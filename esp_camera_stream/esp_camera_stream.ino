@@ -18,7 +18,7 @@ void setup() {
     return ;
   }
   // Wi-Fi connection
-  if (server.wifi_conn(SSID, PASSWD) == false)
+  if (server.wifi_conn() == false)
   {
     Serial.printf("wifi connect failed!\n");
     return ;

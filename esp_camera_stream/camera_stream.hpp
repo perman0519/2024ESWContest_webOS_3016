@@ -3,6 +3,7 @@
 # define CAMERA_STREAM_HPP
 
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include "esp_camera.h"
 #include "esp_timer.h"
 #include "img_converters.h"
@@ -104,7 +105,6 @@ class StreamServer
 
   private:
     void              set_camera_config(camera_config_t &config);
-    void              wifi_scan();
     static esp_err_t  stream_handler(httpd_req_t *req);
 
     const StreamServer& operator=(const StreamServer& copy);
@@ -115,7 +115,7 @@ class StreamServer
     ~StreamServer();
 
     esp_err_t camera_init();
-    bool      wifi_conn(const char *ssid, const char *passwd);
+    bool      wifi_conn();
     bool      start();
 };
 

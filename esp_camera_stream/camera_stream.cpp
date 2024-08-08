@@ -2,12 +2,12 @@
 
 StreamServer::StreamServer()
 {
-
+  Serial.println("stream server constructor");
 }
 
 StreamServer::~StreamServer()
 {
-
+  Serial.println("stream server destructor");
 }
 
 esp_err_t  StreamServer::camera_init()
@@ -20,82 +20,28 @@ esp_err_t  StreamServer::camera_init()
   return err;
 }
 
-void StreamServer::wifi_scan()
-{
-  WiFi.mode(WIFI_STA);
-
-  int n = WiFi.scanNetworks();
-    Serial.println("Scan done");
-    if (n == 0) {
-        Serial.println("no networks found");
-    } else {
-        Serial.print(n);
-        Serial.println(" networks found");
-        Serial.println("Nr | SSID                             | RSSI | CH | Encryption");
-        for (int i = 0; i < n; ++i) {
-            // Print SSID and RSSI for each network found
-            Serial.printf("%2d",i + 1);
-            Serial.print(" | ");
-            Serial.printf("%-32.32s", WiFi.SSID(i).c_str());
-            Serial.print(" | ");
-            Serial.printf("%4d", WiFi.RSSI(i));
-            Serial.print(" | ");
-            Serial.printf("%2d", WiFi.channel(i));
-            Serial.print(" | ");
-            switch (WiFi.encryptionType(i))
-            {
-            case WIFI_AUTH_OPEN:
-                Serial.print("open");
-                break;
-            case WIFI_AUTH_WEP:
-                Serial.print("WEP");
-                break;
-            case WIFI_AUTH_WPA_PSK:
-                Serial.print("WPA");
-                break;
-            case WIFI_AUTH_WPA2_PSK:
-                Serial.print("WPA2");
-                break;
-            case WIFI_AUTH_WPA_WPA2_PSK:
-                Serial.print("WPA+WPA2");
-                break;
-            case WIFI_AUTH_WPA2_ENTERPRISE:
-                Serial.print("WPA2-EAP");
-                break;
-            case WIFI_AUTH_WPA3_PSK:
-                Serial.print("WPA3");
-                break;
-            case WIFI_AUTH_WPA2_WPA3_PSK:
-                Serial.print("WPA2+WPA3");
-                break;
-            case WIFI_AUTH_WAPI_PSK:
-                Serial.print("WAPI");
-                break;
-            default:
-                Serial.print("unknown");
-            }
-            Serial.println();
-            delay(10);
-        }
-    }
-    Serial.println("");
- 
-    // Delete the scan result to free memory for code below.
-    WiFi.scanDelete();
-}
-
-bool  StreamServer::wifi_conn(const char *ssid, const char *passwd)
+bool  StreamServer::wifi_conn()
 {
   int cnt = 0;
 
-  wifi_scan();
+  uint64_t chipid = ESP.getEfuseMac();
+  Serial.println("chip id : " + String(chipid, HEX));
+  String esp_ap_name = "ESP32_" + String(chipid, HEX);
+  
+  WiFiManager wifiManager;
 
-  WiFi.begin(ssid, passwd);
+  wifiManager.resetSettings();
+  if (wifiManager.autoConnect(esp_ap_name.c_str()) == false)
+  {
+    Serial.println("WiFiManager auto connect failed!");
+    ESP.restart();
+  }
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
     cnt++;
-    if (cnt >= 500)
+    if (cnt >= 100)
       return false;
   }
 
