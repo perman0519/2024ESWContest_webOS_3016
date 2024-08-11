@@ -1,0 +1,16 @@
+{
+  "name": "com.our42.test.proxycamera.service",
+  "version": "1.0.5",
+  "description": "Helloworld service",
+  "main": "service_main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+    "axios": "^1.7.3",
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}
