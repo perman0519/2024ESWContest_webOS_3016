@@ -41,7 +41,7 @@ void loop() {
   {
     if (server.check_ws_server_conn() == false)
     {
-      if (server.ws_server_conn("192.168.3.1", 3000) == false)
+      if (server.ws_server_conn("172.20.10.12", 3000) == false)
       {
         Serial.println("web socket server failed. check your web socket server.");
         return ;
