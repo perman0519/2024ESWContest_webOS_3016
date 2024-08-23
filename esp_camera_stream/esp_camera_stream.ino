@@ -6,6 +6,10 @@
 StreamServer server;
 bool isCameraStreamOn = true;
 
+const char* ws_server_ip = "192.168.219.104";
+const uint16_t ws_server_port = 9999;
+
+
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
@@ -24,7 +28,7 @@ void setup() {
     return ;
   }
 
-  if (server.ws_server_conn("192.168.3.1", 3000) == false)
+  if (server.ws_server_conn(ws_server_ip, ws_server_port) == false)
   {
     Serial.println("web socket server failed. check your web socket server.");
     return ;
@@ -32,16 +36,16 @@ void setup() {
 }
 
 void loop() {
-  if (isCameraStreamOn == false)
-  {
-    server.stop();
-  }
+  // if (isCameraStreamOn == false)
+  // {
+  //   server.stop();
+  // }
 
   if (isCameraStreamOn == true)
   {
     if (server.check_ws_server_conn() == false)
     {
-      if (server.ws_server_conn("172.20.10.12", 3000) == false)
+      if (server.ws_server_conn(ws_server_ip, ws_server_port) == false)
       {
         Serial.println("web socket server failed. check your web socket server.");
         return ;

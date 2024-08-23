@@ -70,14 +70,14 @@ bool   StreamServer::start()
   return true;
 }
 
-bool StreamServer::stop()
-{
-  if (client.isOpen()) {
-    Serial.println("Disconnecting from WebSocket server...");
-    client.close();
-  }
-  return true;
-}
+// bool StreamServer::stop()
+// {
+//   if (client.isOpen()) {
+//     Serial.println("Disconnecting from WebSocket server...");
+//     client.close();
+//   }
+//   return true;
+// }
 
 void StreamServer::onEventsCallback(websockets::WebsocketsEvent event, String data)
 {
