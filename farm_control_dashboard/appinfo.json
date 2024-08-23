@@ -1,0 +1,13 @@
+{
+  "id": "com.our42.farm.control.dashboard",
+  "version": "1.1.4",
+  "vendor": "My Company",
+  "type": "web",
+  "main": "index.html",
+  "title": "farm_dashboard",
+  "icon": "icon.png",
+  "requiredPermissions": [
+    "time.query",
+    "activity.operation"
+  ]
+}

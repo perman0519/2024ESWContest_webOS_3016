@@ -1,0 +1,16 @@
+{
+  "name": "com.our42.farm.control.dashboard.service",
+  "version": "1.1.4",
+  "description": "proxy camera service",
+  "main": "service_main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+    "canvas": "^2.11.2",
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}

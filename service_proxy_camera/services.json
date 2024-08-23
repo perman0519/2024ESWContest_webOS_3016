@@ -1,0 +1,10 @@
+{
+  "id": "com.our42.farm.control.dashboard.service",
+  "description": "camera proxy service",
+  "executable": "service_main.js",
+  "services": [
+    {
+      "name": "com.our42.farm.control.dashboard.service"
+    }
+  ]
+}

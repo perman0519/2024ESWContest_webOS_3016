@@ -1,9 +1,0 @@
-{
-  "id": "com.our42.test.proxycamera.service",
-  "description": "HelloWorld Service",
-  "services": [
-    {
-      "name": "com.our42.test.proxycamera.service"
-    }
-  ]
-}
