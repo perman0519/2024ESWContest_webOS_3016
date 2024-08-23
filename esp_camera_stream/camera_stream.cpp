@@ -17,6 +17,7 @@ esp_err_t  StreamServer::camera_init()
   
   // Camera init
   esp_err_t err = esp_camera_init(&config);
+  
   return err;
 }
 
@@ -52,90 +53,84 @@ bool  StreamServer::wifi_conn()
 
 bool   StreamServer::start()
 {
-  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-  config.server_port = 8081;
-
-  httpd_uri_t index_uri = {
-    .uri       = "/",
-    .method    = HTTP_GET,
-    .handler   = stream_handler,
-    .user_ctx  = NULL
-  };
-  
-  //Serial.printf("Starting web server on port: '%d'\n", config.server_port);
-  if (httpd_start(&stream_httpd, &config) == ESP_OK)
+  client.poll();
+  camera_fb_t *fb = esp_camera_fb_get();
+  if(!fb)
   {
-    httpd_register_uri_handler(stream_httpd, &index_uri);
-  }
-  else
+    esp_camera_fb_return(fb);
     return false;
+  }
 
-  Serial.print("Camera Stream Ready! Go to: http://");
-  Serial.print(WiFi.localIP());
-  Serial.printf(":%d\n", config.server_port);
+  if(fb->format != PIXFORMAT_JPEG) { return false; }
 
+  client.sendBinary((const char*) fb->buf, fb->len);
+  esp_camera_fb_return(fb);
+
+  Serial.println("Camera Streaming..");
   return true;
 }
 
-
-
-esp_err_t StreamServer::stream_handler(httpd_req_t *req)
+bool StreamServer::stop()
 {
-  camera_fb_t * fb = NULL;
-  esp_err_t res = ESP_OK;
-  size_t _jpg_buf_len = 0;
-  uint8_t * _jpg_buf = NULL;
-  char * part_buf[64];
-
-  res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE);
-  if(res != ESP_OK){
-    return res;
+  if (client.isOpen()) {
+    Serial.println("Disconnecting from WebSocket server...");
+    client.close();
   }
+  return true;
+}
 
-  while(true){
-    fb = esp_camera_fb_get();
-    if (!fb) {
-      Serial.println("Camera capture failed");
-      res = ESP_FAIL;
-    } else {
-      if(fb->width > 400){
-        if(fb->format != PIXFORMAT_JPEG){
-          bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
-          esp_camera_fb_return(fb);
-          fb = NULL;
-          if(!jpeg_converted){
-            Serial.println("JPEG compression failed");
-            res = ESP_FAIL;
-          }
-        } else {
-          _jpg_buf_len = fb->len;
-          _jpg_buf = fb->buf;
-        }
-      }
+void StreamServer::onEventsCallback(websockets::WebsocketsEvent event, String data)
+{
+    if(event == websockets::WebsocketsEvent::ConnectionOpened)
+    {
+      Serial.println("Connection Opened");
     }
-    if(res == ESP_OK){
-      size_t hlen = snprintf((char *)part_buf, 64, _STREAM_PART, _jpg_buf_len);
-      res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
+    else if(event == websockets::WebsocketsEvent::ConnectionClosed)
+    {
+      Serial.println("Connection Closed");
+      ESP.restart();
     }
-    if(res == ESP_OK){
-      res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
+    else if(event == websockets::WebsocketsEvent::GotPing)
+    {
+      Serial.println("Got a Ping!");
     }
-    if(res == ESP_OK){
-      res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
+    else if(event == websockets::WebsocketsEvent::GotPong)
+    {
+      Serial.println("Got a Pong!");
     }
-    if(fb){
-      esp_camera_fb_return(fb);
-      fb = NULL;
-      _jpg_buf = NULL;
-    } else if(_jpg_buf){
-      free(_jpg_buf);
-      _jpg_buf = NULL;
-    }
-    if(res != ESP_OK){
-      break;
+}
+
+void StreamServer::onMessageCallback(websockets::WebsocketsMessage message)
+{
+  Serial.print("web socket Message: ");
+  Serial.println(message.data());
+}
+
+bool StreamServer::ws_server_conn(const char *server_host, const uint16_t server_port)
+{
+  client.onMessage(onMessageCallback);
+  client.onEvent(onEventsCallback);
+  bool connected = client.connect(server_host, server_port, "/");
+  int i = 0;
+
+  while (!connected)
+  {
+    Serial.println("Waiting for connected Web Socket server.");
+    connected = client.connect(server_host, server_port, "/");
+    delay(300);
+    if (++i > 100)
+    {
+      Serial.println("Web Socket server connect failed.");
+      return false;
     }
   }
-  return res;
+  Serial.println("Web Socket server connect.");
+  return true;
+}
+
+bool StreamServer::check_ws_server_conn()
+{
+  return client.ping();
 }
 
 void StreamServer::set_camera_config(camera_config_t &config)
@@ -158,16 +153,16 @@ void StreamServer::set_camera_config(camera_config_t &config)
   config.pin_sscb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
-  config.xclk_freq_hz = 20000000;
+  config.xclk_freq_hz = 10000000;
   config.pixel_format = PIXFORMAT_JPEG; 
 
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
+    config.jpeg_quality = 40;
     config.fb_count = 2;
   } else {
     config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
+    config.jpeg_quality = 40;
+    config.fb_count = 2;
   }
 }

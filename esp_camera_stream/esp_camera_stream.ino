@@ -1,16 +1,16 @@
 #include "camera_stream.hpp"
-#include "env.h"
 
 // Not tested with this model
 //#define CAMERA_MODEL_WROVER_KIT
 
+StreamServer server;
+bool isCameraStreamOn = true;
+
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
- 
+
   Serial.begin(115200);
   Serial.setDebugOutput(false);
-  
-  StreamServer server;
 
   if (server.camera_init() != ESP_OK)
   {
@@ -24,13 +24,34 @@ void setup() {
     return ;
   }
 
-  if (server.start() == false)
+  if (server.ws_server_conn("192.168.3.1", 3000) == false)
   {
-    Serial.printf("start failed!\n");
+    Serial.println("web socket server failed. check your web socket server.");
     return ;
   }
 }
 
 void loop() {
-  delay(10000);
+  if (isCameraStreamOn == false)
+  {
+    server.stop();
+  }
+
+  if (isCameraStreamOn == true)
+  {
+    if (server.check_ws_server_conn() == false)
+    {
+      if (server.ws_server_conn("192.168.3.1", 3000) == false)
+      {
+        Serial.println("web socket server failed. check your web socket server.");
+        return ;
+      }
+    }
+
+    if (server.start() == false)
+    {
+      Serial.printf("Error! restart plz.. \n");
+      ESP.restart();
+    }
+  }
 }

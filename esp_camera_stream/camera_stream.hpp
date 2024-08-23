@@ -4,6 +4,7 @@
 
 #include <WiFi.h>
 #include <WiFiManager.h>
+#include <ArduinoWebsockets.h>
 #include "esp_camera.h"
 #include "esp_timer.h"
 #include "img_converters.h"
@@ -101,11 +102,15 @@ class StreamServer
     static constexpr const char*  _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
     static constexpr const char*  _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
     static constexpr const char*  _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
-    httpd_handle_t      stream_httpd = NULL;
+    httpd_handle_t                stream_httpd = NULL;
+    websockets::WebsocketsClient  client;
 
   private:
     void              set_camera_config(camera_config_t &config);
     static esp_err_t  stream_handler(httpd_req_t *req);
+    static void       onEventsCallback(websockets::WebsocketsEvent event, String data);
+    static void       onMessageCallback(websockets::WebsocketsMessage message);
+
 
     const StreamServer& operator=(const StreamServer& copy);
     StreamServer(const StreamServer& copy);
@@ -116,7 +121,10 @@ class StreamServer
 
     esp_err_t camera_init();
     bool      wifi_conn();
+    bool      ws_server_conn(const char *server_host, const uint16_t server_port);
+    bool      check_ws_server_conn();
     bool      start();
+    bool      stop();
 };
 
 #endif
