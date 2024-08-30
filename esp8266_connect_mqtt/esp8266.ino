@@ -15,6 +15,8 @@ const char* mqtt_password = "";
 // 토픽 설정
 const char* led_command_topic = "esp32/led/command";
 const char* led_status_topic = "esp32/led/status";
+const char* waterpump_command_topic = "esp32/waterpump/command";
+const char* waterpump_status_topic = "esp32/waterpump/status";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -54,11 +56,19 @@ void callback(char* topic, byte* payload, unsigned int length) {
     // LED 제어 로직 추가
     if (String(topic) == led_command_topic) {
         if (message == "ON") {
-            Serial.println("ON");
+            Serial.println("LED_ON");
         } else if (message == "OFF") {
-            Serial.println("OFF");
+            Serial.println("LED_OFF");
         }
     }
+    if (String(topic) == waterpump_command_topic) {
+        if (message == "ON") {
+            Serial.println("WATERPUMP_ON");
+        } else if (message == "OFF") {
+            Serial.println("WATERPUMP_OFF");
+        }
+    }
+    //TODO: water pump
 }
 
 void reconnect() {
@@ -71,6 +81,7 @@ void reconnect() {
             Serial.println("connected");
             client.publish(led_status_topic, "ESP SETUP COMPLETE");  // 연결 확인 메시지
             client.subscribe(led_command_topic);        // LED 제어 토픽 구독
+            client.subscribe(waterpump_command_topic);        // LED 제어 토픽 구독
         } else {
             Serial.print("failed, rc=");
             Serial.print(client.state());
@@ -101,6 +112,12 @@ void loop() {
       }
       else if (command == "LED_ON_OK") {
          client.publish(led_status_topic, "LED_ON_OK");
+      }
+      else if (command == "WATERPUMP_ON_OK") {
+         client.publish(waterpump_status_topic, "WATERPUMP_ON_OK");
+      }
+      else if (command == "WATERPUMP_OFF_OK") {
+         client.publish(waterpump_status_topic, "WATERPUMP_OFF_OK");
       }
   }
 }
