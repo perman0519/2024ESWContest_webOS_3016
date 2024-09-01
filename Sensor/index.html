@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Example Web App</title>
+    <script src="./mqttws31.js"></script>
+    <style type="text/css">
+        body {
+            width: 100%;
+            height: 100%;
+            background-color:#202020;
+        }
+        div {
+            position:absolute;
+            height:100%;
+            width:100%;
+            display: table;
+        }
+        h1 {
+            display: table-cell;
+            vertical-align: middle;
+            text-align:center;
+            color:#FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="txt_msg">Hello, Web Application!!</h1>
+    <h2 id="mqtt_msg">Content</h2>
+
+    <script src="./mqtt.js"></script>
+</body>
+</html>

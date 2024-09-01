@@ -1,0 +1,13 @@
+{
+  "id": "com.mqtt-test.app",
+  "version": "1.2.0",
+  "vendor": "My Company",
+  "type": "web",
+  "main": "index.html",
+  "title": "mqtt-test",
+  "icon": "icon.png",
+  "requiredPermissions": [
+    "time.query",
+    "activity.operation"
+  ]
+}
