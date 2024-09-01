@@ -1,20 +1,26 @@
 const WebSocket = require('ws');
 const fs = require('fs');
-const { Image } = require('canvas');
 
-// 이미지 유효성 검사 함수
+// PNG 헤더 확인 함수
+function isValidPng(buffer) {
+    const pngHeader = Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]); // PNG 파일의 헤더 (8바이트)
+    return buffer.slice(0, 8).equals(pngHeader);
+}
+
+// JPEG 헤더 확인 함수
+function isValidJpeg(buffer) {
+    const jpegHeader = Buffer.from([0xFF, 0xD8, 0xFF]); // JPEG 파일의 헤더 (3바이트)
+    return buffer.slice(0, 3).equals(jpegHeader);
+}
+
+// 이미지 유효성 검사 함수 (PNG 및 JPEG 파일용)
 function isValidImage(imageBuffer) {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
-        img.src = imageBuffer;
-    });
+    return isValidPng(imageBuffer) || isValidJpeg(imageBuffer);
 }
 
 // WebSocket 서버 생성
 
-export const startWsServer = () => {
+const startWSServer = () => {
 	const wss = new WebSocket.Server({ port: 3000 });
 
 	wss.on('connection', (ws) => {
@@ -51,12 +57,4 @@ export const startWsServer = () => {
 	console.log('WebSocket server running on ws://0.0.0.0:3000');
 }
 
-// export const stopWsServer = () => {
-//     if (wss) {
-//         wss.close(() => {
-//             console.log('웹소켓 서버가 종료되었습니다.');
-//         });
-//     } else {
-//         console.log('서버가 실행 중이 아닙니다.');
-//     }
-// }
+module.exports = { startWSServer };

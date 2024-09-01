@@ -1,6 +1,6 @@
 {
   "name": "com.our42.farm.control.dashboard.service",
-  "version": "1.1.4",
+  "version": "1.1.8",
   "description": "proxy camera service",
   "main": "service_main.js",
   "scripts": {

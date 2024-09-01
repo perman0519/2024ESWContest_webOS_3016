@@ -59,7 +59,7 @@ app.get('/stream', (req, res) => {
 const startHttpServer = () => {
     app.listen(port, () => {
     console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
-});
+    });
 }
 
-startHttpServer();
+module.exports = { startHttpServer };

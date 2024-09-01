@@ -4,66 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Farm Control Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-        * {
-            color: white;
-        }
     </style>
 </head>
 <body>
-    <h1>Farm Control Dashboard</h1>
-    <div class="control-box">
-        <h3>websocket server state</h3>
-        <span id="ws-state"></span>
-        <img src="http://192.168.219.104:8081/stream" alt="" width="600" height="400">
-    </div>
-
+    <header class="container">
+        <h1>Farm Control Dashboard</h1>
+    </header>
+    <main class="container">
+        <section>
+            <div class="d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                    <span class="fs-3 fw-bold me-3"> websocket server state : </span> <div id="ws-state"></div>
+                </div>
+                <button class="btn btn-primary" id="ws-server-restart-btn">Restart</button>
+            </div>
+            <div id="preview"></div>
+        </section>
+    </main>
     <script>
-        const ws = new WebSocket('ws://192.168.219.104:9999');
-        const state = document.getElementById("ws-state");
-        const checkWebSocketState = setInterval(() => {
+        const checkWSState = () => {
             switch (ws.readyState) {
                 case WebSocket.CONNECTING:
                     const connectionTimeout = setTimeout(() => {
                         if (ws.readyState === WebSocket.CONNECTING) {
-                            state.innerText = "state: server not running.."
+                            state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
                             ws.close();
                             clearInterval(checkWebSocketState);
                         }
                     }, 5000); // 5초 동안 연결을 시도
-                    state.innerText = "state: connecting.."
+                    state.innerHTML = '<span class="badge text-bg-warning">connecting...</span>'
                     break;
                 case WebSocket.OPEN:
-                    state.innerText = "state: running.."
+                    state.innerHTML = '<span class="badge text-bg-success">running!</span>'
                     break;
                 case WebSocket.CLOSING:
-                    state.innerText = "state: closing.."
+                    state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
+                    document.querySelector('preview').innerHTML = '<img class="img-fluid img-thumbnail" src="http://192.168.219.104:8081/stream" alt="카메라 모니터링" width="600" height="400">';
                     break;
                 case WebSocket.CLOSED:
-                    state.innerText = "state: not running.."
+                    state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
                     clearInterval(checkWebSocketState); // 연결이 닫히면 확인 중지
                     break;
                 default:
                     console.log("알 수 없는 상태");
                     break;
             }
-        }, 1000); // 1000ms = 1초
+        };
     </script>
     <script>
-        // const bridge = new WebOSServiceBridge();
+        const ws = new WebSocket('ws://10.19.215.26:3000');
+        const state = document.getElementById("ws-state");
+        const checkWebSocketState = setInterval(checkWSState, 1000);
+    </script>
+    <script>
+        const bridge = new WebOSServiceBridge();
 
-        // const startServer = () => {
-        //     console.log("start server function");
-        //     const url = 'luna://com.our42.test.control.dashboard.service/startWSServer';
-        //     const params = {};
-        //     bridge.onservicecallback = (msg) => {
-        //         console.log(msg);
-        //         let res = JSON.parse(msg);
-        //         document.getElementById("txt_msg").innerHTML = res.reply;
-        //     };
+        const startServer = () => {
+            console.log("start server function");
+            const url = 'luna://com.our42.farm.control.dashboard.service/startWSServer';
+            const params = {};
+            bridge.onservicecallback = (msg) => {
+                console.log(msg);
+                let res = JSON.parse(msg);
+                // document.getElementById("txt_msg").innerHTML = res.reply;
+                const checkWebSocketState = setInterval(checkWSState, 1000);
+            };
+            bridge.call(url, JSON.stringify(params));
+        }
 
-        //     bridge.call(url, JSON.stringify(params));
-        // }
+        document.querySelector("#ws-server-restart-btn").addEventListener("click", startServer);
     </script>
 </body>
 </html>
