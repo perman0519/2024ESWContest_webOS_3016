@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Example Web App</title>
+    <script src="./mqttws31.js"></script>
+    <style type="text/css">
+        body {
+            width: 100%;
+            height: 100%;
+            background-color:#202020;
+        }
+        div {
+            position:absolute;
+            height:100%;
+            width:100%;
+            display: table;
+        }
+        h1 {
+            display: table-cell;
+            vertical-align: middle;
+            text-align:center;
+            color:#FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1 id="txt_msg">Hello, Web Application!!</h1>
+        <h2 id="mqtt_msg"></h2>
+        <button id="onOff" style="z-index:2; width: 100px; height: 100px;">ON/OFF</button>
+    </div>
+
+    <script>
+        // DOMContentLoaded 이벤트를 사용하여 HTML 로드 완료 후 코드 실행
+        let toggleStatus = 0;
+        document.addEventListener("DOMContentLoaded", function () {
+            var mqtt_host = "10.19.218.225";
+            var mqtt_port = "8000";
+            var mqtt_clientId = "clientID-" + parseInt(Math.random() * 100);
+            var mqtt_topic = "led_command_topic";
+
+            let button = document.querySelector("#onOff");
+            button.innerText = "BUTTON";
+
+            // MQTT 클라이언트 설정
+            let client = new Paho.MQTT.Client("ws://" + mqtt_host + ":" + mqtt_port + "/mqtt", mqtt_clientId);
+
+            // 브로커 연결 옵션
+            var options = {
+                timeout: 3,
+                onSuccess: function () {
+                    console.log("Connected to MQTT broker");
+                    document.querySelector("#txt_msg").innerText = "connection Success";
+                },
+                onFailure: function (message) {
+                    console.log("Connection failed: " + message.errorMessage);
+                    document.querySelector("#txt_msg").innerText = "connection fail";
+                }
+            };
+
+            // 브로커 연결
+            client.connect(options);
+
+            // 메시지 송신 함수
+            function sendMessage() {
+                if (toggleStatus === 0) {
+                    var message = new Paho.MQTT.Message("ON");
+                    toggleStatus = 1;
+                    button.innerText = "ON";
+                }
+                else {
+                    var message = new Paho.MQTT.Message("OFF");
+                    toggleStatus = 0;
+                    button.innerText = "OFF";
+                }
+                message.destinationName = "esp32/led/command";  // 전송할 토픽 이름
+                client.send(message);
+                document.getElementById("mqtt_msg").innerText = "Message sent: toggle";
+            }
+
+            // 버튼 클릭 이벤트 설정
+            button.addEventListener("click", sendMessage);
+        });
+    </script>
+</body>
+</html>
