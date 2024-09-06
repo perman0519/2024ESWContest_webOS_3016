@@ -2,7 +2,7 @@
 var client = new Paho.MQTT.Client("192.168.106.135", Number(1883), "/mqtt", "webOSClient-" + Math.random());
 let mqttMsg = document.querySelector("#mqtt_msg");
 let txtMsg = document.querySelector("#txt_msg");
-let onOff = document.querySelector("#onOff");
+// let onOff = document.querySelector("#onOff");
 
 txtMsg.innerText = "APP open";
 
