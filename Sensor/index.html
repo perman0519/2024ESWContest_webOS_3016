@@ -25,6 +25,8 @@
     <!-- Firebase App SDK 및 Realtime Database SDK 로드 -->
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+    <!-- MQTT 관련 스크립트 로드 -->
+    <script src="./mqtt.js"></script>
 
     <script>
       // Firebase 설정
@@ -41,17 +43,11 @@
       // Firebase 초기화
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
-    </script>
 
-    <!-- mqtt.js를 body 끝부분에 로드 -->
-    <script src="./mqtt.js"></script>
-
-    <script>
-      // DOMContentLoaded 이벤트가 발생한 후에 loadMQTT 함수 호출
-      document.addEventListener("DOMContentLoaded", function () {
-        loadMQTT(database);  // mqtt.js 파일에서 정의된 함수를 호출
-      });
+      // MQTT 관련 스크립트 호출
+      setupMQTT(database);
     </script>
 </body>
 </html>
+
 
