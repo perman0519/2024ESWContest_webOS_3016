@@ -2,31 +2,56 @@
 <html>
 <head>
     <title>Example Web App</title>
+    <!-- MQTT WebSocket용 JavaScript 라이브러리 (Paho MQTT) 로드 -->
     <script src="./mqttws31.js"></script>
+
     <style type="text/css">
         body {
             width: 100%;
             height: 100%;
-            background-color:#202020;
-        }
-        div {
-            position:absolute;
-            height:100%;
-            width:100%;
-            display: table;
+            background-color: #202020;
         }
         h1 {
-            display: table-cell;
-            vertical-align: middle;
-            text-align:center;
-            color:#FFFFFF;
+            text-align: center;
+            color: #FFFFFF;
         }
     </style>
 </head>
 <body>
-    <h1 id="txt_msg">Hello, Web Application!!</h1>
-    <h2 id="mqtt_msg">Content</h2>
+    <h1>Firebase EXAMPLE</h1><br />
+    <h2 id="txt_msg">Hello, Web Application!!</h2>
+    <h2 id="mqtt_msg">Waiting for MQTT message...</h2>
 
+    <!-- Firebase App SDK 및 Realtime Database SDK 로드 -->
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-database.js"></script>
+
+    <script>
+      // Firebase 설정
+      const firebaseConfig = {
+            apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
+            authDomain: "smartfarm-ddbc3.firebaseapp.com",
+            databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
+            projectId: "smartfarm-ddbc3",
+            storageBucket: "smartfarm-ddbc3.appspot.com",
+            messagingSenderId: "945689382597",
+            appId: "1:945689382597:web:ca23f3de21c44e2645aaac"
+        };
+
+      // Firebase 초기화
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+    </script>
+
+    <!-- mqtt.js를 body 끝부분에 로드 -->
     <script src="./mqtt.js"></script>
+
+    <script>
+      // DOMContentLoaded 이벤트가 발생한 후에 loadMQTT 함수 호출
+      document.addEventListener("DOMContentLoaded", function () {
+        loadMQTT(database);  // mqtt.js 파일에서 정의된 함수를 호출
+      });
+    </script>
 </body>
 </html>
+
