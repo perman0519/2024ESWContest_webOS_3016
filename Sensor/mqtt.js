@@ -1,6 +1,6 @@
 function setupMQTT(database) 
 {
-    var mqtt_host = "192.168.100.101"; // 브로커 IP
+    var mqtt_host = "192.168.100.100"; // 브로커 IP
     var mqtt_port = "8000"; // 브로커 포트
     var mqtt_clientId = "clientID-" + parseInt(Math.random() * 100); // 클라이언트 ID
     var mqtt_topic = "Sensor/Temp_Humi"; // 구독할 토픽
@@ -106,4 +106,41 @@ function setupMQTT(database)
     // 브로커 연결
     client.connect(options);
 }
+
+function fetchTemperatureDataAfter(database, startTime) 
+{
+    // 'sensorValue' 경로에서 타임스탬프가 특정 시각 이후인 데이터를 가져옴
+    database.ref('sensorValue')
+        .orderByChild('timestamp') // 타임스탬프 필드를 기준으로 정렬
+        .startAt(startTime) // 주어진 startTime 이후의 데이터만 필터링
+        .on('value', (snapshot) => { // 실시간으로 데이터 변경을 감지
+            if (snapshot.exists()) 
+            {
+                const data = snapshot.val();
+                const temperatures = [];    // 데이터베이스에 접근해서 데이터를 담아둘 배열
+
+                // 온도 데이터만 추출하여 배열에 저장
+                for (let key in data) 
+                {
+                    if (data[key].temperature) 
+                    {
+                        temperatures.push(data[key].temperature);
+                    }
+                }
+
+                console.log(`Fetched temperatures after ${startTime}: `, temperatures);
+
+                // temperatures 배열의 값을 문자열로 변환하여 화면에 출력
+                document.querySelector("#sensor_data").innerText = temperatures.join('\n');
+            } 
+            else 
+            {
+                console.log("No data available after the specified time");
+            }
+        }, (error) => {
+            console.error("Error fetching data: ", error);
+        });
+}
+
+
 

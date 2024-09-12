@@ -21,6 +21,7 @@
     <h1>Firebase EXAMPLE</h1><br />
     <h2 id="txt_msg">Hello, Web Application!!</h2>
     <h2 id="mqtt_msg">Waiting for MQTT message...</h2>
+    <h2 id="sensor_data">Wait sensor data..</h2>
 
     <!-- Firebase App SDK 및 Realtime Database SDK 로드 -->
     <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-app.js"></script>
@@ -46,6 +47,10 @@
 
       // MQTT 관련 스크립트 호출
       setupMQTT(database);
+      // 예시 사용: 특정 시각 이후의 데이터를 가져오려면 타임스탬프 값을 지정
+      const startTime = '2024-09-12 21:38:00'; // 원하는 시각 - 현재 시간으로 바꿔서, 내가 원하는 온도값이 계속 찍히는 지 확인하는 걸 추천
+      fetchTemperatureDataAfter(database, startTime);
+
     </script>
 </body>
 </html>
