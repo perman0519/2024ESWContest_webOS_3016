@@ -21,6 +21,7 @@
                 <button class="btn btn-primary" id="ws-server-restart-btn">Restart</button>
             </div>
             <div id="preview"></div>
+            <!-- <div id -->
         </section>
     </main>
     <script>
@@ -54,7 +55,7 @@
         };
     </script>
     <script>
-        const ws = new WebSocket('ws://10.19.215.26:3000');
+        const ws = new WebSocket('ws://192.168.100.104:3000');
         const state = document.getElementById("ws-state");
         const checkWebSocketState = setInterval(checkWSState, 1000);
     </script>

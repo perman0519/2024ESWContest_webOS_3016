@@ -22,7 +22,7 @@ int   soil_humi;
 
 DHT dht(DHTPIN, DHTTYPE);
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
   dht.begin();
@@ -31,7 +31,7 @@ void setup()
   client.setCallback(callback);
 }
 
-void setup_wifi() 
+void setup_wifi()
 {
   delay(10);
   // WiFi 연결 확인하는 부분.
@@ -41,7 +41,7 @@ void setup_wifi()
 
   WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) 
+  while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
     Serial.print(".");
@@ -53,47 +53,47 @@ void setup_wifi()
   Serial.println(WiFi.localIP());
 }
 
-void callback(char* topic, byte* payload, unsigned int length) 
+void callback(char* topic, byte* payload, unsigned int length)
 {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
 
-  for (int i = 0; i < length; i++) 
+  for (int i = 0; i < length; i++)
   {
     Serial.print((char)payload[i]);
   }
   Serial.println();
 
   // 1 받으면 LED ON
-  if ((char)payload[0] == '1') 
+  if ((char)payload[0] == '1')
   {
     digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
 
-  } 
-  else 
+  }
+  else
   {
     digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
   }
 
 }
 
-void reconnect() 
+void reconnect()
 {
   // Loop until we're reconnected
-  while (!client.connected()) 
+  while (!client.connected())
   {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client")) 
+    if (client.connect("ESP8266Client"))
     {
       Serial.println("connected");
       // Once connected, publish an announcement...
       client.publish("outTopic", "hello world");
       // ... and resubscribe
       client.subscribe("inTopic");
-    } 
-    else 
+    }
+    else
     {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -105,12 +105,12 @@ void reconnect()
 }
 
 
-float getHumi() 
+float getHumi()
 {                  //DHT22 습도를 받아오는 함수
   float h = dht.readHumidity();
   float t = dht.readTemperature();
 
-  if (isnan(h) || isnan(t)) 
+  if (isnan(h) || isnan(t))
   {
     Serial.println("Failed to read from DHT sensor!");
   }
@@ -121,9 +121,9 @@ float getHumi()
   return(h);
 }
 
-float getTemp() 
+float getTemp()
 {                 //DHT22 온도를 받아오는 함수
-  
+
   float t = dht.readTemperature();
 
   Serial.print("Temperature: ");
@@ -143,12 +143,12 @@ int getSoliHumi()
   //시리얼모니터 출력
   Serial.println("Mositure : " + String(value1));
   Serial.println(String(value2) + "%"); //우리가 알고 있는 습도의 %가 아니다.^^
-  
+
   //send data
   digitalWrite(LEDPIN, HIGH);
 
   return (value2);
-  
+
 }
 
 void mqtt_publish(float humi, float temp, int soil_humi)
@@ -156,9 +156,9 @@ void mqtt_publish(float humi, float temp, int soil_humi)
   //전송할 데이터를 json 타입으로 가공하기
   String payload = "{";
   char msg[1000];
- 
+
   digitalWrite(LEDPIN, LOW);
-  if (!client.connected()) 
+  if (!client.connected())
   {
     reconnect();
   }
@@ -166,7 +166,7 @@ void mqtt_publish(float humi, float temp, int soil_humi)
 
   long now = millis();
 
-  if (now - lastMsg > 2000) 
+  if (now - lastMsg > 2000)
   {
     lastMsg = now;
 
@@ -188,7 +188,7 @@ void mqtt_publish(float humi, float temp, int soil_humi)
   delay(500); //0.5초 단위로 Publishing (조정가능)
 }
 
-void loop() 
+void loop()
 {
   humi = getHumi(); //습도를 받아서 변수에 입력
   temp = getTemp(); //온도를 받아서 변수에 입력

@@ -1,0 +1,9 @@
+{
+  "id": "com.our42.farm.control.dashboard.sensor.service",
+  "description": "sensor store",
+  "services": [
+    {
+      "name": "com.our42.farm.control.dashboard.sensor.service"
+    }
+  ]
+}

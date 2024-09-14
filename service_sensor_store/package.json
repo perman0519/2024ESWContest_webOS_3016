@@ -1,0 +1,15 @@
+{
+  "name": "com.our42.farm.control.dashboard.sensor.service",
+  "version": "1.2.5",
+  "description": "sensor store",
+  "main": "sensor_store.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+    "firebase": "^10.13.1",
+    "mqtt": "^5.10.1"
+  }
+}
