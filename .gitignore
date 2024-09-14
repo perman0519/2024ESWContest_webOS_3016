@@ -2,3 +2,4 @@
 .vscode/
 .env
 *.ipk
+node_modules/
