@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {Panel, Header} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
 import Dropdown from '@enact/sandstone/Dropdown';
@@ -81,7 +81,7 @@ function MainPanel(props) {
             <div className="main-container">
 				<div className="temp-box box-three">
                     <div>
-                       <img src="http://192.168.100.103:8081/stream" width="600"></img>
+                       <img src="http://192.168.100.103:8081/stream" alt='img' width="600"/>
                     </div>
                 </div>
                 <div className="temp-box box-three">
