@@ -2,7 +2,7 @@
 let led_toggleStatus = 0;
 let water_toggleStatus = 0;
 document.addEventListener("DOMContentLoaded", function () {
-	var mqtt_host = "10.19.218.225";
+	var mqtt_host = "192.168.100.102";
 	var mqtt_port = "8000";
 	var mqtt_clientId = "clientID-" + parseInt(Math.random() * 100);
 
@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", function () {
 	led_button.innerText = "LED BUTTON";
 	let water_button =  document.querySelector("#WATER_BUTTON");
 	water_button.innerText = "WATERPUMP BUTTON";
-
 
 	// MQTT 클라이언트 설정
 	let client = new Paho.MQTT.Client("ws://" + mqtt_host + ":" + mqtt_port + "/mqtt", mqtt_clientId);

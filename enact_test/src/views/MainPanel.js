@@ -1,8 +1,10 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {Panel, Header} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
 import Dropdown from '@enact/sandstone/Dropdown';
 import TimePicker from '@enact/sandstone/TimePicker';
+import Button from '@enact/sandstone/Button';
+import { useNavigate } from 'react-router-dom';  // useNavigate import 추가
 import * as Paho from 'paho-mqtt/paho-mqtt';
 import './MainPanel.style.css';
 
@@ -72,27 +74,40 @@ function TextOnOff({topic, client, name}) {
     );
 }
 
-function MainPanel(props) {
+const MainPanel = (props) => {  // kind 대신 일반 함수 컴포넌트로 변경
     const client = useMQTTClient();
+    const navigate = useNavigate();
+
+    const goToSecondPage = useCallback(() => {
+        navigate('/second');
+    }, [navigate])
+
+    const goToLogin = useCallback(() => {
+        navigate('/login');
+    }, [navigate])
 
     return (
         <Panel {...props}>
             <Header title="COSMOS IoT Dashboard" />
             <div className="main-container">
+                <div>
+                    <Button onClick={goToSecondPage}>Go to Second Page</Button>
+                    <Button onClick={goToLogin}>Go to Login Page</Button>
+                </div>
 				<div className="temp-box box-three">
-                    <div>
-                       <img src="http://192.168.100.103:8081/stream" width="600"></img>
-                    </div>
+					<div>
+						<img src="http://192.168.100.103:8081/stream" width="600" alt="Stream" />
+					</div>
                 </div>
                 <div className="temp-box box-three">
                     <div>
-                        <Dropdown
-                            className="down"
-                            defaultSelected={0}
-                            inline
-                            title="공간을 선택하십시오 (Light)">
-                            {['거실', '안방', '침실1', '침실2', '부엌', '서재']}
-                        </Dropdown>
+						<Dropdown
+							className="down"
+							defaultSelected={0}
+							inline="true"
+							title="공간을 선택하십시오 (Light)">
+							{['거실', '안방', '침실1', '침실2', '부엌', '서재']}
+						</Dropdown>
                     </div>
                 </div>
                 <div className="temp-box box-four">
