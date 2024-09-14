@@ -86,6 +86,10 @@ const MainPanel = (props) => {  // kind 대신 일반 함수 컴포넌트로 변
         navigate('/login');
     }, [navigate])
 
+    const goToSocket = useCallback(() => {
+        navigate('/websocket');
+    }, [navigate])
+
     return (
         <Panel {...props}>
             <Header title="COSMOS IoT Dashboard" />
@@ -93,6 +97,7 @@ const MainPanel = (props) => {  // kind 대신 일반 함수 컴포넌트로 변
                 <div>
                     <Button onClick={goToSecondPage}>Go to Second Page</Button>
                     <Button onClick={goToLogin}>Go to Login Page</Button>
+                    <Button onClick={goToSocket}>Go to Socket Page</Button>
                 </div>
 				<div className="temp-box box-three">
 					<div>
