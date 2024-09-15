@@ -1,8 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {Panel, Header} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
 import Dropdown from '@enact/sandstone/Dropdown';
 import TimePicker from '@enact/sandstone/TimePicker';
+import Button from '@enact/sandstone/Button';
 import * as Paho from 'paho-mqtt/paho-mqtt';
 import './MainPanel.style.css';
 
@@ -75,15 +76,19 @@ function TextOnOff({topic, client, name}) {
 function MainPanel(props) {
     const client = useMQTTClient();
 
+    const { next, socket } = props;
+
     return (
-        <Panel {...props}>
+        <Panel noCloseButton {...props}>
             <Header title="COSMOS IoT Dashboard" />
             <div className="main-container">
 				<div className="temp-box box-three">
                     <div>
-                       <img src="http://192.168.100.103:8081/stream" width="600"></img>
+                       <img src="http://192.168.100.103:8081/stream" alt='' width="600"/>
                     </div>
                 </div>
+                <Button onClick={next}>Next Page</Button>
+                <Button onClick={socket}>Socket Page</Button>
                 <div className="temp-box box-three">
                     <div>
                         <Dropdown
