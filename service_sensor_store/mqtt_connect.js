@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 
 function setupMQTT(database, ref, set) {
-    const mqtt_host = "192.168.100.100"; // 브로커 IP
+    const mqtt_host = "10.19.218.225"; // 브로커 IP
     const mqtt_port = "8000"; // 브로커 포트
     const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100); // 클라이언트 ID
     const mqtt_topic = "sensor/all"; // 구독할 토픽

@@ -1,0 +1,13 @@
+{
+  "id": "com.our42.farm.control.dashboard.sensor.control.service",
+  "services": [
+    {
+      "name": "com.our42.farm.control.dashboard.sensor.control.service",
+      "description": "MQTT sensor data tranfer to websocket server"
+    },
+    {
+      "name": "com.our42.farm.control.dashboard.sensor.service",
+      "description": "sensor store"
+    }
+  ]
+}
