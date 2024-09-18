@@ -22,7 +22,7 @@ function sensorControlServer(message) {
 
                 socket.on("message", (message) => {
                     console.log('Received message:', message.toString('utf8'));
-                    service.call("luna://com.control.sensor.service/getSensorData", {}, (response) => {
+                    service.call("luna://com.farm-server.sensor.service/getSensorData", {}, (response) => {
                         console.log("Call to getSensorData");
                         console.log("Message payload:", JSON.stringify(response.payload));
 

@@ -1,5 +1,5 @@
 {
-  "name": "com.control.socket-server.service",
+  "name": "com.farm-server.socket-server.service",
   "version": "1.0.17",
   "description": "MQTT sensor data tranfer to websocket server",
   "main": "main.js",
