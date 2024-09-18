@@ -39,6 +39,7 @@
 		"@enact/spotlight": "^4.7.8",
 		"@enact/ui": "^4.7.8",
 		"@enact/webos": "^4.7.8",
+		"firebase": "^10.13.1",
 		"ilib": "npm:ilib-webos@^14.19.0-webos1",
 		"paho-mqtt": "^1.1.0",
 		"prop-types": "^15.8.1",

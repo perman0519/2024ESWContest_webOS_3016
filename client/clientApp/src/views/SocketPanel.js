@@ -1,5 +1,4 @@
-import {Panel, Header} from '@enact/sandstone/Panels';
-import Button from '@enact/sandstone/Button';
+import {Panel, Header, Button} from '@enact/sandstone';
 import { useEffect, useState } from 'react';
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
@@ -77,7 +76,5 @@ function ConnectSocket() {
         </div>
     );
 }
-
-
 
 export default SocketPanel;
