@@ -1,0 +1,13 @@
+{
+  "id": "com.control.socket-server.service",
+  "services": [
+    {
+      "name": "com.control.socket-server.service",
+      "description": "MQTT sensor data tranfer to websocket server"
+    },
+    {
+      "name": "com.control.sensor.service",
+      "description": "sensor store"
+    }
+  ]
+}

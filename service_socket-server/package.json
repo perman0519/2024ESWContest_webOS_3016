@@ -1,0 +1,14 @@
+{
+  "name": "com.control.socket-server.service",
+  "version": "1.0.17",
+  "description": "MQTT sensor data tranfer to websocket server",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
