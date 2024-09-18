@@ -28,7 +28,7 @@ function ConnectSocket() {
         // WebSocket 연결을 설정하는 함수
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://localhost:3001');
+            wsRef.current = new WebSocket('ws://10.19.208.172:3001');
 
             wsRef.current.onopen = function() {
                 console.log('서버에 연결되었습니다.');
@@ -60,7 +60,6 @@ function ConnectSocket() {
                 console.error('WebSocket 오류 발생:', error);
             };
         };
-
         connectWebSocket();  // WebSocket 연결 시도
 
         return () => {
@@ -77,7 +76,5 @@ function ConnectSocket() {
         </div>
     );
 }
-
-
 
 export default SocketPanel;

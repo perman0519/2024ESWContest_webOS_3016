@@ -7,10 +7,10 @@ let serverStarted = false;
 const startServer = () => {
     if (!serverStarted) {
         const wss = new WebSocket.Server({ port: 3001 }); //생성하면서 동시에 연결시도
-        
+
         // if (wss.readyState === 0)
         // wss.opmessage = function() {}
-        wss.on("connection", (socket) => {
+        wss.on("connection", async (socket) => {
             socket.on("close", () => {
                 console.log("Connection closed");
             });
@@ -26,7 +26,7 @@ const startServer = () => {
                 service.call("luna://com.our42.farm.control.dashboard.sensor.service/getSensorData", {}, (response) => {
                     console.log("Call to getSensorData");
                     console.log("Message payload:", JSON.stringify(response.payload));
-                    
+
                     // 클라이언트에 응답 전송
                     socket.send(JSON.stringify(response.payload));
                     console.log('Sent response message:', JSON.stringify(response.payload));

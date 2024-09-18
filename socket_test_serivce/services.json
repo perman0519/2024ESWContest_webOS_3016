@@ -1,0 +1,10 @@
+{
+  "id": "com.socket.test.service",
+  "description": "sockettest Service",
+  "executables" : "socket_test_service.js",
+  "services": [
+    {
+      "name": "com.socket.test.service"
+    }
+  ]
+}
