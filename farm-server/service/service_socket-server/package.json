@@ -9,6 +9,7 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
+    "mqtt": "^5.10.1",
     "ws": "^8.18.0"
   }
 }
