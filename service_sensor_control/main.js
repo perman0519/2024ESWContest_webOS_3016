@@ -10,8 +10,10 @@
 // eslint-disable-next-line import/no-unresolved
 const WebSocket = require("ws");
 const pkgInfo = require('./package.json');
+const serviceInfo = require('./services.json')
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
+// const receivedSensorDataService = new Service(serviceInfo.services[1].name);
 
 // const pkgInfo = require('./package.json');
 // const service = new Service("com.our42.farm.control.dashboard.sensor.control.service"); // 루나버스 기반 서비스 객체 생성. 시스템 or 다른 APP과 통신할 수 있는 서비스 객체 생성. pkgInfo.name 대신.
@@ -26,31 +28,25 @@ let serverStarted = false;
 
 function sensorControlServer(message) {
     console.log("In sensorControlServer callback");
-    
+
     try {
         // startServer(); // 다른 서비스 호출 부분
         if (!serverStarted) {
             const wss = new WebSocket.Server({ port: 3001 }); //생성하면서 동시에 연결시도
-            
+
             // if (wss.readyState === 0)
             // wss.opmessage = function() {}
             wss.on("connection", (socket) => {
                 socket.on("close", () => {
                     console.log("Connection closed");
                 });
-    
+
                 socket.on("message", (message) => {
-                    console.log('Received message:', message);
-    
-                    // 메시지를 JSON으로 파싱
-                    const receivedMessage = JSON.parse(message);
-    
-                    // 메시지 타입이 'command'일 경우 처리
-                    // if (receivedMessage.msg_type === 'command') {
+                    console.log('Received message:', message.toString('utf8'));
                     service.call("luna://com.our42.farm.control.dashboard.sensor.service/getSensorData", {}, (response) => {
                         console.log("Call to getSensorData");
                         console.log("Message payload:", JSON.stringify(response.payload));
-                        
+
                         // 클라이언트에 응답 전송
                         socket.send(JSON.stringify(response.payload));
                         console.log('Sent response message:', JSON.stringify(response.payload));
@@ -59,7 +55,7 @@ function sensorControlServer(message) {
                     socket.send("WebSocket server is running");
                 });
             });
-    
+
             // 서버가 시작된 상태로 플래그 변경
             serverStarted = true;
         } else {
@@ -78,10 +74,10 @@ function sensorControlServer(message) {
         Response: "ok port 3001"
     });
 }
-                    
-service.register("sensorControlServer", sensorControlServer);                  
-                    
-                    
+
+service.register("sensorControlServer", sensorControlServer);
+
+
 
 // const Service = require('webos-service');
 // const { startServer } = require('./ws_server.js');

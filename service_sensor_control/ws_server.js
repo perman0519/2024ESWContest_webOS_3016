@@ -1,13 +1,13 @@
 const WebSocket = require("ws");
 const Service = require('webos-service');
-// const receivedSensorDataService = new Service("com.our42.farm.control.dashboard.sensor.service");
+const receivedSensorDataService = new Service("com.our42.farm.control.dashboard.sensor.service");
 
 let serverStarted = false;
 
 const startServer = () => {
     if (!serverStarted) {
         const wss = new WebSocket.Server({ port: 3001 }); //생성하면서 동시에 연결시도
-        
+
         // if (wss.readyState === 0)
         // wss.opmessage = function() {}
         wss.on("connection", (socket) => {
@@ -23,10 +23,10 @@ const startServer = () => {
 
                 // 메시지 타입이 'command'일 경우 처리
                 // if (receivedMessage.msg_type === 'command') {
-                service.call("luna://com.our42.farm.control.dashboard.sensor.service/getSensorData", {}, (response) => {
+                receivedSensorDataService.call("luna://com.our42.farm.control.dashboard.sensor.service/getSensorData", {}, (response) => {
                     console.log("Call to getSensorData");
                     console.log("Message payload:", JSON.stringify(response.payload));
-                    
+
                     // 클라이언트에 응답 전송
                     socket.send(JSON.stringify(response.payload));
                     console.log('Sent response message:', JSON.stringify(response.payload));

@@ -1,6 +1,6 @@
 {
   "name": "com.our42.farm.control.dashboard.sensor.control.service",
-  "version": "1.0.11",
+  "version": "1.0.17",
   "description": "MQTT sensor data tranfer to websocket server",
   "main": "main.js",
   "scripts": {
