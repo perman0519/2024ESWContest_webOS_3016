@@ -170,6 +170,9 @@ void mqtt_publish(float humi, float temp, int soil_humi)
   {
     lastMsg = now;
 
+    payload += "\"sector\" :0 ";
+    payload += "\"data\" : ";
+    payload += "{"
     payload += "\"humidity\" : ";
     payload += String(humi);
     payload += ",";
@@ -178,6 +181,7 @@ void mqtt_publish(float humi, float temp, int soil_humi)
     payload += ",";
     payload += "\"soil_humidity\" : ";
     payload += String(soil_humi);
+    payload += "}";
     payload += "}";
     // packet = "Humidity : " + String(Humi) + "% " + "Temperature : " + String(Temp) + "*C" ; //문자열과 숫자를 합친다.
     payload.toCharArray(msg, payload.length() + 1); //mqtt publishing이 char형으로만 보낼 수 있기때문에 toCharArray로 변환.
