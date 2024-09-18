@@ -6,7 +6,7 @@ import { useState, useCallback } from 'react';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
-import { getDatabase, ref, onValue } from "firebase/database";
+// import { getDatabase, ref, onValue } from "firebase/database";
 // import { getAuth } from "firebase/auth";
 
 // const db = getDatabase();
@@ -62,16 +62,16 @@ function LoginPanel(props) {
       }, [email, password, main, setUser]);
 
 
-    const getData = useCallback(() => {
-        const db = getDatabase();
-        const userId = auth.currentUser.uid;
-        return onValue(ref(db, '/' + userId), (snapshot) => {
-            const sector = (snapshot.val() && snapshot.val().sector) || 'Anonymous';
-            console.log("Sector: ", sector[0]);
-        }, {
-            onlyOnce: true
-        });
-    }, []);
+    // const getData = useCallback(() => {
+    //     const db = getDatabase();
+    //     const userId = auth.currentUser.uid;
+    //     return onValue(ref(db, '/' + userId), (snapshot) => {
+    //         const sector = (snapshot.val() && snapshot.val().sector) || 'Anonymous';
+    //         console.log("Sector: ", sector[0]);
+    //     }, {
+    //         onlyOnce: true
+    //     });
+    // }, []);
 
     return (
         <Panel noBackButton noCloseButton {...props}>

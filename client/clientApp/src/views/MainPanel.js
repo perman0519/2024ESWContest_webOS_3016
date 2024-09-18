@@ -2,7 +2,6 @@ import {useState, useEffect, useCallback} from 'react';
 import {Panel, Header} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
 import Button from '@enact/sandstone/Button';
-import * as Paho from 'paho-mqtt';
 import './MainPanel.style.css';
 import {signOut} from 'firebase/auth';
 import { auth } from './firebase';
@@ -10,54 +9,23 @@ import { auth } from './firebase';
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
-// MQTT 클라이언트 설정
-const mqtt_host = "192.168.100.102";
-const mqtt_port = 8000;
-const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100);
-
-// MQTT 클라이언트를 관리하는 커스텀 훅
-function useMQTTClient() {
-    const [client, setClient] = useState(null);
-
-    useEffect(() => {
-        const mqttClient = new Paho.Client(mqtt_host, mqtt_port, mqtt_clientId);
-
-        const onConnect = () => {
-            console.log("Connected to MQTT broker");
-            setClient(mqttClient);
-        };
-
-        const onFailure = (error) => {
-            console.log("Connection failed: " + error.errorMessage);
-        };
-
-        mqttClient.connect({
-            onSuccess: onConnect,
-            onFailure: onFailure,
-            useSSL: false  // 필요한 경우 SSL 사용
-        });
-
-        return () => {
-            if (mqttClient.isConnected()) {
-                mqttClient.disconnect();
-            }
-        };
-    }, []);
-
-    return client;
-}
-
-function TextOnOff({topic, client, name}) {
+function ConrtolOnOff({user, type}) {
     const [isSelected, setIsSelected] = useState(false);
 
     const sendMessage = useCallback((toggleStatus) => {
-        if (client && client.isConnected()) {
-            const message = new Paho.Message(toggleStatus ? "ON" : "OFF");
-            message.destinationName = topic;
-            client.send(message);
-            console.log(`Message sent to ${topic}: ${message.payloadString}`);
+        if (wsRef.current) {
+            const message = `
+                {
+                    "user_id": "${user.uid}",
+                    "sector_id": ${0},
+                    "type": "${type}",
+                    "command": "${toggleStatus ? "ON" : "OFF"}"
+                }
+            `
+
+            wsRef.current.send(message);
         }
-    }, [client, topic]);
+    }, [user, type]);
 
     const handleToggle = useCallback((e) => {
         setIsSelected(e.selected);
@@ -70,15 +38,13 @@ function TextOnOff({topic, client, name}) {
                 <Switch onToggle={handleToggle} />
             </span>
             <span>
-                {isSelected ? <span>{name} on</span> : <span>{name} off</span>}
+                {isSelected ? <span>{type} on</span> : <span>{type} off</span>}
             </span>
         </div>
     );
 }
 
 function MainPanel(props) {
-    const client = useMQTTClient();
-
     const { next, user, login } = props;
 
     const logout = useCallback(async () => {
@@ -120,10 +86,10 @@ function MainPanel(props) {
                 {/* <Button onClick={socket}>Socket Page</Button> */}
                 <div className="temp-box box-four">
                     <div>
-                        <TextOnOff topic="esp32/led/command" client={client} name='led' />
+                        <ConrtolOnOff user={user} type='led'/>
                     </div>
                     <div>
-                        <TextOnOff topic="esp32/waterpump/command" client={client} name='waterpump'/>
+                        <ConrtolOnOff user={user} type='waterpump' />
                     </div>
                 </div>
             </div>
