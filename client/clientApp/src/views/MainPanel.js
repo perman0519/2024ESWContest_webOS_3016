@@ -108,16 +108,16 @@ function ConnectSocket() {
             wsRef.current = new WebSocket('ws://10.19.208.172:3001');
 
             wsRef.current.onopen = function() {
-                console.log('서버에 연결되었습니다.');
+                console.log('Online 🟢');
                 setConnectionAttempts(0);  // 연결 성공 시 시도 횟수 초기화
                 setIsConnected(true);  // 연결 성공 여부 업데이트
-                wsRef.current.send('안녕하세요, 서버!');
+                // wsRef.current.send('안녕하세요, 서버!');
             };
 
             wsRef.current.onclose = function(event) {
                 setIsConnected(false);  // 연결이 닫혔을 때 연결 상태 업데이트
                 if (!event.wasClean) {
-                    console.error('연결이 비정상적으로 종료되었습니다. 재시도 중...');
+                    console.error('Offline 🔴');
                     setConnectionAttempts((prev) => prev + 1);  // 연결 시도 횟수 증가
                     // 5초 후에 다시 연결 시도
                     setTimeout(() => {
@@ -150,7 +150,7 @@ function ConnectSocket() {
     return (
         <div>
             <span>WebSocket 연결 시도 횟수: {connectionAttempts}</span>
-            <span>WebSocket 상태: {isConnected ? '연결됨' : '연결되지 않음'}</span>
+            <span>WebSocket 상태: {isConnected ? '🟢' : '🔴'}</span>
         </div>
     );
 }
