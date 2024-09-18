@@ -1,0 +1,9 @@
+{
+  "id": "com.control.sensor.service",
+  "description": "sensor store",
+  "services": [
+    {
+      "name": "com.control.sensor.service"
+    }
+  ]
+}
