@@ -21,7 +21,7 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 // });
 
 function LoginPanel(props) {
-    const { main, user, setUser } = props;
+    const { main, user, setUser, register } = props;
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -102,6 +102,9 @@ function LoginPanel(props) {
                         <Button onClick={handleLogin}>Login</Button>
                     </div>
                 )}
+            </div>
+            <div>
+              <Button onClick={register}>Register</Button>
             </div>
         </Panel>
     );

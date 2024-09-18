@@ -8,5 +8,10 @@
 	"icon": "icon.png",
 	"miniicon": "icon-mini.png",
 	"largeIcon": "icon-large.png",
-	"uiRevision": 2
+	"uiRevision": 2,
+	"requiredPermissions": [
+		"time.query",
+		"activity.operation",
+		"notification.operation"
+	]
 }

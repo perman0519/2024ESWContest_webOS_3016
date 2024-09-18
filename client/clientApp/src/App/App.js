@@ -4,6 +4,7 @@ import Panels from '@enact/sandstone/Panels';
 import MainPanel from '../views/MainPanel';
 import LoginPanel from '../views/LoginPanel';
 import SocketPanel from '../views/SocketPanel';
+import RegisterPanel from '../views/RegisterPanel';
 
 import { auth } from '../views/firebase';
 import { useState, useCallback, useEffect } from 'react';
@@ -43,11 +44,16 @@ const App = (props) => {
         setIndex(0);
     }, []);
 
+    const registerPanel = useCallback(() => {
+        setIndex(3);
+    }, []);
+
     return (
         <Panels {...props} index={index} onBack={previousPanel}>
-            <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel}/>
+            <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
             <MainPanel login={loginPanel} user={user} next={nextPanel} socket={socketPanel} />
             <SocketPanel main={mainPanel}/>
+            <RegisterPanel login={loginPanel}/>
         </Panels>
     );
 };
