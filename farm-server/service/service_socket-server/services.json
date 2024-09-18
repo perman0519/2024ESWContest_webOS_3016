@@ -1,12 +1,12 @@
 {
-  "id": "com.farm-server.socket-server.service",
+  "id": "com.farm.server.socket.server.service",
   "services": [
     {
-      "name": "com.farm-server.socket-server.service",
+      "name": "com.farm.server.socket.server.service",
       "description": "MQTT sensor data tranfer to websocket server"
     },
     {
-      "name": "com.farm-server.sensor.service",
+      "name": "com.farm.server.sensor.service",
       "description": "sensor store"
     }
   ]

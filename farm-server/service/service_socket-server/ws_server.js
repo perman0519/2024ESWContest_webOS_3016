@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const Service = require('webos-service');
-const receivedSensorDataService = new Service("com.farm-server.sensor.service");
+const receivedSensorDataService = new Service("com.farm.server.sensor.service");
 
 let serverStarted = false;
 
@@ -17,7 +17,7 @@ const startServer = () => {
 
                 // 메시지를 JSON으로 파싱
                 // const receivedMessage = JSON.parse(message);
-                // receivedSensorDataService.call("luna://com.farm-server.sensor.service/getSensorData", {}, (response) => {
+                // receivedSensorDataService.call("luna://com.farm.server.sensor.service/getSensorData", {}, (response) => {
                 //     console.log("Call to getSensorData");
                 //     console.log("Message payload:", JSON.stringify(response.payload));
 

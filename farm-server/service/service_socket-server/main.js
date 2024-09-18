@@ -60,28 +60,28 @@ function sensorControlServer(message) {
                     console.log('Received message:', message.toString('utf8'));
 
                     jsonMsg = JSON.parse(message.toString('utf8'));
-                    if (jsonMsg.type === "LED") {
+                    if (jsonMsg.type === "led") {
                         if (jsonMsg.command === "ON") {
                             console.log("LED ON");
                             publishToMQTT("esp32/led/command", "ON");
                         }
-                        else if (jsmsg.command === "OFF") {
+                        else if (jsonMsg.command === "OFF") {
                             console.log("LED OFF");
                             publishToMQTT("esp32/led/command", "OFF");
                         }
                     }
-                    else if (jsonMsg.type === "pump") {
+                    else if (jsonMsg.type === "waterpump") {
                         if (jsonMsg.command === "ON") {
                             console.log("pump ON");
                             publishToMQTT("esp32/waterpump/command", "ON");
                         }
-                        else if (jsmsg.command === "OFF") {
+                        else if (jsonMsg.command === "OFF") {
                             console.log("pump ON");
                             publishToMQTT("esp32/waterpump/command", "OFF");
                         }
                     }
                     //아직 동작안됨
-                    // service.call("luna://com.farm-server.sensor.service/getSensorData", {}, (response) => {
+                    // service.call("luna://com.farm.server.sensor.service/getSensorData", {}, (response) => {
                     //     console.log("Call to getSensorData");
                     //     console.log("Message payload:", JSON.stringify(response.payload));
                     //     // 클라이언트에 응답 전송

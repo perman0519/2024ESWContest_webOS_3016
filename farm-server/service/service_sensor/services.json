@@ -1,9 +1,9 @@
 {
-  "id": "com.farm-server.sensor.service",
+  "id": "com.farm.server.sensor.service",
   "description": "sensor store",
   "services": [
     {
-      "name": "com.farm-server.sensor.service"
+      "name": "com.farm.server.sensor.service"
     }
   ]
 }
