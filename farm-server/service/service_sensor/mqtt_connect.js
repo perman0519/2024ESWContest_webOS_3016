@@ -41,7 +41,7 @@ function updateSectorInfo(database, sensorData, ref)
 }
 
 function setupMQTT(database, ref) {
-    const mqtt_host = "192.168.100.102"; // 브로커 IP
+    const mqtt_host = "54.180.187.212"; // 브로커 IP
     const mqtt_port = "8000"; // 브로커 포트
     const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100); // 클라이언트 ID
     const mqtt_topic = "sensor/all"; // 나중에 변경

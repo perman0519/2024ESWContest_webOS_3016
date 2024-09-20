@@ -7,7 +7,7 @@ const service = new Service(pkgInfo.name);
 const mqtt = require('mqtt');
 
 function publishToMQTT(topic, command) {
-    const mqtt_host = "10.19.218.225";
+    const mqtt_host = "54.180.187.212";
     const mqtt_port = "8000";
     const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100);
 
