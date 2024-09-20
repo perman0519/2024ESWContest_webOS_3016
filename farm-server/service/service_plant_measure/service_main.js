@@ -7,6 +7,7 @@ const logHeader = "[" + pkgInfo.name + "]";
 const axios = require("axios");
 const fs = require("fs");
 
+// 나중에는 실제 카메라로 받아온 이미지를 불러와야함.
 const image = fs.readFileSync("./test_img.jpg", {
     encoding: "base64"
 });
@@ -16,7 +17,7 @@ const calculatePixelHeight = (bbox) => {
     return bbox.height;
 }
 
-// 픽셀-인치 변환 계수를 설정하는 함수
+// 픽셀-센치 변환 계수를 설정하는 함수
 const establishConversionFactor = (referenceHeight, referencePixelHeight) => {
     return referenceHeight / referencePixelHeight;
 }
