@@ -1,4 +1,8 @@
 const mqtt = require('mqtt');
+const { push, set, onValue } = require('firebase/database');
+
+// 마지막 저장된 시간을 기록하는 변수
+let lastSavedTime = 0;
 
 //sensor한테 받은 데이터를 db에 각 해당 sector 하위에 추가.
 function updateSectorInfo(database, sensorData, ref)
@@ -14,9 +18,6 @@ function updateSectorInfo(database, sensorData, ref)
             String(now.getSeconds()).padStart(2, '0');
     }
 
-    // 마지막 저장된 시간을 기록하는 변수
-    let lastSavedTime = 0;
-
     // 현재 시간 (밀리초 단위로 저장)
     const currentTime = Date.now();
 
@@ -31,9 +32,33 @@ function updateSectorInfo(database, sensorData, ref)
 
             const sector_id = sensorData.sector;
             const timeStamp = getLocalTimestamp();
-            const sectorValue = ref(`sector/${sector_id}/sensorData/${timeStamp}`); //여기서 터짐
-            // const sectorValue = database.ref(`sector/${sector_id}/sensorData/${timeStamp}`); //여기서 터짐
-            sectorValue.push(sensorData.data); // 우리가 넣어줄 JSON 값으로 변경.
+            const sectorValue = ref(database, `sector/${sector_id}/sensorData/`);
+
+            onValue(sectorValue, (snapshot) => {
+                const existingData = snapshot.val() || {}; // 데이터가 없을 때도 existingData 변수가 객체 형식으로 초기화
+
+                // 새로운 데이터 추가 시, 같은 타임스탬프가 없을 경우에만 추가
+                if (!existingData[timeStamp]) {
+                    existingData[timeStamp] = sensorData.data; // 새 데이터 추가
+                } else {
+                    console.log("Data with the same timestamp already exists, skipping...");
+                }
+
+                // 업데이트된 데이터를 다시 저장
+                set(sectorValue, existingData)
+                    .then(() => {
+                        console.log("Data updated successfully.");
+                    })
+                    .catch((error) => {
+                        console.error("Error updating data: ", error);
+                    });
+            }); 
+                
+            // const newSectorValue = push(sectorValue);
+            // set (newSectorValue, sensorData.data)
+
+            // const sectorValue = database.ref(`sector/${sector_id}/sensorData/${timeStamp}`);
+            // sectorValue.push(sensorData.data); // 우리가 넣어줄 JSON 값으로 변경.
         }
     } else {
         console.log("Skipped saving, waiting for 30 seconds interval.");

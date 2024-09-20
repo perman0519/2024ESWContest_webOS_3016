@@ -7,7 +7,7 @@ const char* ssid = "42 Guest";
 const char* password = "WeL0ve42Seoul";
 
 // MQTT Broker 설정
-const char* mqtt_server = "10.19.218.225";
+const char* mqtt_server = "54.180.187.212";
 int mqtt_port = 1883;
 const char* mqtt_user = "";
 const char* mqtt_password = "";

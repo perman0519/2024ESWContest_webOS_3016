@@ -8,9 +8,9 @@
 
 #define DHTTYPE DHT22
 
-const char* ssid = "LGU+-974B82";
-const char* password = "77025701";
-const char* mqtt_server = "192.168.100.102";          // broker가 실행되고 있는 주소.
+const char* ssid = "42 Guest";
+const char* password = "WeL0ve42Seoul";
+const char* mqtt_server = "54.180.187.212";          // broker가 실행되고 있는 주소.
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -170,9 +170,9 @@ void mqtt_publish(float humi, float temp, int soil_humi)
   {
     lastMsg = now;
 
-    payload += "\"sector\" :0 ";
+    payload += "\"sector\" :0, ";
     payload += "\"data\" : ";
-    payload += "{"
+    payload += "{" ;
     payload += "\"humidity\" : ";
     payload += String(humi);
     payload += ",";
