@@ -1,0 +1,9 @@
+{
+  "id": "com.farm.server.plant.measure.service",
+  "description": "plant detact and measure",
+  "services": [
+    {
+      "name": "com.farm.server.plant.measure.service"
+    }
+  ]
+}
