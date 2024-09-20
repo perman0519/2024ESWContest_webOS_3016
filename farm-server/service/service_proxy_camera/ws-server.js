@@ -19,7 +19,6 @@ function isValidImage(imageBuffer) {
 }
 
 // WebSocket 서버 생성
-
 const startWSServer = () => {
 	const wss = new WebSocket.Server({ port: 3000 });
 
@@ -32,7 +31,7 @@ const startWSServer = () => {
 				const isValid = await isValidImage(message);
 				if (isValid) {
 					// 이미지 저장
-					fs.writeFile('stream.jpeg', message, (err) => {
+					fs.writeFile('/media/internal/stream.jpeg', message, (err) => {
 						if (err) {
 							console.error('Error saving image:', err);
 						} else {

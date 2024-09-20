@@ -1,6 +1,6 @@
 {
   "id": "com.farm.server",
-  "version": "1.4.9",
+  "version": "1.4.11",
   "vendor": "My Company",
   "type": "web",
   "main": "index.html",
@@ -8,6 +8,8 @@
   "icon": "icon.png",
   "requiredPermissions": [
     "time.query",
-    "activity.operation"
+    "activity.operation",
+    "com.farm.server.camera.service",
+    "com.farm.server.socket.server.service"
   ]
 }

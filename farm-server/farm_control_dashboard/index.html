@@ -13,58 +13,94 @@
         <h1>Farm Control Dashboard</h1>
     </header>
     <main class="container">
-        <section>
+        <section class="container mt-3">
             <div class="d-flex justify-content-between">
                 <div class="d-flex align-items-center">
-                    <span class="fs-3 fw-bold me-3"> websocket server state : </span> <div id="ws-state"></div>
+                    <span class="fs-3 fw-bold me-3"> camera websocket server state : </span> <div id="camera-ws-state"></div>
                 </div>
-                <button class="btn btn-primary" id="ws-server-restart-btn">Restart</button>
+                <button class="btn btn-primary" id="camera-ws-btn">start</button>
             </div>
-            <div id="preview"></div>
+            <!-- <div id -->
+        </section>
+        <section class="container mt-3">
+            <div class="d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                    <span class="fs-3 fw-bold me-3"> camera http server state : </span> <div id="camera-http-state"></div>
+                </div>
+                <button class="btn btn-primary" id="camera-http-btn"> camera http server start</button>
+            </div>
+            <!-- <div id -->
+        </section>
+        <section class="container mt-3">
+            <div class="d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                    <span class="fs-3 fw-bold me-3">sensor/control ws server state : </span> <div id="sensor-ws-state"></div>
+                </div>
+                <button class="btn btn-primary" id="control-ws-btn"> sensor/control ws server start</button>
+            </div>
             <!-- <div id -->
         </section>
     </main>
     <script>
-        const checkWSState = () => {
+        const checkWSState = (ws, stateTag) => {
             switch (ws.readyState) {
                 case WebSocket.CONNECTING:
                     const connectionTimeout = setTimeout(() => {
                         if (ws.readyState === WebSocket.CONNECTING) {
-                            state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
+                            stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
                             ws.close();
-                            clearInterval(checkWebSocketState);
                         }
-                    }, 5000); // 5초 동안 연결을 시도
-                    state.innerHTML = '<span class="badge text-bg-warning">connecting...</span>'
+                    }, 5000);
+                    stateTag.innerHTML = '<span class="badge text-bg-warning">connecting...</span>'
                     break;
                 case WebSocket.OPEN:
-                    state.innerHTML = '<span class="badge text-bg-success">running!</span>'
+                    stateTag.innerHTML = '<span class="badge text-bg-success">running!</span>'
                     break;
                 case WebSocket.CLOSING:
-                    state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
-                    document.querySelector('preview').innerHTML = '<img class="img-fluid img-thumbnail" src="http://192.168.219.104:8081/stream" alt="카메라 모니터링" width="600" height="400">';
+                    stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
                     break;
                 case WebSocket.CLOSED:
-                    state.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
-                    clearInterval(checkWebSocketState); // 연결이 닫히면 확인 중지
+                    stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
                     break;
                 default:
-                    console.log("알 수 없는 상태");
+                    console.log("Default.");
                     break;
             }
         };
     </script>
     <script>
-        const ws = new WebSocket('ws://192.168.100.104:3000');
-        const state = document.getElementById("ws-state");
-        const checkWebSocketState = setInterval(checkWSState, 1000);
+        const checkHttpState = (stateTag) => {
+            const url = 'http://localhost:8081/stream';
+
+            fetch(url)
+                .then(response => {
+                    if (response.ok) {
+                        stateTag.innerHTML = '<span class="badge text-bg-success">running!</span>'
+                    } else {
+                        stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
+                    }
+                })
+                .catch(error => {
+                    stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
+                });
+        }
+    </script>
+    <script>
+        const cameraWs = new WebSocket('ws://localhost:3000');
+        const sensorControlWs = new WebSocket('ws://localhost:3001');
+        const cameraState = document.getElementById("camera-ws-state");
+        const cameraHttpState = document.getElementById("camera-http-state")
+        const sensorState = document.getElementById("sensor-ws-state");
+        const checkCameraWebSocketState = setInterval(() => {checkWSState(cameraWs, cameraState);}, 1000);
+        const checkCameraHttpState = setInterval(() => {checkHttpState(cameraHttpState);}, 1000)
+        const checkSensorControlWebSocketState = setInterval(() => {checkWSState(sensorControlWs, sensorState);}, 1000);
     </script>
     <script>
         const bridge = new WebOSServiceBridge();
 
-        const startServer = () => {
+        const startServer = (url) => {
             console.log("start server function");
-            const url = 'luna://com.our42.farm.control.dashboard.service/startWSServer';
+            // const url = 'luna://com.farm.server.dashboard.service/startWSServer';
             const params = {};
             bridge.onservicecallback = (msg) => {
                 console.log(msg);
@@ -74,8 +110,9 @@
             };
             bridge.call(url, JSON.stringify(params));
         }
-
-        document.querySelector("#ws-server-restart-btn").addEventListener("click", startServer);
+        document.querySelector("#camera-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startWSServer');});
+        document.querySelector("#camera-http-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startHttpServer')});
+        document.querySelector("#control-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.socket.server.service/sensorControlServer')});
     </script>
 </body>
 </html>

@@ -1,13 +1,12 @@
 const express = require('express');
 const fs = require('fs');
-const path = require('path');
 
 const app = express();
 const port = 8081;
 
 // Placeholder image path
-const placeholderImagePath = path.join(__dirname, 'placeholder.jpeg');
-const imagePath = path.join(__dirname, 'stream.jpeg');
+const placeholderImagePath = '/media/internal/placeholder.jpeg'
+const imagePath = '/media/internal/stream.jpeg'
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');

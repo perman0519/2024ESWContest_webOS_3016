@@ -9,7 +9,6 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
-    "canvas": "^2.11.2",
     "express": "^4.19.2",
     "ws": "^8.18.0"
   }
