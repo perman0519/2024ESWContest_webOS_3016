@@ -29,7 +29,7 @@ const startTime = '2024-09-12 21:38:00';
 function storeSensor(message) {
     console.log("initSensor callback");
 
-    setupMQTT(database, ref, set);
+    setupMQTT(database, ref);
     message.respond({
         returnValue: true,
         Response: "Sensor data stored"

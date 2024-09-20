@@ -72,7 +72,7 @@ function sensorControlServer(message) {
                             publishToMQTT("esp32/waterpump/command", "ON");
                         }
                         else if (jsonMsg.command === "OFF") {
-                            console.log("pump ON");
+                            console.log("pump OFF");
                             publishToMQTT("esp32/waterpump/command", "OFF");
                         }
                     }

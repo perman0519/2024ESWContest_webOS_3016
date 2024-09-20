@@ -1,6 +1,6 @@
 {
   "id": "com.farm.server",
-  "version": "1.4.11",
+  "version": "1.4.17",
   "vendor": "My Company",
   "type": "web",
   "main": "index.html",

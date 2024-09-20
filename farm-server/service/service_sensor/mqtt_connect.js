@@ -1,39 +1,8 @@
 const mqtt = require('mqtt');
 
 //sensor한테 받은 데이터를 db에 각 해당 sector 하위에 추가.
-function updateSectorInfo(database, sensorData)
+function updateSectorInfo(database, sensorData, ref)
 {
-    // 마지막 저장된 시간을 기록하는 변수
-    let lastSavedTime = 0;
-
-    // 현재 시간 (밀리초 단위로 저장)
-    const currentTime = Date.now();
-
-    if (currentTime - lastSavedTime >= 30000) {
-        lastSavedTime = currentTime;
-        console.log("30초 경과: 데이터를 저장합니다.");
-
-        if (sensorData.humidity && sensorData.temperature && sensorData.soil_humidity) {
-            console.log("Saving to Firebase: ", sensorData);
-
-            const sector_id = sensorData.sector;
-            const timeStamp = getLocalTimestamp();
-            const sectorValue = database.ref(`sector/ + ${sector_id} + ${timeStamp}`);
-            sectorValue.push(sensorData.data); // 우리가 넣어줄 JSON 값으로 변경.
-        } else {
-            console.error("Missing required sensor data: ", sensorData);
-        }
-    } else {
-        console.log("Skipped saving, waiting for 30 seconds interval.");
-    }
-}
-
-function setupMQTT(database, ref, set) {
-    const mqtt_host = "10.19.218.225"; // 브로커 IP
-    const mqtt_port = "8000"; // 브로커 포트
-    const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100); // 클라이언트 ID
-    const mqtt_topic = "sensor/all"; // 나중에 변경
-
     // 지역 시간 타임스탬프 생성 함수
     function getLocalTimestamp() {
         const now = new Date();
@@ -44,6 +13,38 @@ function setupMQTT(database, ref, set) {
             String(now.getMinutes()).padStart(2, '0') + ':' +
             String(now.getSeconds()).padStart(2, '0');
     }
+
+    // 마지막 저장된 시간을 기록하는 변수
+    let lastSavedTime = 0;
+
+    // 현재 시간 (밀리초 단위로 저장)
+    const currentTime = Date.now();
+
+    if (currentTime - lastSavedTime >= 30000) {
+        lastSavedTime = currentTime;
+        console.log("30초 경과: 데이터를 저장합니다.");
+
+        if (isNaN(sensorData.data.humidity) || isNaN(sensorData.data.temperature) || isNaN(sensorData.data.soil_humidity)) {
+            console.error("Missing required sensor data: ", sensorData);
+        } else {
+            console.log("Saving to Firebase: ", sensorData);
+
+            const sector_id = sensorData.sector;
+            const timeStamp = getLocalTimestamp();
+            const sectorValue = ref(`sector/${sector_id}/sensorData/${timeStamp}`); //여기서 터짐
+            // const sectorValue = database.ref(`sector/${sector_id}/sensorData/${timeStamp}`); //여기서 터짐
+            sectorValue.push(sensorData.data); // 우리가 넣어줄 JSON 값으로 변경.
+        }
+    } else {
+        console.log("Skipped saving, waiting for 30 seconds interval.");
+    }
+}
+
+function setupMQTT(database, ref) {
+    const mqtt_host = "192.168.100.102"; // 브로커 IP
+    const mqtt_port = "8000"; // 브로커 포트
+    const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100); // 클라이언트 ID
+    const mqtt_topic = "sensor/all"; // 나중에 변경
 
     // MQTT 클라이언트 생성
     const client = mqtt.connect(`ws://${mqtt_host}:${mqtt_port}`, {
@@ -77,7 +78,7 @@ function setupMQTT(database, ref, set) {
         try {
             sensorData = JSON.parse(message.toString());
             console.log("Parsed sensor data: ", sensorData);
-            updateSectorInfo(database, sensorData);
+            updateSectorInfo(database, sensorData, ref);
         } catch (error) {
             console.error("Invalid message format: ", error);
             return;
