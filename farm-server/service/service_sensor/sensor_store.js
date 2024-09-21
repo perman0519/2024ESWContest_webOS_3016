@@ -28,7 +28,7 @@ const startTime = '2024-09-12 21:38:00';
 module.exports = database;
 
 
-function storeSensor(message) {
+function storeSensorData(message) {
     console.log("initSensor callback");
 
     setupMQTT(database, ref);
@@ -53,5 +53,5 @@ async function getSensorData(message) {
 
 
 
-service.register("storeSensorData", storeSensor);
+service.register("storeSensorData", storeSensorData);
 service.register("getSensorData", getSensorData);
