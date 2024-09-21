@@ -51,7 +51,5 @@ async function getSensorData(message) {
     }
 }
 
-
-
 service.register("storeSensorData", storeSensorData);
 service.register("getSensorData", getSensorData);

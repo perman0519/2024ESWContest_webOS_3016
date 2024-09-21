@@ -101,6 +101,7 @@ function socketServer(message) {
             wss.on("connection", (socket) => { 
                 socket.on("close", () => {
                     console.log("Connection closed");
+                    setTimeout(socketServer, 100); // 5초 후 재연결
                 });
                 socket.on("message", (message) => {
                     console.log('Received message:', message.toString('utf8'));
@@ -112,6 +113,7 @@ function socketServer(message) {
                             console.log("LED ON");
                             publishToMQTT("esp32/led/command", "ON");
                             storeLedStatus(0, "ON");
+                            socket.send("{ \"status\": \"success\", \"message\": \"LED ON\" }");
                             // const ledStatus = ref(database, `sector/${sector_id}/LED_Status/`);
                             // set(ledStatus, "ON")
                             //     .then(() => {
@@ -125,6 +127,7 @@ function socketServer(message) {
                             console.log("LED OFF");
                             publishToMQTT("esp32/led/command", "OFF");
                             storeLedStatus(0, "OFF");
+                            socket.send("{ \"status\": \"success\", \"message\": \"LED OFF\" }");
 
                             // const ledStatus = ref(database, `sector/${sector_id}/LED_Status/`);
                             // set(ledStatus, "OFF")
@@ -141,18 +144,20 @@ function socketServer(message) {
                             console.log("pump ON");
                             publishToMQTT("esp32/waterpump/command", "ON");
                             storePumpStatus(0, "ON");
+                            socket.send("{ \"status\": \"success\", \"message\": \"WaterPump ON\" }");
                         }
                         else if (jsonMsg.command === "OFF") {
                             console.log("pump OFF");
                             publishToMQTT("esp32/waterpump/command", "OFF");
                             storePumpStatus(0, "OFF");
+                            socket.send("{ \"status\": \"success\", \"message\": \"WaterPump OFF\" }");
                         }
                     }
                     else if (jsonMsg.type === "timelapse") {
                         console.log("timelapse");
                         //timelapse영상제작
                     }
-                    socket.send("WebSocket server is running");
+                    // socket.send("WebSocket server is running");
                 });
             });
             serverStarted = true;
