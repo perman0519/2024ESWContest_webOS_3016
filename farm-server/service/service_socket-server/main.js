@@ -93,7 +93,7 @@ let serverStarted = false;
 // const database = getDatabase();
 
 
-function sensorControlServer(message) {
+function socketServer(message) {
     console.log("In sensorControlServer callback");
     try {
         if (!serverStarted) {
@@ -145,7 +145,7 @@ function sensorControlServer(message) {
                         else if (jsonMsg.command === "OFF") {
                             console.log("pump OFF");
                             publishToMQTT("esp32/waterpump/command", "OFF");
-                            storePumpStatus(0, "ON");
+                            storePumpStatus(0, "OFF");
                         }
                     }
                     else if (jsonMsg.type === "timelapse") {
@@ -168,4 +168,4 @@ function sensorControlServer(message) {
     });
 }
 
-service.register("sensorControlServer", sensorControlServer);
+service.register("socketServer", socketServer);
