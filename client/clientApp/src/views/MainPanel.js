@@ -6,6 +6,8 @@ import './MainPanel.style.css';
 import {signOut} from 'firebase/auth';
 import { auth } from './firebase';
 
+import ChartComponent from './chartComponent.js';
+
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
@@ -45,7 +47,7 @@ function ConrtolOnOff({user, type}) {
 }
 
 function MainPanel(props) {
-    const { next, user, login } = props;
+    const { next, user, login, chart } = props;
 
     const logout = useCallback(async () => {
         try {
@@ -83,6 +85,9 @@ function MainPanel(props) {
                 </div>
                 <ConnectSocket />
                 <Button onClick={next}>Next Page</Button>
+                <Button onClick={chart}>Chart test</Button>
+                <ChartComponent />
+
                 {/* <Button onClick={socket}>Socket Page</Button> */}
                 <div className="temp-box box-four">
                     <div>

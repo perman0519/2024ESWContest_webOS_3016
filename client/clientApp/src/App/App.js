@@ -48,12 +48,17 @@ const App = (props) => {
         setIndex(3);
     }, []);
 
+    const chartPanel = useCallback(() => {
+        setIndex(4);
+    }, []);
+
     return (
         <Panels {...props} index={index} onBack={previousPanel}>
             <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
-            <MainPanel login={loginPanel} user={user} next={nextPanel} socket={socketPanel} />
+            <MainPanel login={loginPanel} user={user} next={nextPanel} socket={socketPanel} chart={chartPanel}/>
             <SocketPanel main={mainPanel}/>
             <RegisterPanel login={loginPanel}/>
+            <chartPanel />
         </Panels>
     );
 };
