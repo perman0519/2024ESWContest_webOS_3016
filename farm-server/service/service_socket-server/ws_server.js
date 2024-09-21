@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const Service = require('webos-service');
-const receivedSensorDataService = new Service("com.farm.server.sensor.service");
+// const receivedSensorDataService = new Service("com.farm.server.sensor.service");
 
 let serverStarted = false;
 

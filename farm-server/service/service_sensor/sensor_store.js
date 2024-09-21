@@ -25,6 +25,8 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const startTime = '2024-09-12 21:38:00';
 
+module.exports = database;
+
 
 function storeSensor(message) {
     console.log("initSensor callback");
@@ -48,6 +50,8 @@ async function getSensorData(message) {
         console.error("Error: ", error);
     }
 }
+
+
 
 service.register("storeSensorData", storeSensor);
 service.register("getSensorData", getSensorData);
