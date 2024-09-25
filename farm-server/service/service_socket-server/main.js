@@ -98,7 +98,7 @@ function socketServer(message) {
     try {
         if (!serverStarted) {
             const wss = new WebSocket.Server({ port: 3001 });
-            wss.on("connection", (socket) => { 
+            wss.on("connection", (socket) => {
                 socket.on("close", () => {
                     console.log("Connection closed");
                     setTimeout(socketServer, 100); // 5초 후 재연결
@@ -121,7 +121,7 @@ function socketServer(message) {
                             //     })
                             //     .catch((error) => {
                             //         console.error("Error updating Firebase: ", error);
-                            //     });    
+                            //     });
                         }
                         else if (jsonMsg.command === "OFF") {
                             console.log("LED OFF");
@@ -136,7 +136,7 @@ function socketServer(message) {
                             //     })
                             //     .catch((error) => {
                             //         console.error("Error updating Firebase: ", error);
-                            //     });  
+                            //     });
                         }
                     }
                     else if (jsonMsg.type === "waterpump") {
@@ -174,3 +174,13 @@ function socketServer(message) {
 }
 
 service.register("socketServer", socketServer);
+service.register("test", (message) => {
+    service.call("luna://com.farm.server.sensor.service/getSensorData", {}, (response) => {
+        console.log("Call to getSensorData");
+        console.log("Message payload:", JSON.stringify(response.payload));
+    });
+    message.respond({
+        returnValue: true,
+        Response: "test success"
+    });
+});

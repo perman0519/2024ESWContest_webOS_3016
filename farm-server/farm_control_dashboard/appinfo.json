@@ -9,7 +9,6 @@
   "requiredPermissions": [
     "time.query",
     "activity.operation",
-    "com.farm.server.camera.service",
-    "com.farm.server.socket.server.service"
+    "com.farm.server.sensor.service.group"
   ]
 }

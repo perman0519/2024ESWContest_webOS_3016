@@ -52,8 +52,8 @@ function updateSectorInfo(database, sensorData, ref)
                     .catch((error) => {
                         console.error("Error updating data: ", error);
                     });
-            }); 
-                
+            });
+
             // const newSectorValue = push(sectorValue);
             // set (newSectorValue, sensorData.data)
 
@@ -114,7 +114,7 @@ function setupMQTT(database, ref) {
 function fetchTemperatureDataAfter(database, startTime, ref, onValue)
 {
     return new Promise((resolve, reject) => {
-        const starCountRef = ref(database, 'sensorValue/basil');
+        const starCountRef = ref(database, 'sector/0/sensorData');
         onValue(starCountRef, (snapshot) => {
             const data = snapshot.val();
             // updateStarCount(postElement, data);
