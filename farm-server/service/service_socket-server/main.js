@@ -101,7 +101,7 @@ function socketServer(message) {
             wss.on("connection", (socket) => {
                 socket.on("close", () => {
                     console.log("Connection closed");
-                    setTimeout(socketServer, 100); // 5초 후 재연결
+                    // setTimeout(socketServer, 100); // 5초 후 재연결
                 });
                 socket.on("message", (message) => {
                     console.log('Received message:', message.toString('utf8'));
