@@ -42,30 +42,35 @@
         </section>
     </main>
     <script>
-        const checkWSState = (ws, stateTag) => {
-            switch (ws.readyState) {
-                case WebSocket.CONNECTING:
-                    const connectionTimeout = setTimeout(() => {
-                        if (ws.readyState === WebSocket.CONNECTING) {
-                            stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
-                            ws.close();
-                        }
-                    }, 5000);
-                    stateTag.innerHTML = '<span class="badge text-bg-warning">connecting...</span>'
-                    break;
-                case WebSocket.OPEN:
-                    stateTag.innerHTML = '<span class="badge text-bg-success">running!</span>'
-                    break;
-                case WebSocket.CLOSING:
-                    stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
-                    break;
-                case WebSocket.CLOSED:
-                    stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>'
-                    break;
-                default:
-                    console.log("Default.");
-                    break;
-            }
+        const checkWSState = (ws_url, stateTag, wsInstance) => {
+        if (!ws_url) {
+            console.error("WebSocket URL is undefined");
+            return;
+        }
+        if (wsInstance && wsInstance.readyState === WebSocket.OPEN) {
+            // WebSocket already connected
+            return;
+        }
+
+        try {
+            const ws = new WebSocket(ws_url);
+            ws.onopen = () => {
+                stateTag.innerHTML = '<span class="badge text-bg-success">running!</span>';
+            };
+
+            ws.onerror = () => {
+                stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>';
+            };
+
+            ws.onclose = () => {
+                stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>';
+            };
+
+            wsInstance = ws;
+        } catch (error) {
+            console.log("WebSocket Error: ", error);
+            stateTag.innerHTML = '<span class="badge text-bg-danger">Error!</span>';
+        }
         };
     </script>
     <script>
@@ -86,14 +91,22 @@
         }
     </script>
     <script>
-        const cameraWs = new WebSocket('ws://localhost:3000');
-        const sensorControlWs = new WebSocket('ws://localhost:3001');
         const cameraState = document.getElementById("camera-ws-state");
         const cameraHttpState = document.getElementById("camera-http-state")
         const sensorState = document.getElementById("sensor-ws-state");
-        const checkCameraWebSocketState = setInterval(() => {checkWSState(cameraWs, cameraState);}, 1000);
+        console.log(sensorState)
+        // setInterval
+        let cameraWsInstance = null;
+        let sensorWsInstance = null;
+
+        const checkCameraWebSocketState = setInterval(() => {
+            checkWSState('ws://localhost:3000', cameraState, cameraWsInstance);
+        }, 1000);
+
+        const checkSensorControlWebSocketState = setInterval(() => {
+            checkWSState('ws://localhost:3001', sensorState, sensorWsInstance);
+        }, 1000);
         const checkCameraHttpState = setInterval(() => {checkHttpState(cameraHttpState);}, 1000)
-        const checkSensorControlWebSocketState = setInterval(() => {checkWSState(sensorControlWs, sensorState);}, 1000);
     </script>
     <script>
         const bridge = new WebOSServiceBridge();
@@ -110,9 +123,10 @@
             };
             bridge.call(url, JSON.stringify(params));
         }
+
         document.querySelector("#camera-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startWSServer');});
         document.querySelector("#camera-http-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startHttpServer')});
-        document.querySelector("#control-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.socket.server.service/sensorControlServer')});
+        document.querySelector("#control-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.socket.server.service/socketServer')});
     </script>
 </body>
 </html>
