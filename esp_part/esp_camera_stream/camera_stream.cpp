@@ -14,10 +14,10 @@ esp_err_t  StreamServer::camera_init()
 {
   camera_config_t config;
   set_camera_config(config);
-  
+
   // Camera init
   esp_err_t err = esp_camera_init(&config);
-  
+
   return err;
 }
 
@@ -28,15 +28,12 @@ bool  StreamServer::wifi_conn()
   uint64_t chipid = ESP.getEfuseMac();
   Serial.println("chip id : " + String(chipid, HEX));
   String esp_ap_name = "ESP32_" + String(chipid, HEX);
-  
-  WiFiManager wifiManager;
 
-  wifiManager.resetSettings();
-  if (wifiManager.autoConnect(esp_ap_name.c_str()) == false)
-  {
-    Serial.println("WiFiManager auto connect failed!");
-    ESP.restart();
-  }
+  const char* ssid = "42 Guest";
+  const char* password = "WeL0ve42Seoul";
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -154,7 +151,7 @@ void StreamServer::set_camera_config(camera_config_t &config)
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 10000000;
-  config.pixel_format = PIXFORMAT_JPEG; 
+  config.pixel_format = PIXFORMAT_JPEG;
 
   if(psramFound()){
     config.frame_size = FRAMESIZE_UXGA;
