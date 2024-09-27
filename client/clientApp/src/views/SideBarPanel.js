@@ -6,7 +6,7 @@ export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트
 
     return (
 		<>
-        <div className={`fixed h-screen inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} w-64 bg-white shadow-lg transition-transform duration-300 ease-in-out z-20 lg:relative lg:translate-x-0 flex flex-col`}>
+        <div className={`fixed h-screen inset-y-0 left-0 transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} w-46 bg-white shadow-lg transition-transform duration-300 ease-in-out z-20 lg:relative lg:translate-x-0 flex flex-col`}>
                     <div className="p-4 border-b border-gray-200">
                     <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto">
                         <span className="text-white text-xl font-bold">PG</span>

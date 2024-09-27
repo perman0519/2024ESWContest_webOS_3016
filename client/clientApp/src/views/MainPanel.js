@@ -12,6 +12,7 @@ import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Bell, Menu, Flower, Droplet, Sun } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
+import '../App/App.style.css';
 
 // import ChartComponent from './chartComponent.js';
 
@@ -145,19 +146,16 @@ function MainPanel(props) {
         setSelectedPlant(e.value);
     }, []);
     return (
-        <Panel noBackButton noCloseButton {...props}>
+        <Panel css={".custom-panel"}  noBackButton noCloseButton {...props}>
             {/* <Header title="COSMOS IoT Dashboard" /> */}
-            <Row style={{height: '100%'}}>
-            <div className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden">
-                <Cell size="10%">
+            <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
+                <Cell size="20%">
                     <SidebarPanel logout={logout} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
-                <Cell>
-                    <div className="flex-1 overflow-hidden">
-                    <Column>
-                        <div className="h-full overflow-y-auto p-4">
-                        <Cell size={80} component="header" className="flex justify-between items-center mb-6">
-                                <div className="flex items-center space-x-4">
+                <Cell className="flex-1 overflow-hidden">
+                    <Column className="h-full overflow-y-auto p-2">
+                        <Cell size={100} component="header" className="flex justify-between items-center mb-6">
+                            <div className="flex items-center space-x-4">
                                 <Button variant="ghost" className="lg:hidden text-gray-800" onClick={handleSidebarToggle}>
                                     <Menu className="h-6 w-6" />
                                 </Button>
@@ -178,11 +176,9 @@ function MainPanel(props) {
                                     <SelectItem value="바질">바질</SelectItem>
                                     <SelectItem value="로즈마리">로즈마리</SelectItem>
                                 </Select>
-                                </div>
+                            </div>
                         </Cell>
-                        </div>
-                        <Cell>
-                            <div className="grid grid-cols-12 gap-6">
+                        <Cell className="grid grid-cols-12 gap-3">
                                 <Card className="col-span-12 xl:col-span-8 bg-white border-gray-200">
                                 <CardContent className="p-6">
                                     <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
@@ -201,18 +197,18 @@ function MainPanel(props) {
                                     </div>
                                     <div className="flex space-x-4">
                                         <Button variant="outline" size="icon" className="text-blue-500 border-blue-500 hover:bg-blue-50">
-                                        <Droplet size={20} />
+                                        <Droplet size={40} />
                                         </Button>
                                         <Button variant="outline" size="icon" className="text-yellow-500 border-yellow-500 hover:bg-yellow-50">
-                                        <Sun size={20} />
+                                        <Sun size={40} />
                                         </Button>
                                         <ConnectSocket/>
                                     </div>
                                     </div>
                                 </CardContent>
-                                </Card>
+                            </Card>
 
-                                <Card className="col-span-12 xl:col-span-4 bg-white border-gray-200">
+                            <Card className="col-span-8 xl:col-span-4 bg-white border-gray-200">
                                 <CardContent className="p-6">
                                     <h3 className="text-lg font-semibold mb-4 text-gray-800">식물 성장</h3>
                                     <div className="flex justify-between items-center mb-4">
@@ -288,13 +284,9 @@ function MainPanel(props) {
                                 </div>
                             </CardContent>
                             </Card>
-                        </div>
-
                         </Cell>
                     </Column>
-                    </div>
                 </Cell>
-            </div>
             </Row>
 
             {/* 메인 콘텐츠 */}
@@ -353,8 +345,7 @@ function ConnectSocket() {
 
     return (
         <div>
-            <span>WebSocket 연결 시도 횟수: {connectionAttempts}</span>
-            <span>WebSocket 상태: {isConnected ? '🟢' : '🔴'}</span>
+            <span>{isConnected ? '🟢' : '🔴'}</span>
         </div>
     );
 }

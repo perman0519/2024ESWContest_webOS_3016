@@ -10,7 +10,7 @@ export const Select = ({ onValueChange, defaultValue, children }) => {
 	  <select
 		onChange={handleChange(onValueChange)} // 화살표 함수 대신 핸들러 사용
 		defaultValue={defaultValue}
-		className="w-[180px] bg-white border border-gray-300 text-gray-800 rounded px-3 py-2"
+		className="w-[300px] bg-white border border-gray-300 text-gray-800 rounded px-3 py-2"
 	  >
 		{children}
 	  </select>

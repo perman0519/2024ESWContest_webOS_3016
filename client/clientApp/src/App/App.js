@@ -12,6 +12,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 import './attachErrorHandler';
 import css from './App.module.less';
+import './App.style.css';
 
 const App = (props) => {
     const [index, setIndex] = useState(0);
@@ -53,7 +54,7 @@ const App = (props) => {
     }, []);
 
     return (
-        <Panels {...props} index={index} onBack={previousPanel}>
+        <Panels css={".custom-panel"} {...props} index={index} onBack={previousPanel}>
             <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
             <MainPanel login={loginPanel} user={user} next={nextPanel} socket={socketPanel} chart={chartPanel}/>
             <SocketPanel main={mainPanel}/>
