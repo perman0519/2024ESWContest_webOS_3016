@@ -2,13 +2,14 @@
   "name": "com.farm.server.sensor.service",
   "version": "1.3.5",
   "description": "sensor store",
-  "main": "sensor_store.js",
+  "main": "service_main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "BSD",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "firebase": "^10.13.1",
     "mqtt": "^5.10.1"
   }

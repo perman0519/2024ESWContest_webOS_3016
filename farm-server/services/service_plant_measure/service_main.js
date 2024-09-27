@@ -56,8 +56,6 @@ async function getPlantLength(message) {
         returnValue: true,
         Response: `{"plant_length" : "${plantHeightCM}"}`
     });
-    // return `{"plant_length" : "${plantHeightCM}"}`
 }
 
-// a method that always returns the same value
 service.register("getPlantLength", getPlantLength);

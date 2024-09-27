@@ -1,9 +1,9 @@
 #!/bin/bash
 
-TARGET_DEVICE="rbpi4"
+TARGET_DEVICE="mac"
 
 SERVER_WEB_APP="farm_control_dashboard"
-SERVICE_DIR="service"
+SERVICE_DIR="services"
 SERVICES=("service_plant_measure" "service_proxy_camera" "service_sensor" "service_socket-server")
 
 PACKAGE_TARGET=$SERVER_WEB_APP

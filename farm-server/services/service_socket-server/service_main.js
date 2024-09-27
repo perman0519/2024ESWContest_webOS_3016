@@ -1,31 +1,11 @@
 const WebSocket = require("ws");
 const pkgInfo = require('./package.json');
-const serviceInfo = require('./services.json')
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
-// const { ref, set } = require('firebase/database');
 const mqtt = require('mqtt');
-// const database = require('./service_sensor/sensor_store.js');
-
+const { database } = require('./firebase.js');
+const { ref, set } = require('firebase/database');
 const logHeader = "[" + pkgInfo.name + "]";
-
-const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, set } = require('firebase/database');
-
-// Firebase 구성
-const firebaseConfig = {
-    apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-    authDomain: "smartfarm-ddbc3.firebaseapp.com",
-    databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-    projectId: "smartfarm-ddbc3",
-    storageBucket: "smartfarm-ddbc3.appspot.com",
-    messagingSenderId: "945689382597",
-    appId: "1:945689382597:web:ca23f3de21c44e2645aaac"
-};
-
-// Firebase 초기화
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 // Firebase에 명령 저장하는 함수
 function storeLedStatus(sector_id, state) {
@@ -41,6 +21,7 @@ function storeLedStatus(sector_id, state) {
     });
 }
 
+//
 function storePumpStatus(sector_id, state) {
     const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
     set(commandRef, {
@@ -54,7 +35,7 @@ function storePumpStatus(sector_id, state) {
     });
 }
 
-
+//publish command to MQTT brocker
 function publishToMQTT(topic, command) {
     const mqtt_host = "54.180.187.212";
     const mqtt_port = "8000";
@@ -83,18 +64,10 @@ function publishToMQTT(topic, command) {
     });
 }
 
+// serverStart Status
 let serverStarted = false;
 
-// {
-//     "user_id": ${user.uid},
-//     "sector_id": ${0},
-//     "type": ${type},
-//     "command": ${toggleStatus ? "ON" : "OFF"}
-// }
-
-// const database = getDatabase();
-
-
+//
 function socketServer(message) {
     console.log("In sensorControlServer callback");
     try {
@@ -109,36 +82,19 @@ function socketServer(message) {
                     console.log('Received message:', message.toString('utf8'));
 
                     jsonMsg = JSON.parse(message.toString('utf8'));
-                    const sector_id = jsonMsg.sector_id || 0;
+                    const sector_id = jsonMsg.sector_id || 0; //When sector_ID not exist set sector_ID to 0.
                     if (jsonMsg.type === "led") {
                         if (jsonMsg.command === "ON") {
                             console.log("LED ON");
                             publishToMQTT("esp32/led/command", "ON");
                             storeLedStatus(0, "ON");
-                            socket.send("{ \"status\": \"success\", \"message\": \"LED ON\" }");
-                            // const ledStatus = ref(database, `sector/${sector_id}/LED_Status/`);
-                            // set(ledStatus, "ON")
-                            //     .then(() => {
-                            //         console.log("LED status updated in Firebase: ON");
-                            //     })
-                            //     .catch((error) => {
-                            //         console.error("Error updating Firebase: ", error);
-                            //     });
+                            socket.send("{ \"status\": \"LED ON success\", \"message\": \"LED ON\" }");
                         }
                         else if (jsonMsg.command === "OFF") {
                             console.log("LED OFF");
                             publishToMQTT("esp32/led/command", "OFF");
                             storeLedStatus(0, "OFF");
-                            socket.send("{ \"status\": \"success\", \"message\": \"LED OFF\" }");
-
-                            // const ledStatus = ref(database, `sector/${sector_id}/LED_Status/`);
-                            // set(ledStatus, "OFF")
-                            //     .then(() => {
-                            //         console.log("LED status updated in Firebase: OFF");
-                            //     })
-                            //     .catch((error) => {
-                            //         console.error("Error updating Firebase: ", error);
-                            //     });
+                            socket.send("{ \"status\": \"LED OFF success\", \"message\": \"LED OFF\" }");
                         }
                     }
                     else if (jsonMsg.type === "waterpump") {
@@ -146,20 +102,19 @@ function socketServer(message) {
                             console.log("pump ON");
                             publishToMQTT("esp32/waterpump/command", "ON");
                             storePumpStatus(0, "ON");
-                            socket.send("{ \"status\": \"success\", \"message\": \"WaterPump ON\" }");
+                            socket.send("{ \"status\": \"WaterPump ON success\", \"message\": \"WaterPump ON\" }");
                         }
                         else if (jsonMsg.command === "OFF") {
                             console.log("pump OFF");
                             publishToMQTT("esp32/waterpump/command", "OFF");
                             storePumpStatus(0, "OFF");
-                            socket.send("{ \"status\": \"success\", \"message\": \"WaterPump OFF\" }");
+                            socket.send("{ \"status\": \"WaterPump OFF success\", \"message\": \"WaterPump OFF\" }");
                         }
                     }
                     else if (jsonMsg.type === "timelapse") {
                         console.log("timelapse");
                         //timelapse영상제작
                     }
-                    // socket.send("WebSocket server is running");
                 });
             });
             serverStarted = true;
@@ -192,6 +147,8 @@ function socketServer(message) {
 }
 
 service.register("socketServer", socketServer);
+
+// express 변경하면 지움
 service.register("test", (message) => {
     service.call("luna://com.farm.server.sensor.service/getSensorData", {}, (response) => {
         console.log("Call to getSensorData");
@@ -235,6 +192,7 @@ function sendResponses() {
 }
 
 var heartbeat = service.register("heartbeat");
+
 heartbeat.on("request", function(message) {
     console.log(logHeader, "SERVICE_METHOD_CALLED:/heartbeat");
     message.respond({event: "beat"}); // initial response
@@ -245,6 +203,7 @@ heartbeat.on("request", function(message) {
         }
     }
 });
+
 heartbeat.on("cancel", function(message) {
     delete subscriptions[message.uniqueToken]; // remove message from "subscriptions"
     var keys = Object.keys(subscriptions);
