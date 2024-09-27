@@ -1,13 +1,44 @@
 import {useState, useEffect, useCallback} from 'react';
-import {Panel, Header} from '@enact/sandstone/Panels';
+import {Panel} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
-import Button from '@enact/sandstone/Button';
+// import Button from '@enact/sandstone/Button';
+import { Button } from '../components/button/Button';
+import { Row, Cell, Column } from '@enact/ui/Layout';
 import './MainPanel.style.css';
 import {signOut} from 'firebase/auth';
 import { auth } from './firebase';
+import { Card, CardContent } from '../components/card/Card';
+import { Select, SelectItem } from '../components/select/Select';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Bell, Menu, Flower, Droplet, Sun } from 'lucide-react'
+import { SidebarPanel } from './SideBarPanel';
 
-import ChartComponent from './chartComponent.js';
+// import ChartComponent from './chartComponent.js';
 
+// const generateSensorData = () => {
+//     return Array.from({ length: 24 }, (_, i) => ({
+//       time: `${i}:00`,
+//       temperature: Math.random() * 10 + 20,
+//       humidity: Math.random() * 30 + 50,
+//       soilMoisture: Math.random() * 20 + 30,
+//     }))
+//   }
+
+//   const generateGrowthData = () => {
+//     const baseData = [
+//       { date: '9월 1일', height: 5 },
+//       { date: '9월 5일', height: 7 },
+//       { date: '9월 10일', height: 12 },
+//       { date: '9월 15일', height: 18 },
+//       { date: '9월 20일', height: 25 },
+//       { date: '9월 25일', height: 30 },
+//     ];
+
+//     return baseData.map(item => ({
+//       ...item,
+//       height: item.height + (Math.random() - 0.5) * 5
+//     }));
+//   }
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
@@ -46,8 +77,53 @@ function ConrtolOnOff({user, type}) {
     );
 }
 
+// const updateAdvisorMessage = (setAdvisorMessage) => {
+//     const messages = [
+//       "식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.",
+//       "수분이 부족해 보입니다. 물을 주는 것이 좋겠습니다.",
+//       "햇빛이 충분한지 확인해 주세요.",
+//       "온도가 적정 범위를 벗어났습니다. 환경을 조절해 주세요.",
+//       "영양분 공급이 필요해 보입니다. 비료를 주는 것을 고려해 보세요."
+//     ]
+//     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+//     setAdvisorMessage(randomMessage)
+//   }
+
+const generateSensorData = () => {
+    return Array.from({ length: 24 }, (_, i) => ({
+      time: `${i}:00`,
+      temperature: Math.random() * 10 + 20,
+      humidity: Math.random() * 30 + 50,
+      soilMoisture: Math.random() * 20 + 30,
+    }))
+  }
+
+  const generateGrowthData = () => {
+    const baseData = [
+      { date: '9월 1일', height: 5 },
+      { date: '9월 5일', height: 7 },
+      { date: '9월 10일', height: 12 },
+      { date: '9월 15일', height: 18 },
+      { date: '9월 20일', height: 25 },
+      { date: '9월 25일', height: 30 },
+    ];
+
+    return baseData.map(item => ({
+      ...item,
+      height: item.height + (Math.random() - 0.5) * 5
+    }));
+  }
+
 function MainPanel(props) {
-    const { next, user, login, chart } = props;
+    const {  user, login } = props;
+    const [sensorData, setSensorData] = useState(generateSensorData())
+    const [growthData, setGrowthData] = useState(generateGrowthData())
+    const [currentTemp, setCurrentTemp] = useState(26)
+    const [plantAge, setPlantAge] = useState(21)
+    const [plantHeight, setPlantHeight] = useState(30)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+    const [selectedPlant, setSelectedPlant] = useState("겨자")
+    const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.")
 
     const logout = useCallback(async () => {
         try {
@@ -62,46 +138,169 @@ function MainPanel(props) {
     console.log(user.uid);
     console.log(user.email);
 
+    const handleSidebarToggle = useCallback((prevState) => {
+        setIsSidebarOpen(!prevState);
+      }, []);
+    const handleSelectedPlant = useCallback((e) => {
+        setSelectedPlant(e.value);
+    }, []);
     return (
         <Panel noBackButton noCloseButton {...props}>
-            <Header title="COSMOS IoT Dashboard" />
-            <div>
-                {user ? (
-                    <div>
-                        <p>환영합니다, {user.email}님.</p>
-                        <p>UID: {user.uid}</p>
-                        <Button onClick={logout}>Logout</Button>
-                    </div>
-                ) : (
-                    <Button onClick={login}>Login Page</Button>
-                )}
-            </div>
-            <div className="main-container">
-				<div className="temp-box box-three">
-                    {/* console.log("test"); */}
-                    <div>
-                       <img src="http://192.168.100.103:8081/stream" alt='img' width="600"/>
-                    </div>
-                </div>
-                <ConnectSocket />
-                <Button onClick={next}>Next Page</Button>
-                <Button onClick={chart}>Chart test</Button>
-                <ChartComponent />
+            {/* <Header title="COSMOS IoT Dashboard" /> */}
+            <Row style={{height: '100%'}}>
+            <div className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden">
+                <Cell size="10%">
+                    <SidebarPanel logout={logout} isSidebarOpen={isSidebarOpen}/>
+                </Cell>
+                <Cell>
+                    <div className="flex-1 overflow-hidden">
+                    <Column>
+                        <div className="h-full overflow-y-auto p-4">
+                        <Cell size={80} component="header" className="flex justify-between items-center mb-6">
+                                <div className="flex items-center space-x-4">
+                                <Button variant="ghost" className="lg:hidden text-gray-800" onClick={handleSidebarToggle}>
+                                    <Menu className="h-6 w-6" />
+                                </Button>
+                                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                                    <Flower className="text-white" size={24} />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-gray-800">안녕하세요, {user.email}</h1>
+                                    <p className="text-l text-gray-600">오늘은 어떤 식물을 돌볼까요?</p>
+                                </div>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
+                                    <Bell size={20} />
+                                </Button>
+                                <Select onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
+                                    <SelectItem value="겨자">겨자</SelectItem>
+                                    <SelectItem value="바질">바질</SelectItem>
+                                    <SelectItem value="로즈마리">로즈마리</SelectItem>
+                                </Select>
+                                </div>
+                        </Cell>
+                        </div>
+                        <Cell>
+                            <div className="grid grid-cols-12 gap-6">
+                                <Card className="col-span-12 xl:col-span-8 bg-white border-gray-200">
+                                <CardContent className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
+                                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                                    <span className="text-gray-500">실시간 식물 카메라</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                    <div className="flex items-center space-x-4">
+                                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                        {currentTemp}°C
+                                        </div>
+                                        <div>
+                                        <p className="text-sm text-gray-500">현재 온도</p>
+                                        <p className="text-lg font-semibold text-gray-800">실내 온도</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-4">
+                                        <Button variant="outline" size="icon" className="text-blue-500 border-blue-500 hover:bg-blue-50">
+                                        <Droplet size={20} />
+                                        </Button>
+                                        <Button variant="outline" size="icon" className="text-yellow-500 border-yellow-500 hover:bg-yellow-50">
+                                        <Sun size={20} />
+                                        </Button>
+                                        <ConnectSocket/>
+                                    </div>
+                                    </div>
+                                </CardContent>
+                                </Card>
 
-                {/* <Button onClick={socket}>Socket Page</Button> */}
-                <div className="temp-box box-four">
-                    <div>
-                        <ConrtolOnOff user={user} type='led'/>
+                                <Card className="col-span-12 xl:col-span-4 bg-white border-gray-200">
+                                <CardContent className="p-6">
+                                    <h3 className="text-lg font-semibold mb-4 text-gray-800">식물 성장</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                    <div>
+                                        <p className="text-sm text-gray-500">식물 나이</p>
+                                        <p className="text-2xl font-bold text-gray-800">{plantAge} 일</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">현재 높이</p>
+                                        <p className="text-2xl font-bold text-gray-800">{plantHeight} cm</p>
+                                    </div>
+                                    </div>
+                                    <div className="h-64">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={growthData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                        <XAxis
+                                            dataKey="date"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#6B7280', fontSize: 12 }}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: '#6B7280', fontSize: 12 }}
+                                            domain={[0, 'dataMax + 5']}
+                                        />
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }}
+                                            labelStyle={{ color: '#111827' }}
+                                            itemStyle={{ color: '#10B981' }}
+                                        />
+                                        <defs>
+                                            <linearGradient id="colorHeight" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                                            <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <Area
+                                            type="monotone"
+                                            dataKey="height"
+                                            stroke="#10B981"
+                                            fill="url(#colorHeight)"
+                                            strokeWidth={2}
+                                            dot={{ fill: '#10B981', strokeWidth: 2 }}
+                                        />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                    </div>
+                                    <div className="mt-4 p-4 bg-green-50 rounded-lg">
+                                    <h4 className="text-md font-semibold mb-2 text-green-800">식물 어드바이저</h4>
+                                    <p className="text-sm text-green-700">{advisorMessage}</p>
+                                    </div>
+                                </CardContent>
+                             </Card>
+
+                            <Card className="col-span-12 bg-white border-gray-200">
+                            <CardContent className="p-6">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800">센서 데이터</h3>
+                                <div className="h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={sensorData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                                    <XAxis dataKey="time" stroke="#6B7280" />
+                                    <YAxis stroke="#6B7280" />
+                                    <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }} />
+                                    <Area type="monotone" dataKey="soilMoisture" stackId="1" stroke="#10B981" fill="#D1FAE5" fillOpacity={0.6} name="토양 습도 (%)" />
+                                    <Area type="monotone" dataKey="humidity" stackId="1" stroke="#3B82F6" fill="#DBEAFE" fillOpacity={0.6} name="습도 (%)" />
+                                    <Area type="monotone" dataKey="temperature" stroke="#EF4444" fill="#FEE2E2" fillOpacity={0.8} name="온도 (°C)" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                                </div>
+                            </CardContent>
+                            </Card>
+                        </div>
+
+                        </Cell>
+                    </Column>
                     </div>
-                    <div>
-                        <ConrtolOnOff user={user} type='waterpump' />
-                    </div>
-                </div>
+                </Cell>
             </div>
+            </Row>
+
+            {/* 메인 콘텐츠 */}
         </Panel>
     );
 }
-
 function ConnectSocket() {
     const [connectionAttempts, setConnectionAttempts] = useState(0);  // 연결 시도 횟수
     const [isConnected, setIsConnected] = useState(false);  // 연결 성공 여부 상태 관리

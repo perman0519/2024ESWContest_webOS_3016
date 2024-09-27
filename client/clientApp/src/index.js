@@ -1,4 +1,5 @@
 /* global ENACT_PACK_ISOMORPHIC */
+import './index.css';
 import {createRoot, hydrateRoot} from 'react-dom/client';
 
 import App from './App';
