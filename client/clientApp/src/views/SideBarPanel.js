@@ -1,8 +1,8 @@
 import { Button } from "../components/button/Button";
-import { Settings, Home, Film } from "lucide-react";
+import { Home, Film, ChartArea } from "lucide-react";
 
 export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트로 변경
-    const { logout, isSidebarOpen } = props;
+    const { main, chart, logout, isSidebarOpen } = props;
 
     return (
 		<>
@@ -14,11 +14,11 @@ export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트
                     </div>
                     <div className="flex-1 overflow-y-auto p-4">
                     <div className="space-y-4">
-                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                        <Button variant="ghost" onClick={main} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <Home className="mr-2 h-4 w-4" /> <span className="text-base text-center">홈</span>
                         </Button>
-                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
-                            <Settings className="mr-2 h-4 w-4" /> <span className="text-base text-center">설정</span>
+                        <Button variant="ghost" onClick={chart} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                            <ChartArea className="mr-2 h-4 w-4" /> <span className="text-base text-center">그래프</span>
                         </Button>
                         <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <Film className="mr-2 h-4 w-4" /> <span className="text-base text-center">타임랩스</span>

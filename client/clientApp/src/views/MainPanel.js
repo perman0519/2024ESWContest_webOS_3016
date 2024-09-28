@@ -10,38 +10,10 @@ import { auth } from './firebase';
 import { Card, CardContent } from '../components/card/Card';
 import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Bell, Menu, Flower, Droplet, Sun } from 'lucide-react'
+import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
-
-
-// import ChartComponent from './chartComponent.js';
-
-// const generateSensorData = () => {
-//     return Array.from({ length: 24 }, (_, i) => ({
-//       time: `${i}:00`,
-//       temperature: Math.random() * 10 + 20,
-//       humidity: Math.random() * 30 + 50,
-//       soilMoisture: Math.random() * 20 + 30,
-//     }))
-//   }
-
-//   const generateGrowthData = () => {
-//     const baseData = [
-//       { date: '9월 1일', height: 5 },
-//       { date: '9월 5일', height: 7 },
-//       { date: '9월 10일', height: 12 },
-//       { date: '9월 15일', height: 18 },
-//       { date: '9월 20일', height: 25 },
-//       { date: '9월 25일', height: 30 },
-//     ];
-
-//     return baseData.map(item => ({
-//       ...item,
-//       height: item.height + (Math.random() - 0.5) * 5
-//     }));
-//   }
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
@@ -116,7 +88,7 @@ const generateSensorData = () => {
   }
 
 function MainPanel(props) {
-    const {  user, login } = props;
+    const { main, chart, user, login } = props;
     const [sensorData, setSensorData] = useState(generateSensorData())
     const [growthData, setGrowthData] = useState(generateGrowthData())
     const [currentTemp, setCurrentTemp] = useState(26)
@@ -125,6 +97,8 @@ function MainPanel(props) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [selectedPlant, setSelectedPlant] = useState("겨자")
     const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.")
+    const [src, setSrc] = useState('http://10.19.233.90:8081/stream');
+    const [camerror, setError] = useState(false);
 
     const logout = useCallback(async () => {
         try {
@@ -145,12 +119,29 @@ function MainPanel(props) {
     const handleSelectedPlant = useCallback((e) => {
         setSelectedPlant(e.value);
     }, []);
+
+    const handleError = () => {
+        setError(true);
+    };
+
+    useEffect(() => {
+        if (camerror) {
+            const timer = setTimeout(() => {
+                setSrc('http://10.19.233.90:8081/stream'); // 다시 호출
+                setError(false);
+            }, 5000); // 5초 후에 다시 호출
+
+            return () => clearTimeout(timer); // Cleanup
+        }
+    }, [camerror]);
+
+
     return (
         <Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
                 <Cell size="12%">
-                    <SidebarPanel logout={logout} isSidebarOpen={isSidebarOpen}/>
+                    <SidebarPanel main={main} chart={chart} logout={logout} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
@@ -198,9 +189,16 @@ function MainPanel(props) {
                                     </div>
                                     <div className=" rounded-lg flex items-center justify-center mb-4">
                                     {/* <span className="text-gray-500">실시간 식물 카메라</span> */}
-                                        <img src='http://10.19.233.90:8081/stream' width="940" height="600"/>
+                                        <img
+                                            src={src}
+                                            width="940"
+                                            height="600"
+                                            onError={handleError} // 이미지 로드 실패 시 handleError 호출
+                                            alt="Streaming Content"
+                                        />
+                                        {camerror && <span className="text-gray-500">실시간 식물 카메라</span>}
                                     </div>
-                                    <div className="flex justify-between items-center">
+                                    <div className="mt-8 flex justify-evenly items-center">
                                         <div className="flex items-center space-x-4">
                                             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                                             {currentTemp}°C
@@ -289,25 +287,6 @@ function MainPanel(props) {
                                     </div>
                                 </CardContent>
                              </Card>
-
-                            <Card className="col-span-12 bg-white border-gray-200">
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold mb-4 text-gray-800">센서 데이터</h3>
-                                <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={sensorData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                    <XAxis dataKey="time" stroke="#6B7280" />
-                                    <YAxis stroke="#6B7280" />
-                                    <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }} />
-                                    <Area type="monotone" dataKey="soilMoisture" stackId="1" stroke="#10B981" fill="#D1FAE5" fillOpacity={0.6} name="토양 습도 (%)" />
-                                    <Area type="monotone" dataKey="humidity" stackId="1" stroke="#3B82F6" fill="#DBEAFE" fillOpacity={0.6} name="습도 (%)" />
-                                    <Area type="monotone" dataKey="temperature" stroke="#EF4444" fill="#FEE2E2" fillOpacity={0.8} name="온도 (°C)" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                                </div>
-                            </CardContent>
-                            </Card>
                         </Cell>
                     </Column>
                 </Cell>
