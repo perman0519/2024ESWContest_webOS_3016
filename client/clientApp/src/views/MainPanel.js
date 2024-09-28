@@ -12,7 +12,9 @@ import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { Bell, Menu, Flower, Droplet, Sun } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
-import '../App/App.style.css';
+import css from '../App/App.module.less';
+
+
 
 // import ChartComponent from './chartComponent.js';
 
@@ -45,6 +47,7 @@ const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조�
 
 function ConrtolOnOff({user, type}) {
     const [isSelected, setIsSelected] = useState(false);
+    const icon = type === "led" ? "💡" : "🚰";
 
     const sendMessage = useCallback((toggleStatus) => {
         if (wsRef.current) {
@@ -67,12 +70,9 @@ function ConrtolOnOff({user, type}) {
     }, [sendMessage]);
 
     return (
-        <div>
+        <div className='border-r'>
             <span>
-                <Switch onToggle={handleToggle} />
-            </span>
-            <span>
-                {isSelected ? <span>{type} on</span> : <span>{type} off</span>}
+                {icon} <Switch onToggle={handleToggle} />
             </span>
         </div>
     );
@@ -146,15 +146,15 @@ function MainPanel(props) {
         setSelectedPlant(e.value);
     }, []);
     return (
-        <Panel css={".custom-panel"}  noBackButton noCloseButton {...props}>
+        <Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
-                <Cell size="20%">
+                <Cell size="12%">
                     <SidebarPanel logout={logout} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
-                        <Cell size={100} component="header" className="flex justify-between items-center mb-6">
+                        <Cell size={100} component="header" className="flex justify-between items-center mt-2 mb-6">
                             <div className="flex items-center space-x-4">
                                 <Button variant="ghost" className="lg:hidden text-gray-800" onClick={handleSidebarToggle}>
                                     <Menu className="h-6 w-6" />
@@ -166,12 +166,14 @@ function MainPanel(props) {
                                     <h1 className="text-xl font-bold text-gray-800">안녕하세요, {user.email}</h1>
                                     <p className="text-l text-gray-600">오늘은 어떤 식물을 돌볼까요?</p>
                                 </div>
-                                </div>
-                                <div className="flex items-center space-x-4">
+                            </div>
+                            <div className="flex items-center space-x-4">
+
+                                <ConnectSocket />
                                 <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
                                     <Bell size={20} />
                                 </Button>
-                                <Select onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
+                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
                                     <SelectItem value="겨자">겨자</SelectItem>
                                     <SelectItem value="바질">바질</SelectItem>
                                     <SelectItem value="로즈마리">로즈마리</SelectItem>
@@ -181,29 +183,51 @@ function MainPanel(props) {
                         <Cell className="grid grid-cols-12 gap-3">
                                 <Card className="col-span-12 xl:col-span-8 bg-white border-gray-200">
                                 <CardContent className="p-6">
-                                    <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
-                                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                                    <span className="text-gray-500">실시간 식물 카메라</span>
+                                    <div className='flex justify-evenly items-center mb-2'>
+                                        <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
+                                        <div className="flex items-center space-x-4 border-x">
+                                            {/* <Button variant="outline" size="icon" className="text-blue-500 border-blue-500 hover:bg-blue-50"> */}
+                                            {/* <Droplet size={40} /> */}
+                                            <ConrtolOnOff user={user} type='waterpump' />
+                                            {/* </Button> */}
+                                            {/* <Button variant="outline" size="icon" className="text-yellow-500 border-yellow-500 hover:bg-yellow-50"> */}
+                                            {/* <Sun size={40} /> */}
+                                            <ConrtolOnOff user={user} type='led' />
+                                            {/* </Button> */}
+                                        </div>
+                                    </div>
+                                    <div className=" rounded-lg flex items-center justify-center mb-4">
+                                    {/* <span className="text-gray-500">실시간 식물 카메라</span> */}
+                                        <img src='http://10.19.233.90:8081/stream' width="940" height="600"/>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                        {currentTemp}°C
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            {currentTemp}°C
+                                            </div>
+                                            <div>
+                                            <p className="text-sm text-gray-500">현재 온도</p>
+                                            <p className="text-lg font-semibold text-gray-800">실내 온도</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                        <p className="text-sm text-gray-500">현재 온도</p>
-                                        <p className="text-lg font-semibold text-gray-800">실내 온도</p>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                                {currentTemp}°C
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-500">현재 습도</p>
+                                                <p className="text-lg font-semibold text-gray-800">실내 습도</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex space-x-4">
-                                        <Button variant="outline" size="icon" className="text-blue-500 border-blue-500 hover:bg-blue-50">
-                                        <Droplet size={40} />
-                                        </Button>
-                                        <Button variant="outline" size="icon" className="text-yellow-500 border-yellow-500 hover:bg-yellow-50">
-                                        <Sun size={40} />
-                                        </Button>
-                                        <ConnectSocket/>
-                                    </div>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                                {currentTemp}°C
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-500">현재 토양 습도</p>
+                                                <p className="text-lg font-semibold text-gray-800">토양습도</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -301,7 +325,7 @@ function ConnectSocket() {
         // WebSocket 연결을 설정하는 함수
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://10.19.208.172:3001');
+            wsRef.current = new WebSocket('ws://10.19.233.90:3001');
 
             wsRef.current.onopen = function() {
                 console.log('Online 🟢');

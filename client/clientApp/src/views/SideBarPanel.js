@@ -14,20 +14,20 @@ export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트
                     </div>
                     <div className="flex-1 overflow-y-auto p-4">
                     <div className="space-y-4">
-                        <Button variant="ghost" className="w-full justify-start text-gray-800 hover:bg-green-100">
-                            <Home className="mr-2 h-4 w-4" /> 홈
+                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                            <Home className="mr-2 h-4 w-4" /> <span className="text-base text-center">홈</span>
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start text-gray-800 hover:bg-green-100">
-                            <Settings className="mr-2 h-4 w-4" /> 설정
+                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                            <Settings className="mr-2 h-4 w-4" /> <span className="text-base text-center">설정</span>
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start text-gray-800 hover:bg-green-100">
-                            <Film className="mr-2 h-4 w-4" /> 타임랩스 영상
+                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                            <Film className="mr-2 h-4 w-4" /> <span className="text-base text-center">타임랩스</span>
                         </Button>
                     </div>
                     </div>
                     <div className="p-4 border-t border-gray-200">
                         <Button onClick={logout} variant="ghost" className="w-full justify-start text-gray-800 hover:bg-green-100">
-                            <span className="mr-2 h-4 w-4" /> 로그아웃
+                            <span className="mr-2 h-4 w-4 text-base"> 로그아웃 </span>
                         </Button>
                     </div>
 
