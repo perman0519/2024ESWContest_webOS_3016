@@ -17,7 +17,6 @@ app.use((req, res, next) => {
 
 app.get('/stream', (req, res) => {
     res.setHeader('Content-Type', 'multipart/x-mixed-replace; boundary=frame');
-
     const sendImage = (imagePath) => {
         fs.readFile(imagePath, (err, imageBytes) => {
             if (err) {
@@ -36,7 +35,6 @@ app.get('/stream', (req, res) => {
                 });
                 return;
             }
-
             res.write('--frame\r\n');
             res.write('Content-Type: image/jpeg\r\n\r\n');
             res.write(imageBytes);
@@ -47,7 +45,7 @@ app.get('/stream', (req, res) => {
     // Continuously send image data
     const intervalId = setInterval(() => {
         sendImage(imagePath);
-    }, 1000); // Adjust the interval time as needed
+    }, 500); // Adjust the interval time as needed
 
     req.on('close', () => {
         clearInterval(intervalId);
