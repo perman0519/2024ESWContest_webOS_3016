@@ -14,7 +14,7 @@ async function getGeneratedPythonCode(prompt) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': `Bearer `,  // 실제 API 키 사용
+            'Authorization': `Bearer`,  // 실제 API 키 사용
             'Content-Type': 'application/json'
         }
     });
@@ -94,15 +94,15 @@ print(predicted_water_amount[0])  # 예측된 양을 출력합니다.
 getGeneratedPythonCode(pythonCodePrompt)
     .then((generatedCode) => {
         // 피처 이름 영어를 한글로 바꾸기
-        const correctedCode = generatedCode
-        .replace(/temperature/g, '온도')
-        .replace(/humidity/g, '습도')
-        .replace(/sunlight/g, '일조량');
+        // const correctedCode = generatedCode
+        // .replace(/temperature/g, '온도')
+        // .replace(/humidity/g, '습도')
+        // .replace(/sunlight/g, '일조량');
 
-        console.log("생성된 Python 코드:\n", correctedCode);
+        console.log("생성된 Python 코드:\n", generatedCode);
 
         // 생성된 Python 코드를 파일로 저장
-        fs.writeFileSync('generated_code.py', correctedCode);
+        fs.writeFileSync('generated_code.py', generatedCode);
 
         // 저장한 Python 코드를 실행
         exec('python3 generated_code.py', (error, stdout, stderr) => {
