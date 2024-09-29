@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Panel } from '@enact/sandstone/Panels';
-import Switch from '@enact/sandstone/Switch';
 import { Button } from '../components/button/Button';
 import { Row, Cell, Column } from '@enact/ui/Layout';
 import './MainPanel.style.css';
@@ -16,52 +15,7 @@ import css from '../App/App.module.less';
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
-function ConrtolOnOff({ user, type }) {
-	const [isSelected, setIsSelected] = useState(false);
-	const icon = type === "led" ? "💡" : "🚰";
-
-	const sendMessage = useCallback((toggleStatus) => {
-		if (wsRef.current) {
-			const message = `
-                {
-                    "user_id": "${user.uid}",
-                    "sector_id": ${0},
-                    "type": "${type}",
-                    "command": "${toggleStatus ? "ON" : "OFF"}"
-                }
-            `
-
-			wsRef.current.send(message);
-		}
-	}, [user, type]);
-
-	const handleToggle = useCallback((e) => {
-		setIsSelected(e.selected);
-		sendMessage(e.selected);
-	}, [sendMessage]);
-
-	return (
-		<div className='border-r'>
-			<span>
-				{icon} <Switch onToggle={handleToggle} />
-			</span>
-		</div>
-	);
-}
-
-// const updateAdvisorMessage = (setAdvisorMessage) => {
-//     const messages = [
-//       "식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.",
-//       "수분이 부족해 보입니다. 물을 주는 것이 좋겠습니다.",
-//       "햇빛이 충분한지 확인해 주세요.",
-//       "온도가 적정 범위를 벗어났습니다. 환경을 조절해 주세요.",
-//       "영양분 공급이 필요해 보입니다. 비료를 주는 것을 고려해 보세요."
-//     ]
-//     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
-//     setAdvisorMessage(randomMessage)
-//   }
-
-const generateSensorData = () => {
+const getSensorData = () => {
 	return Array.from({ length: 24 }, (_, i) => ({
 		time: `${i}:00`,
 		temperature: Math.random() * 10 + 20,
@@ -72,7 +26,7 @@ const generateSensorData = () => {
 
 function ChartPanel(props) {
 	const { main, chart, user, login } = props;
-	const [sensorData, setSensorData] = useState(generateSensorData())
+	const [sensorData, setSensorData] = useState(getSensorData())
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 	const [selectedPlant, setSelectedPlant] = useState("겨자")
 
@@ -85,16 +39,18 @@ function ChartPanel(props) {
 		}
 	}, [login]);
 
-	console.log('Main');
-	console.log(user.uid);
-	console.log(user.email);
+	useEffect(() => {
+		setInterval(() => {setSensorData(getSensorData())}, 5000);
+	}, [sensorData]);
 
 	const handleSidebarToggle = useCallback((prevState) => {
 		setIsSidebarOpen(!prevState);
 	}, []);
+
 	const handleSelectedPlant = useCallback((e) => {
 		setSelectedPlant(e.value);
 	}, []);
+
 	return (
 		<Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
 			{/* <Header title="COSMOS IoT Dashboard" /> */}
@@ -153,14 +109,11 @@ function ChartPanel(props) {
 					</Column>
 				</Cell>
 			</Row>
-
-			{/* 메인 콘텐츠 */}
 		</Panel>
 	);
 }
 
 function ConnectSocket() {
-	const [connectionAttempts, setConnectionAttempts] = useState(0);  // 연결 시도 횟수
 	const [isConnected, setIsConnected] = useState(false);  // 연결 성공 여부 상태 관리
 
 	useEffect(() => {
@@ -171,7 +124,6 @@ function ConnectSocket() {
 
 			wsRef.current.onopen = function () {
 				console.log('Online 🟢');
-				setConnectionAttempts(0);  // 연결 성공 시 시도 횟수 초기화
 				setIsConnected(true);  // 연결 성공 여부 업데이트
 				// wsRef.current.send('안녕하세요, 서버!');
 			};
@@ -180,7 +132,6 @@ function ConnectSocket() {
 				setIsConnected(false);  // 연결이 닫혔을 때 연결 상태 업데이트
 				if (!event.wasClean) {
 					console.error('Offline 🔴');
-					setConnectionAttempts((prev) => prev + 1);  // 연결 시도 횟수 증가
 					// 5초 후에 다시 연결 시도
 					setTimeout(() => {
 						console.log('다시 연결 시도 중...');
