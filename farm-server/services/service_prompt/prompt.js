@@ -5,6 +5,7 @@ const openai = new OpenAI({
     apiKey: ""
 });
 
+// call the gpt4API
 async function getGpt4Response() {
   try {
     // GPT-4 모델을 호출
@@ -15,10 +16,6 @@ async function getGpt4Response() {
         { role: "user", content: "species: rettuce, length: 7cm, humidity: 50%, temperature: 296K, age: 2weeks" },
       ],
     });
-
-    // 응답 출력
-    // console.log(response.data.choices[0].message.content);
-    console.log(response);
     
     // 응답 출력
     if (response.choices && response.choices.length > 0) {

@@ -3,6 +3,7 @@ const { spawn } = require('child_process');
 // Python 스크립트 호출 함수
 function callRandomForestModel(features) {
     return new Promise((resolve, reject) => {
+        // 원래있던 작성해둔 python script 실행
         const pythonProcess = spawn('python3', ['predict.py', ...features]);
 
         pythonProcess.stdout.on('data', (data) => {

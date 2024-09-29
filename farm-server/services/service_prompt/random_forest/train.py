@@ -6,9 +6,11 @@ X_train = [
     [10.2, 5.1],  # 주차별 줄기 길이, 엽폭
     [11.3, 5.5],
     [12.1, 5.9],
+    [16.1, 6.9],
+    [21.1, 7.9],
 ]
 
-y_train = [1, 2, 2]  # 물 준 횟수
+y_train = [1, 2, 2, 5, 6]  # 물 준 횟수
 
 # 모델 생성 및 학습
 model = RandomForestRegressor(n_estimators=100, random_state=42)
