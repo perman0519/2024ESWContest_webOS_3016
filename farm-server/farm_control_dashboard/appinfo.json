@@ -1,6 +1,6 @@
 {
   "id": "com.farm.server",
-  "version": "1.4.20",
+  "version": "1.4.23",
   "vendor": "My Company",
   "type": "web",
   "main": "index.html",
@@ -11,6 +11,7 @@
     "activity.operation",
     "com.farm.server.sensor.service.group",
     "com.farm.server.camera.service.group",
-    "com.farm.server.socket.server.service.group"
+    "com.farm.server.socket.server.service.group",
+    "com.farm.server.ai.service.group"
   ]
 }

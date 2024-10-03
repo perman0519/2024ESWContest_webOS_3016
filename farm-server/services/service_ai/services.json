@@ -1,0 +1,9 @@
+{
+  "id": "com.farm.server.ai.service",
+  "description": "ai action",
+  "services": [
+    {
+      "name": "com.farm.server.ai.service"
+    }
+  ]
+}
