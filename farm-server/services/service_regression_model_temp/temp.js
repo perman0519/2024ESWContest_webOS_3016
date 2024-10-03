@@ -77,7 +77,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': `Bearer`,  // 실제 API 키 사용
+            'Authorization': `Bearer `,  // 실제 API 키 사용
             'Content-Type': 'application/json'
         }
     });
@@ -91,7 +91,8 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
     const data = await getLatestSensorData();
     console.log("getSenSorData Latest: ", data);
-    const features = Object.values(data).map(value => value.toString());
+    const pre_features = Object.values(data).map(value => value.toString());
+    const features = pre_features.slice(1, 3).reverse();
 
     console.log("feature Latest: ", features);
     try {
