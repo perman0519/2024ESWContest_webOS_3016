@@ -2,6 +2,23 @@ const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
+const { ref,  query, orderByKey, limitToLast, get } = require('firebase/database');
+const initializeApp = require('firebase/app').initializeApp;
+const getDatabase = require('firebase/database').getDatabase;
+
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
+    authDomain: "smartfarm-ddbc3.firebaseapp.com",
+    databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
+    projectId: "smartfarm-ddbc3",
+    storageBucket: "smartfarm-ddbc3.appspot.com",
+    messagingSenderId: "945689382597",
+    appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
+  };
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
@@ -35,6 +52,8 @@ async function convertPredictionToNaturalLanguage(prediction) {
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
 async function callRandomForestModel(message) { //인자로 ['온도', '습도', '일조량']
     const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
+    const test = getLatestSensorData();
+    console.log("getSenSorData Latest: ", test);
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
@@ -50,7 +69,6 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
             .catch((error) => {
                 console.error("자연어 변환 중 오류 발생:", error);
             });
-
         message.respond({
             returnValue: true,
             Response: "Sensor data stored"
@@ -62,6 +80,37 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
         // return null;
     }
 }
+
+//gpt가 생성한 최신데이터 가져오는 함수
+async function getLatestSensorData() {
+    try {
+        const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
+        
+        const snapshot = await get(sensorDataRef);
+
+        if (snapshot.exists()){
+            const data = snapshot.val();
+            let latestData = null;
+
+            for (let key in data){
+                latestData = data[key];
+            }
+
+            console.log("Fetched latest sensor data: ", latestData);
+            return latestData;
+        }
+        else {
+            console.log("No data available");
+            return null;
+        }
+    } catch (error) {
+    console.error("Error fetching data: ", error);
+    throw error;
+    }    
+}
+
+
+
 
 // data값은 순서대로 온도, 습도, 일조량
 //const data = ['26', '60', '5'];
