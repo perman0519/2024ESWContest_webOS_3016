@@ -1,7 +1,6 @@
 import {useState, useEffect, useCallback} from 'react';
 import {Panel} from '@enact/sandstone/Panels';
 import Switch from '@enact/sandstone/Switch';
-// import Button from '@enact/sandstone/Button';
 import { Button } from '../components/button/Button';
 import { Row, Cell, Column } from '@enact/ui/Layout';
 import './MainPanel.style.css';
@@ -10,41 +9,16 @@ import { auth } from './firebase';
 import { Card, CardContent } from '../components/card/Card';
 import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Bell, Menu, Flower, Droplet, Sun } from 'lucide-react'
+import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
-import '../App/App.style.css';
+import css from '../App/App.module.less';
 
-// import ChartComponent from './chartComponent.js';
-
-// const generateSensorData = () => {
-//     return Array.from({ length: 24 }, (_, i) => ({
-//       time: `${i}:00`,
-//       temperature: Math.random() * 10 + 20,
-//       humidity: Math.random() * 30 + 50,
-//       soilMoisture: Math.random() * 20 + 30,
-//     }))
-//   }
-
-//   const generateGrowthData = () => {
-//     const baseData = [
-//       { date: '9월 1일', height: 5 },
-//       { date: '9월 5일', height: 7 },
-//       { date: '9월 10일', height: 12 },
-//       { date: '9월 15일', height: 18 },
-//       { date: '9월 20일', height: 25 },
-//       { date: '9월 25일', height: 30 },
-//     ];
-
-//     return baseData.map(item => ({
-//       ...item,
-//       height: item.height + (Math.random() - 0.5) * 5
-//     }));
-//   }
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
-function ConrtolOnOff({user, type}) {
+function ConrtolOnOff({ user, type }) {
     const [isSelected, setIsSelected] = useState(false);
+    const icon = type === "led" ? "💡" : "🚰";
 
     const sendMessage = useCallback((toggleStatus) => {
         if (wsRef.current) {
@@ -63,41 +37,17 @@ function ConrtolOnOff({user, type}) {
 
     const handleToggle = useCallback((e) => {
         setIsSelected(e.selected);
-        sendMessage(e.selected);
-    }, [sendMessage]);
+        sendMessage(isSelected);
+    }, [isSelected, sendMessage]);
 
     return (
-        <div>
+        <div className='border-r'>
             <span>
-                <Switch onToggle={handleToggle} />
-            </span>
-            <span>
-                {isSelected ? <span>{type} on</span> : <span>{type} off</span>}
+                {icon} <Switch onToggle={handleToggle} />
             </span>
         </div>
     );
 }
-
-// const updateAdvisorMessage = (setAdvisorMessage) => {
-//     const messages = [
-//       "식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.",
-//       "수분이 부족해 보입니다. 물을 주는 것이 좋겠습니다.",
-//       "햇빛이 충분한지 확인해 주세요.",
-//       "온도가 적정 범위를 벗어났습니다. 환경을 조절해 주세요.",
-//       "영양분 공급이 필요해 보입니다. 비료를 주는 것을 고려해 보세요."
-//     ]
-//     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
-//     setAdvisorMessage(randomMessage)
-//   }
-
-const generateSensorData = () => {
-    return Array.from({ length: 24 }, (_, i) => ({
-      time: `${i}:00`,
-      temperature: Math.random() * 10 + 20,
-      humidity: Math.random() * 30 + 50,
-      soilMoisture: Math.random() * 20 + 30,
-    }))
-  }
 
   const generateGrowthData = () => {
     const baseData = [
@@ -116,15 +66,18 @@ const generateSensorData = () => {
   }
 
 function MainPanel(props) {
-    const {  user, login } = props;
-    const [sensorData, setSensorData] = useState(generateSensorData())
+    const { main, chart, user, login } = props;
     const [growthData, setGrowthData] = useState(generateGrowthData())
     const [currentTemp, setCurrentTemp] = useState(26)
+    const [currentHumi, setCurrentHumi] = useState(40)
+    const [currentSoilHumi, setCurrentSoilHumi] = useState(66)
     const [plantAge, setPlantAge] = useState(21)
     const [plantHeight, setPlantHeight] = useState(30)
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [selectedPlant, setSelectedPlant] = useState("겨자")
     const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.")
+    const [src, setSrc] = useState('http://10.19.233.90:8081/stream');
+    const [camerror, setError] = useState(false);
 
     const logout = useCallback(async () => {
         try {
@@ -141,20 +94,58 @@ function MainPanel(props) {
 
     const handleSidebarToggle = useCallback((prevState) => {
         setIsSidebarOpen(!prevState);
-      }, []);
+    }, []);
+
     const handleSelectedPlant = useCallback((e) => {
         setSelectedPlant(e.value);
     }, []);
+
+    const handleError = useCallback(() => {
+        setError(true);
+    }, []);
+
+    useEffect(() => {
+        if (camerror) {
+            const timer = setTimeout(() => {
+                setSrc('http://10.19.233.90:8081/stream'); // 다시 호출
+                setError(false);
+            }, 5000); // 5초 후에 다시 호출
+
+            return () => clearTimeout(timer); // Cleanup
+        }
+
+        setInterval(() => {
+            let humi = Math.round(Math.random() * 30 + 50);
+            let temp = Math.round(Math.random() * 10 + 20);
+            let soilHumi = Math.round(Math.random() * 20 + 30);
+
+            setCurrentHumi(humi);
+            setCurrentSoilHumi(soilHumi);
+            setCurrentTemp(temp);
+        }, 10000);
+
+        setInterval(() => {
+            let age = plantAge + 1;
+            let height = plantHeight + 1;
+
+            setPlantAge(age);
+            setPlantHeight(height);
+            setGrowthData(generateGrowthData());
+        }, 20000);
+
+    }, [camerror, plantAge, plantHeight]);
+
+
     return (
-        <Panel css={".custom-panel"}  noBackButton noCloseButton {...props}>
+        <Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
-                <Cell size="20%">
-                    <SidebarPanel logout={logout} isSidebarOpen={isSidebarOpen}/>
+                <Cell size="12%">
+                    <SidebarPanel main={main} chart={chart} logout={logout} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
-                        <Cell size={100} component="header" className="flex justify-between items-center mb-6">
+                        <Cell size={100} component="header" className="flex justify-between items-center mt-2 mb-6">
                             <div className="flex items-center space-x-4">
                                 <Button variant="ghost" className="lg:hidden text-gray-800" onClick={handleSidebarToggle}>
                                     <Menu className="h-6 w-6" />
@@ -166,12 +157,14 @@ function MainPanel(props) {
                                     <h1 className="text-xl font-bold text-gray-800">안녕하세요, {user.email}</h1>
                                     <p className="text-l text-gray-600">오늘은 어떤 식물을 돌볼까요?</p>
                                 </div>
-                                </div>
-                                <div className="flex items-center space-x-4">
+                            </div>
+                            <div className="flex items-center space-x-4">
+
+                                <ConnectSocket />
                                 <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
                                     <Bell size={20} />
                                 </Button>
-                                <Select onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
+                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
                                     <SelectItem value="겨자">겨자</SelectItem>
                                     <SelectItem value="바질">바질</SelectItem>
                                     <SelectItem value="로즈마리">로즈마리</SelectItem>
@@ -181,29 +174,51 @@ function MainPanel(props) {
                         <Cell className="grid grid-cols-12 gap-3">
                                 <Card className="col-span-12 xl:col-span-8 bg-white border-gray-200">
                                 <CardContent className="p-6">
-                                    <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
-                                    <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center mb-4">
-                                    <span className="text-gray-500">실시간 식물 카메라</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                        {currentTemp}°C
-                                        </div>
-                                        <div>
-                                        <p className="text-sm text-gray-500">현재 온도</p>
-                                        <p className="text-lg font-semibold text-gray-800">실내 온도</p>
+                                    <div className='flex justify-evenly items-center mb-2'>
+                                        <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
+                                        <div className="flex items-center space-x-4 border-x">
+                                            <ConrtolOnOff user={user} type='waterpump' />
+                                            <ConrtolOnOff user={user} type='led' />
                                         </div>
                                     </div>
-                                    <div className="flex space-x-4">
-                                        <Button variant="outline" size="icon" className="text-blue-500 border-blue-500 hover:bg-blue-50">
-                                        <Droplet size={40} />
-                                        </Button>
-                                        <Button variant="outline" size="icon" className="text-yellow-500 border-yellow-500 hover:bg-yellow-50">
-                                        <Sun size={40} />
-                                        </Button>
-                                        <ConnectSocket/>
+                                    <div className=" rounded-lg flex items-center justify-center mb-4">
+                                        <img
+                                            src={src}
+                                            width="940"
+                                            height="600"
+                                            onError={handleError} // 이미지 로드 실패 시 handleError 호출
+                                            alt="Streaming Content"
+                                        />
+                                        {camerror && <span className="text-gray-500">실시간 식물 카메라</span>}
                                     </div>
+                                    <div className="mt-8 flex justify-evenly items-center">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            {currentTemp}°C
+                                            </div>
+                                            <div>
+                                            <p className="text-sm text-gray-500">현재 온도</p>
+                                            <p className="text-lg font-semibold text-gray-800">실내 온도</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                                {currentHumi}%
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-500">현재 습도</p>
+                                                <p className="text-lg font-semibold text-gray-800">실내 습도</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                                {currentSoilHumi}°C
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-500">현재 토양 습도</p>
+                                                <p className="text-lg font-semibold text-gray-800">토양습도</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -265,25 +280,6 @@ function MainPanel(props) {
                                     </div>
                                 </CardContent>
                              </Card>
-
-                            <Card className="col-span-12 bg-white border-gray-200">
-                            <CardContent className="p-6">
-                                <h3 className="text-lg font-semibold mb-4 text-gray-800">센서 데이터</h3>
-                                <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={sensorData}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                                    <XAxis dataKey="time" stroke="#6B7280" />
-                                    <YAxis stroke="#6B7280" />
-                                    <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }} />
-                                    <Area type="monotone" dataKey="soilMoisture" stackId="1" stroke="#10B981" fill="#D1FAE5" fillOpacity={0.6} name="토양 습도 (%)" />
-                                    <Area type="monotone" dataKey="humidity" stackId="1" stroke="#3B82F6" fill="#DBEAFE" fillOpacity={0.6} name="습도 (%)" />
-                                    <Area type="monotone" dataKey="temperature" stroke="#EF4444" fill="#FEE2E2" fillOpacity={0.8} name="온도 (°C)" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                                </div>
-                            </CardContent>
-                            </Card>
                         </Cell>
                     </Column>
                 </Cell>
@@ -294,18 +290,16 @@ function MainPanel(props) {
     );
 }
 function ConnectSocket() {
-    const [connectionAttempts, setConnectionAttempts] = useState(0);  // 연결 시도 횟수
     const [isConnected, setIsConnected] = useState(false);  // 연결 성공 여부 상태 관리
 
     useEffect(() => {
         // WebSocket 연결을 설정하는 함수
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://10.19.208.172:3001');
+            wsRef.current = new WebSocket('ws://10.19.233.90:3001');
 
             wsRef.current.onopen = function() {
                 console.log('Online 🟢');
-                setConnectionAttempts(0);  // 연결 성공 시 시도 횟수 초기화
                 setIsConnected(true);  // 연결 성공 여부 업데이트
                 // wsRef.current.send('안녕하세요, 서버!');
             };
@@ -314,7 +308,6 @@ function ConnectSocket() {
                 setIsConnected(false);  // 연결이 닫혔을 때 연결 상태 업데이트
                 if (!event.wasClean) {
                     console.error('Offline 🔴');
-                    setConnectionAttempts((prev) => prev + 1);  // 연결 시도 횟수 증가
                     // 5초 후에 다시 연결 시도
                     setTimeout(() => {
                         console.log('다시 연결 시도 중...');
