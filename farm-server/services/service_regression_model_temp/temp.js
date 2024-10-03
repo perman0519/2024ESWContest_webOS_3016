@@ -77,7 +77,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': `Bearer `,  // 실제 API 키 사용
+            'Authorization': `Bearer`,  // 실제 API 키 사용
             'Content-Type': 'application/json'
         }
     });
@@ -88,9 +88,12 @@ async function convertPredictionToNaturalLanguage(prediction) {
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
 async function callRandomForestModel() { //인자로 ['온도', '습도', '일조량']
-    const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
-    const test = getLatestSensorData();
-    console.log("getSenSorData Latest: ", test);
+    // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
+    const data = await getLatestSensorData();
+    console.log("getSenSorData Latest: ", data);
+    const features = Object.values(data).map(value => value.toString());
+
+    console.log("feature Latest: ", features);
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
