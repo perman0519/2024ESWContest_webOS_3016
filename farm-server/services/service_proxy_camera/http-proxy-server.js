@@ -79,6 +79,33 @@ app.get('/api/sensor', (req, res) => {
     });
 });
 
+app.get('/api/sensor/latest', async (req, res) => {
+    try {
+        const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
+
+        const snapshot = await get(sensorDataRef);
+
+        if (snapshot.exists()){
+            const data = snapshot.val();
+            let latestData = null;
+
+            for (let key in data){
+                latestData = data[key];
+            }
+
+            console.log("Fetched latest sensor data: ", latestData);
+            return latestData;
+        }
+        else {
+            console.log("No data available");
+            return null;
+        }
+    } catch (error) {
+        console.error("Error fetching data: ", error);
+        throw error;
+    }
+});
+
 app.get('/stream', (req, res) => {
     res.setHeader('Content-Type', 'multipart/x-mixed-replace; boundary=frame');
     const sendImage = (imagePath) => {
