@@ -38,7 +38,6 @@
 // const userPrompt = '이번 주 현재 줄기 길이 27, 엽폭 11를 목표로 하는  식물의 물 주기 횟수를 예측해줘';
 // handleUserPrompt(userPrompt);
 
-
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, get } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
@@ -53,6 +52,7 @@ const firebaseConfig = {
     messagingSenderId: "945689382597",
     appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
   };
+  
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -93,8 +93,10 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     console.log("getSenSorData Latest: ", data);
     const pre_features = Object.values(data).map(value => value.toString());
     const features = pre_features.slice(1, 3).reverse();
-
+    // features.push('120');
     console.log("feature Latest: ", features);
+    // console.log("feature Latest: ", pre_features);
+
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
@@ -152,8 +154,6 @@ async function getLatestSensorData() {
 }
 
 
-
-
 // function getSensorDataFromDB(database, ref, onValue)
 // {
 //     return new Promise((resolve, reject) => {
@@ -197,9 +197,6 @@ async function getLatestSensorData() {
 //         //     });
 //     });
 // }
-
-
-
 
 // data값은 순서대로 온도, 습도, 일조량
 // const data = ['26', '60', '5'];

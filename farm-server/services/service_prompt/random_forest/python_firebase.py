@@ -9,8 +9,6 @@ import time
 
 app = Flask(__name__)
 
-#model loading
-model = joblib.load('stacked_model.pkl')
 
 # Firebase database 인증 및 앱 초기화
 cred = credentials.Certificate('./smartfarm.json')  # Firebase auth key setting
@@ -58,6 +56,8 @@ def update_sensor_data():
     return newData
 
 update_sensor_data()
+#model loading
+model = joblib.load('stacked_model.pkl')
 
 @app.route('/predict', methods=['POST'])
 def predict():
