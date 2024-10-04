@@ -1,9 +1,12 @@
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, StackingRegressor
+from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pickle
+from python_firebase import update_sensor_data
+
 
 # Step 1: 기존 모델 불러오기
 with open('regression_model.pkl', 'rb') as f:
@@ -13,6 +16,7 @@ with open('regression_model.pkl', 'rb') as f:
 scaler = StandardScaler()
 
 # 기존 데이터
+
 data = {
     '온도': [20, 22, 21, 19, 24, 25, 23, 22, 21, 20],
     '토양습도': [30, 35, 32, 40, 25, 20, 22, 30, 32, 35],
@@ -26,11 +30,16 @@ X_old = df[['온도', '토양습도']]
 X_old_scaled = scaler.fit_transform(X_old)
 
 # Step 2: 새로운 모델 학습 (새 데이터 사용) POST던 GET이던 쏴야한다
-new_data = {
-    '온도': [26, 28, 27, 29, 30],
-    '토양습도': [15, 18, 17, 14, 16],
-    '물주기양': [140, 135, 145, 130, 150]
-}
+
+new_data = update_sensor_data()
+# print(new_data)
+print(f"그래 이거 맞아 {new_data}입니다.")
+
+# new_data = {
+#     '온도': [26, 28, 27, 29, 30],
+#     '토양습도': [15, 18, 17, 14, 16],
+#     '물주기양': [140, 135, 145, 130, 150]
+# }
 
 new_df = pd.DataFrame(new_data)
 
@@ -49,18 +58,33 @@ new_model.fit(X_new_scaled, y_new)
 with open('regression_model_new.pkl', 'wb') as f:
     pickle.dump(new_model, f)
 
-# Step 3: 두 모델의 예측 결과를 조합 (앙상블)
-# 예측할 데이터
-test_data = np.array([[21, 33]])  # 예: 온도 21, 토양습도 33
-test_data_scaled = scaler.transform(test_data)  # 기존 스케일러 사용
 
-# 기존 모델을 통한 예측
-old_model_prediction = old_model.predict(test_data_scaled)
+with open('regression_model.pkl', 'rb') as f:
+    model1 = pickle.load(f)
 
-# 새로운 모델을 통한 예측
-new_model_prediction = new_model.predict(test_data_scaled)
+with open('regression_model_new.pkl', 'rb') as f:
+    model2 = pickle.load(f)
 
-# 두 모델의 결과를 평균 (앙상블)
-final_prediction = (old_model_prediction + new_model_prediction) / 2
-print(f"앙상블 예측된 물주기양: {final_prediction[0]}")
+stacked_model = StackingRegressor(
+    estimators=[('model1', model1),('model2', model2) ],
+    final_estimator=Ridge()
+)
+
+with open('stacked_model.pkl', 'wb') as f:
+    pickle.dump(stacked_model, f)
+
+# # Step 3: 두 모델의 예측 결과를 조합 (앙상블)
+# # 예측할 데이터
+# test_data = np.array([[21, 33]])  # 예: 온도 21, 토양습도 33
+# test_data_scaled = scaler.transform(test_data)  # 기존 스케일러 사용
+
+# # 기존 모델을 통한 예측
+# old_model_prediction = old_model.predict(test_data_scaled)
+
+# # 새로운 모델을 통한 예측
+# new_model_prediction = new_model.predict(test_data_scaled)
+
+# # 두 모델의 결과를 평균 (앙상블)
+# final_prediction = (old_model_prediction + new_model_prediction) / 2
+# print(f"앙상블 예측된 물주기양: {final_prediction[0]}")
 
