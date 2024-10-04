@@ -3,3 +3,4 @@
 .env
 *.ipk
 node_modules/
+venv/
