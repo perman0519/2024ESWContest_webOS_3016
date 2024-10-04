@@ -105,16 +105,12 @@ function MainPanel(props) {
     }, []);
 
     useEffect(() => {
-        if (camerror) {
-            const timer = setTimeout(() => {
-                setSrc('http://10.19.233.90:8081/stream'); // 다시 호출
-                setError(false);
-            }, 5000); // 5초 후에 다시 호출
+        const cameraInterval = setInterval(() => {
+            setSrc("http://10.19.233.90:8081/stream");
+            setError(false);
+        }, 50000);
 
-            return () => clearTimeout(timer); // Cleanup
-        }
-
-        setInterval(() => {
+        const sensorInterval = setInterval(() => {
             let humi = Math.round(Math.random() * 30 + 50);
             let temp = Math.round(Math.random() * 10 + 20);
             let soilHumi = Math.round(Math.random() * 20 + 30);
@@ -124,7 +120,7 @@ function MainPanel(props) {
             setCurrentTemp(temp);
         }, 10000);
 
-        setInterval(() => {
+        const plantHeightInterval = setInterval(() => {
             let age = plantAge + 1;
             let height = plantHeight + 1;
 
@@ -132,6 +128,8 @@ function MainPanel(props) {
             setPlantHeight(height);
             setGrowthData(generateGrowthData());
         }, 20000);
+
+        return () => {clearInterval(sensorInterval); clearInterval(plantHeightInterval); clearInterval(cameraInterval);};
 
     }, [camerror, plantAge, plantHeight]);
 

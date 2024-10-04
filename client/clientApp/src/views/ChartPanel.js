@@ -40,7 +40,9 @@ function ChartPanel(props) {
 	}, [login]);
 
 	useEffect(() => {
-		setInterval(() => {setSensorData(getSensorData())}, 5000);
+		const interval = setInterval(() => {setSensorData(getSensorData())}, 5000);
+
+		return () => clearInterval(interval);
 	}, [sensorData]);
 
 	const handleSidebarToggle = useCallback((prevState) => {

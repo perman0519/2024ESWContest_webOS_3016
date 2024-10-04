@@ -1,5 +1,5 @@
 import { Button } from "../components/button/Button";
-import { Home, Film, ChartArea } from "lucide-react";
+import { Home, Film, ChartArea, Sprout } from "lucide-react";
 
 export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트로 변경
     const { main, chart, logout, isSidebarOpen } = props;
@@ -16,6 +16,9 @@ export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트
                     <div className="space-y-4">
                         <Button variant="ghost" onClick={main} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <Home className="mr-2 h-4 w-4" /> <span className="text-base text-center">홈</span>
+                        </Button>
+                        <Button variant="ghost" onClick={chart} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                            <Sprout className="mr-2 h-4 w-4" /> <span className="text-base text-center">식물 구독</span>
                         </Button>
                         <Button variant="ghost" onClick={chart} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <ChartArea className="mr-2 h-4 w-4" /> <span className="text-base text-center">그래프</span>
