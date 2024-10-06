@@ -5,7 +5,7 @@ from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import pickle
-from generated_code import update_sensor_data
+from ai_flask_server import update_sensor_data
 
 
 # Step 1: 기존 모델 불러오기
