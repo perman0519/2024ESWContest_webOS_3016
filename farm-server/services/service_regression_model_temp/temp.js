@@ -102,7 +102,13 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
             features: features  // 줄기 길이와 엽폭 데이터를 전송
         }); //response에 물주기양을 반환하도록 되어있음
 
-        console.log('서버 응답 전체:', response.data.prediction);
+        const response2 = await axios.post('http://54.180.187.212:5000/update', {
+            features: features  // 줄기 길이와 엽폭 데이터를 전송
+        }); //response에 물주기양을 반환하도록 되어있음
+
+        console.log('서버 응답 1:', response.data.prediction);
+
+        console.log('서버 응답 2:', response2.data.prediction);
 
         // // 도출된 결과 자연어로 변경하는 함수
         convertPredictionToNaturalLanguage(response.data.prediction)

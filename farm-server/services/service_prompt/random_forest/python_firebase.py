@@ -6,6 +6,8 @@ import firebase_admin
 from firebase_admin import credentials, db
 import threading
 import time
+import subprocess
+import os
 
 app = Flask(__name__)
 
@@ -18,11 +20,23 @@ firebase_admin.initialize_app(cred, {
 #Realtime Database reference
 firebase_ref = db.reference('sector/0/sensorData') #임시
 
+# 모델 파일 확인 및 로드
+model_path = 'stacked_model.pkl'
+
+def load_model():
+    if not os.path.exists(model_path):
+        print(f"{model_path} 파일이 없습니다. 모델을 학습합니다.")
+        subprocess.run(['python3', 'make_model.py'])  # 모델이 없을 경우 make_model.py 실행
+    with open(model_path, 'rb') as f:
+        return joblib.load(f)
+
+model = load_model()
+
 #model loading
 #model = joblib.load('stacked_model.pkl')
 
-with open('stacked_model.pkl', 'rb') as f:
-    model = joblib.load(f)
+# with open('stacked_model.pkl', 'rb') as f:
+#     model = joblib.load(f)
 
 # 수확버튼 누르면 Firebase에서 해당 섹터의 데이터를 전부 가져옴
 def update_sensor_data():
@@ -88,6 +102,24 @@ def predict():
 
 #추론외에 일정시간주기로, fireBase에 직접 접근하는 API 추가
 
+# end-point로 update를 추가하여 updating_model.py를 실행하도록 한다
+@app.route('/update', methods=['POST'])
+def update_model():
+    try:
+        # update_model.py 파일을 실행
+        result = subprocess.run(['python3', 'updating_model.py'], capture_output=True, text=True)
+
+        # 실행 결과 출력
+        if result.returncode == 0:
+            print("업데이트 성공: ", result.stdout)
+            return jsonify({'message': '모델 업데이트 성공', 'output': result.stdout}), 200
+        else:
+            print("업데이트 실패: ", result.stderr)
+            return jsonify({'error': '모델 업데이트 실패', 'output': result.stderr}), 500
+
+    except Exception as e:
+        print("업데이트 오류: ", str(e))
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
