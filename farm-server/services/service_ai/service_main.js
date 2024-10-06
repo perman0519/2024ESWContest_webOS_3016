@@ -47,20 +47,24 @@ async function convertPredictionToNaturalLanguage(prediction) {
     return response.data.choices[0].message.content.trim();
 }
 
+
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
 async function callRandomForestModel(message) { //인자로 ['온도', '습도', '일조량']
     // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
     const data = await getLatestSensorData();
     console.log("getSenSorData Latest: ", data);
-    const features = Object.values(data).map(value => value.toString());
-    console.log("getSenSorData Latest: ", features);
+    const pre_features = Object.values(data).map(value => value.toString());
+    const features = pre_features.slice(1, 3).reverse();
+    console.log("feature Latest: ", features);
+    // console.log("feature Latest: ", pre_features);
+
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
         }); //response에 물주기양을 반환하도록 되어있음
 
-        console.log('서버 응답 전체:', response.data.prediction);
+        console.log('서버 응답 1:', response.data.prediction);
 
         // // 도출된 결과 자연어로 변경하는 함수
         convertPredictionToNaturalLanguage(response.data.prediction)
@@ -70,9 +74,10 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
             .catch((error) => {
                 console.error("자연어 변환 중 오류 발생:", error);
             });
+
         message.respond({
-            returnValue: true,
-            Response: "Sensor data stored"
+           returnValue: true,
+           Response: "Sensor data stored"
         });
             
         // return response;
@@ -81,6 +86,7 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
         // return null;
     }
 }
+
 
 //gpt가 생성한 최신데이터 가져오는 함수
 async function getLatestSensorData() {
@@ -110,8 +116,4 @@ async function getLatestSensorData() {
     }    
 }
 
-// data값은 순서대로 온도, 습도, 일조량
-//const data = ['26', '60', '5'];
-
-//callRandomForestModel(data);
 service.register("callRandomForestModel", callRandomForestModel);
