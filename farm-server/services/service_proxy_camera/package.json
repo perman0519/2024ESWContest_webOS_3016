@@ -9,7 +9,11 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "firebase": "^10.14.0",
+    "fs": "^0.0.1-security",
+    "undici": "^6.19.8",
     "ws": "^8.18.0"
   }
 }

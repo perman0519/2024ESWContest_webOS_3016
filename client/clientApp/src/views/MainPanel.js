@@ -13,6 +13,7 @@ import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
+const ip = "10.19.208.240:8081";
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
@@ -65,19 +66,127 @@ function ConrtolOnOff({ user, type }) {
     }));
   }
 
+async function setPlantList(user) {
+    const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
+    console.log(getSubListRes);
+    const res = await getSubListRes.json();
+    console.log(res);
+    return res;
+}
+
+async function initSelectedPlant(selectedPlantList) {
+    if (!selectedPlantList || selectedPlantList.length === 0) {
+        return null;
+    }
+    const selectRes = await fetch(`http://${ip}/api/sector/${selectedPlantList[0].id}`);
+    if (!selectRes.ok) {
+        throw new Error('Failed to fetch plant details');
+    }
+    const select = await selectRes.json();
+    return select;
+}
+
+async function getSensorLatest(selectSectorId) {
+    const res = await fetch(`http://${ip}/api/sensor/latest/${selectSectorId}`);
+    if (!res.ok) {
+        throw new Error('Failed to fetch sensor data');
+    }
+    const data = await res.json();
+    return data;
+}
+
+function calculateDateDifference(endDate) {
+    try {
+      // 오늘 날짜 (현재 날짜)
+      const start = new Date();
+      const end = new Date(endDate);
+
+      // 날짜가 유효한지 확인
+      if (isNaN(end.getTime())) {
+        throw new Error("Invalid end date format. Please enter a valid date.");
+      }
+
+      // 시작 날짜가 종료 날짜 이후일 경우 오류 처리
+      if (start < end) {
+        throw new Error("End date should be later than or equal to today's date.");
+      }
+
+      // 밀리초 단위 차이를 일 단위로 변환
+      const diffInTime = start.getTime() - end.getTime();
+      const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24)); // 하루는 1000ms * 3600초 * 24시간
+
+      return diffInDays;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+function formatDateToYYYYMMDD(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+let sensorInterval;
 function MainPanel(props) {
-    const { main, chart, user, login } = props;
-    const [growthData, setGrowthData] = useState(generateGrowthData())
-    const [currentTemp, setCurrentTemp] = useState(26)
-    const [currentHumi, setCurrentHumi] = useState(40)
-    const [currentSoilHumi, setCurrentSoilHumi] = useState(66)
-    const [plantAge, setPlantAge] = useState(21)
-    const [plantHeight, setPlantHeight] = useState(30)
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-    const [selectedPlant, setSelectedPlant] = useState("겨자")
-    const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.")
-    const [src, setSrc] = useState('http://10.19.233.90:8081/stream');
-    const [camerror, setError] = useState(false);
+    const { main, chart, user, subscribe, login } = props;
+    const [growthData, setGrowthData] = useState(generateGrowthData());
+    const [currentTemp, setCurrentTemp] = useState(0);
+    const [currentHumi, setCurrentHumi] = useState(0);
+    const [currentSoilHumi, setCurrentSoilHumi] = useState(0);
+    const [plantAge, setPlantAge] = useState(21);
+    const [plantHeight, setPlantHeight] = useState(30);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [src, setSrc] = useState(`http://${ip}/stream`);
+    const [camerror, setCameraError] = useState(false);
+    const [selectedPlantList, setSelectedPlantList] = useState([]);
+    const [selectedPlant, setSelectedPlant] = useState(null);
+    const [selectSectorId, setSelectSectorId] = useState("");
+    const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.");
+    const [isLoading, setIsLoading] = useState(true);
+    const [firebseError, setFirebseError] = useState(null);
+
+    useEffect(() => {
+        async function fetchData() {
+            setIsLoading(true);
+            setFirebseError(null);
+            try {
+                const plantList = await setPlantList(user);
+                setSelectedPlantList(plantList);
+                setSelectSectorId(plantList[0].id);
+                if (plantList.length > 0) {
+                    const plant = await initSelectedPlant(plantList);
+                    setSelectedPlant(plant);
+                    setPlantAge(calculateDateDifference(plant.plant.createdAt));
+                    console.log(plant.plant.length);
+                    setPlantHeight(plant.plant.length[formatDateToYYYYMMDD(new Date())]);
+                    // setGrowthData(plant.plant.length);
+                } else {
+                    setFirebseError("No plants found for this user");
+                }
+                const sensorData = await getSensorLatest(plantList[0].id);
+                setCurrentHumi(sensorData.humidity);
+                setCurrentSoilHumi(sensorData.soil_humidity);
+                setCurrentTemp(sensorData.temperature);
+                sensorInterval = setInterval(async() => {
+                    const sensorData = await getSensorLatest(plantList[0].id);
+                    setCurrentHumi(sensorData.humidity);
+                    setCurrentSoilHumi(sensorData.soil_humidity);
+                    setCurrentTemp(sensorData.temperature);
+                }, 10000);
+
+                return () => clearInterval(sensorInterval);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                setFirebseError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        if (user && user.uid) {
+            fetchData();
+        }
+    }, [user]);
 
     const logout = useCallback(async () => {
         try {
@@ -88,60 +197,75 @@ function MainPanel(props) {
         }
     }, [login]);
 
-    console.log('Main');
-    console.log(user.uid);
-    console.log(user.email);
+    // console.log('Main');
+    // console.log(user.uid);
+    // console.log(user.email);
 
     const handleSidebarToggle = useCallback((prevState) => {
         setIsSidebarOpen(!prevState);
     }, []);
 
-    const handleSelectedPlant = useCallback((e) => {
-        setSelectedPlant(e.value);
+    const handleSelectedPlant = useCallback(async (value) => {
+        console.log(value);
+        const vlist = value.split('-');
+        setSelectSectorId(vlist[0]);
+        fetch(`http://${ip}/api/sector/${vlist[0]}`).then((res) => {
+            if (!res.ok) {
+                throw new Error('Failed to fetch plant details');
+            }
+            res.json().then((data) => {
+                setSelectedPlant(data);
+                setPlantAge(calculateDateDifference(data.plant.createdAt));
+                console.log(data.plant.length);
+                setPlantHeight(data.plant.length[formatDateToYYYYMMDD(new Date())]);
+            });
+        });
+
+        clearInterval(sensorInterval);
+        const sensorData = await getSensorLatest(vlist[0]);
+        setCurrentHumi(sensorData.humidity);
+        setCurrentSoilHumi(sensorData.soil_humidity);
+        setCurrentTemp(sensorData.temperature);
+        sensorInterval = setInterval(async() => {
+            const sensorData = await getSensorLatest(vlist[0]);
+            setCurrentHumi(sensorData.humidity);
+            setCurrentSoilHumi(sensorData.soil_humidity);
+            setCurrentTemp(sensorData.temperature);
+        }, 10000);
     }, []);
 
     const handleError = useCallback(() => {
-        setError(true);
+        setCameraError(true);
     }, []);
 
     useEffect(() => {
-        if (camerror) {
-            const timer = setTimeout(() => {
-                setSrc('http://10.19.233.90:8081/stream'); // 다시 호출
-                setError(false);
-            }, 5000); // 5초 후에 다시 호출
+        const cameraInterval = setInterval(() => {
+            setSrc(`http://${ip}/stream`);
+            setCameraError(false);
+        }, 50000);
 
-            return () => clearTimeout(timer); // Cleanup
-        }
+        return () => {clearInterval(cameraInterval);};
 
-        setInterval(() => {
-            let humi = Math.round(Math.random() * 30 + 50);
-            let temp = Math.round(Math.random() * 10 + 20);
-            let soilHumi = Math.round(Math.random() * 20 + 30);
+    }, [user.uid, camerror, plantAge, plantHeight]);
 
-            setCurrentHumi(humi);
-            setCurrentSoilHumi(soilHumi);
-            setCurrentTemp(temp);
-        }, 10000);
+    if (isLoading) {
+        return <div>데이터를 불러오는 중입니다...</div>;
+    }
 
-        setInterval(() => {
-            let age = plantAge + 1;
-            let height = plantHeight + 1;
+    if (firebseError) {
+        return <div>오류가 발생했습니다: {firebseError}</div>;
+    }
 
-            setPlantAge(age);
-            setPlantHeight(height);
-            setGrowthData(generateGrowthData());
-        }, 20000);
-
-    }, [camerror, plantAge, plantHeight]);
-
+    if (!selectedPlant) {
+        return <div>선택된 식물이 없습니다.</div>;
+    }
 
     return (
         <Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
                 <Cell size="12%">
-                    <SidebarPanel main={main} chart={chart} logout={logout} isSidebarOpen={isSidebarOpen}/>
+                    <SidebarPanel main={main} chart={chart} logout={logout} subscribe={subscribe} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
@@ -164,10 +288,8 @@ function MainPanel(props) {
                                 <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
                                     <Bell size={20} />
                                 </Button>
-                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
-                                    <SelectItem value="겨자">겨자</SelectItem>
-                                    <SelectItem value="바질">바질</SelectItem>
-                                    <SelectItem value="로즈마리">로즈마리</SelectItem>
+                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
+                                    {selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
                                 </Select>
                             </div>
                         </Cell>
@@ -175,7 +297,7 @@ function MainPanel(props) {
                                 <Card className="col-span-12 xl:col-span-8 bg-white border-gray-200">
                                 <CardContent className="p-6">
                                     <div className='flex justify-evenly items-center mb-2'>
-                                        <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant} 식물 구역</h2>
+                                        <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant? selectedPlant.plant.name: ""} 식물 구역</h2>
                                         <div className="flex items-center space-x-4 border-x">
                                             <ConrtolOnOff user={user} type='waterpump' />
                                             <ConrtolOnOff user={user} type='led' />

@@ -5,6 +5,9 @@
   "services": [
     {
       "name": "com.farm.server.camera.service"
+    },
+    {
+      "name": "database.operation"
     }
   ]
 }

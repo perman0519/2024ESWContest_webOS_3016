@@ -25,7 +25,7 @@ const getSensorData = () => {
 }
 
 function ChartPanel(props) {
-	const { main, chart, user, login } = props;
+	const { main, chart, user, subscribe, login } = props;
 	const [sensorData, setSensorData] = useState(getSensorData())
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 	const [selectedPlant, setSelectedPlant] = useState("겨자")
@@ -40,7 +40,9 @@ function ChartPanel(props) {
 	}, [login]);
 
 	useEffect(() => {
-		setInterval(() => {setSensorData(getSensorData())}, 5000);
+		const interval = setInterval(() => {setSensorData(getSensorData())}, 5000);
+
+		return () => clearInterval(interval);
 	}, [sensorData]);
 
 	const handleSidebarToggle = useCallback((prevState) => {
@@ -56,7 +58,7 @@ function ChartPanel(props) {
 			{/* <Header title="COSMOS IoT Dashboard" /> */}
 			<Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{ height: '100%', width: '100%' }}>
 				<Cell size="12%">
-					<SidebarPanel main={main} chart={chart} logout={logout} isSidebarOpen={isSidebarOpen} />
+				<SidebarPanel main={main} chart={chart} logout={logout} subscribe={subscribe} isSidebarOpen={isSidebarOpen}/>
 				</Cell>
 				<Cell className="flex-1 overflow-hidden">
 					<Column className="h-full overflow-y-auto p-2">
