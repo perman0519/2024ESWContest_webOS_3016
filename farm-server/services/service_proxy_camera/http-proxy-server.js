@@ -3,6 +3,7 @@ const { onValue, child, get, ref, query, orderByKey, limitToLast, push, update, 
 const express = require('express');
 const fs = require('fs');
 const { Z_ASCII } = require('zlib');
+const axios = require('axios');  // axios 임포트 추가
 
 const app = express();
 app.use(express.json());
@@ -236,6 +237,31 @@ const startHttpServer = () => {
     console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
     });
 }
+
+// Flask 서버에 update 요청을 보내는 엔드포인트 추가
+app.post('/api/ai/train', async (req, res) => {
+  try {
+      const flaskUrl = 'http://54.180.187.212:5000/update';  // Flask 서버의 엔드포인트
+      const dataToSend = {
+          sectorID: "1"  //TODO: 클라이언트한테 받아올 섹터번호로 나중에 수정해야한다
+      };
+
+      // Flask 서버에 POST 요청 보내기
+      const flaskResponse = await axios.post(flaskUrl, dataToSend);
+
+      // Flask 서버의 응답 처리
+      if (flaskResponse.status === 200) {
+          console.log("Flask 서버로 성공적으로 요청을 보냈습니다:", flaskResponse.data);
+          res.json({ message: "Flask 서버로 업데이트 요청을 성공적으로 보냈습니다." });
+      } else {
+          console.error("Flask 서버 응답 오류:", flaskResponse.status);
+          res.status(500).json({ error: "Flask 서버 응답 오류" });
+      }
+  } catch (error) {
+      console.error("Flask 서버로 요청 보내기 실패:", error);
+      res.status(500).json({ error: "Flask 서버로 요청 보내기 실패" });
+  }
+});
 
 startHttpServer();
 // module.exports = { startHttpServer };
