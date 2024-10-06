@@ -13,7 +13,7 @@ import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
-const ip = "10.19.208.192:8081";
+const ip = "10.19.208.240:8081";
 
 const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
 
@@ -288,7 +288,7 @@ function MainPanel(props) {
                                 <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
                                     <Bell size={20} />
                                 </Button>
-                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
+                                <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
                                     {selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
                                 </Select>
                             </div>
