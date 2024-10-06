@@ -12,6 +12,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 import './attachErrorHandler';
 import css from './App.module.less';
+import SubscribePanel from '../views/SubscribePanel';
 
 
 const App = (props) => {
@@ -58,8 +59,8 @@ const App = (props) => {
             <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
             <MainPanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel}/>
             <RegisterPanel login={loginPanel}/>
-            <ChartPanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} />
-
+            <ChartPanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} />
+            <SubscribePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel}/>
         </Panels>
     );
 };

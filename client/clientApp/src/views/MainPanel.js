@@ -129,7 +129,7 @@ function formatDateToYYYYMMDD(date) {
   }
 let sensorInterval;
 function MainPanel(props) {
-    const { main, chart, user, login } = props;
+    const { main, chart, user, subscribe, login } = props;
     const [growthData, setGrowthData] = useState(generateGrowthData());
     const [currentTemp, setCurrentTemp] = useState(0);
     const [currentHumi, setCurrentHumi] = useState(0);
@@ -265,7 +265,7 @@ function MainPanel(props) {
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
                 <Cell size="12%">
-                    <SidebarPanel main={main} chart={chart} logout={logout} isSidebarOpen={isSidebarOpen}/>
+                    <SidebarPanel main={main} chart={chart} logout={logout} subscribe={subscribe} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
