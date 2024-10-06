@@ -1,6 +1,6 @@
 {
   "name": "com.farm.server.ai.service",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "ai action",
   "main": "service_main.js",
   "scripts": {

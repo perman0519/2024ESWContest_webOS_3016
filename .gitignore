@@ -4,3 +4,4 @@
 *.ipk
 node_modules/
 venv/
+*.pkl

@@ -38,7 +38,6 @@
 // const userPrompt = '이번 주 현재 줄기 길이 27, 엽폭 11를 목표로 하는  식물의 물 주기 횟수를 예측해줘';
 // handleUserPrompt(userPrompt);
 
-
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, get } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
@@ -53,6 +52,7 @@ const firebaseConfig = {
     messagingSenderId: "945689382597",
     appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
   };
+  
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
@@ -77,7 +77,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': `Bearer`,  // 실제 API 키 사용
+            'Authorization': `Bearer `,  // 실제 API 키 사용
             'Content-Type': 'application/json'
         }
     });
@@ -91,15 +91,24 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
     const data = await getLatestSensorData();
     console.log("getSenSorData Latest: ", data);
-    const features = Object.values(data).map(value => value.toString());
-
+    const pre_features = Object.values(data).map(value => value.toString());
+    const features = pre_features.slice(1, 3).reverse();
+    // features.push('120');
     console.log("feature Latest: ", features);
+    // console.log("feature Latest: ", pre_features);
+
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
         }); //response에 물주기양을 반환하도록 되어있음
 
-        console.log('서버 응답 전체:', response.data.prediction);
+        const response2 = await axios.post('http://54.180.187.212:5000/update', {
+            features: features  // 줄기 길이와 엽폭 데이터를 전송
+        }); //response에 물주기양을 반환하도록 되어있음
+
+        console.log('서버 응답 1:', response.data.prediction);
+
+        console.log('서버 응답 2:', response2.data.prediction);
 
         // // 도출된 결과 자연어로 변경하는 함수
         convertPredictionToNaturalLanguage(response.data.prediction)
@@ -151,8 +160,6 @@ async function getLatestSensorData() {
 }
 
 
-
-
 // function getSensorDataFromDB(database, ref, onValue)
 // {
 //     return new Promise((resolve, reject) => {
@@ -196,9 +203,6 @@ async function getLatestSensorData() {
 //         //     });
 //     });
 // }
-
-
-
 
 // data값은 순서대로 온도, 습도, 일조량
 // const data = ['26', '60', '5'];
