@@ -2,7 +2,7 @@ const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
-const { ref,  query, orderByKey, limitToLast, get } = require('firebase/database');
+const { ref,  query, orderByKey, limitToLast, get, set } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
 const getDatabase = require('firebase/database').getDatabase;
 
@@ -47,10 +47,9 @@ async function convertPredictionToNaturalLanguage(prediction) {
     return response.data.choices[0].message.content.trim();
 }
 
-
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
-async function callRandomForestModel(message) { //인자로 ['온도', '습도', '일조량']
+async function callRandomForestModel() { //인자로 ['온도', '습도', '일조량']
     // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
     const data = await getLatestSensorData();
     console.log("getSenSorData Latest: ", data);
@@ -66,27 +65,34 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
 
         console.log('서버 응답 1:', response.data.prediction);
 
+
+        const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction); // await 사용
+
+        console.log("자연어로 변환된 응답:", naturalLanguageResponse);
+
+        return naturalLanguageResponse; // 자연어 변환된 응답 반환
+
+
         // // 도출된 결과 자연어로 변경하는 함수
-        convertPredictionToNaturalLanguage(response.data.prediction)
-            .then((naturalLanguageResponse) => {
-                console.log("자연어로 변환된 응답:", naturalLanguageResponse);
-            })
-            .catch((error) => {
-                console.error("자연어 변환 중 오류 발생:", error);
-            });
+        // convertPredictionToNaturalLanguage(response.data.prediction)
+        //     .then((naturalLanguageResponse) => {
+        //         console.log("자연어로 변환된 응답:", naturalLanguageResponse);
+        //     })
+        //     .catch((error) => {
+        //         console.error("자연어 변환 중 오류 발생:", error);
+        //     });
 
-        message.respond({
-           returnValue: true,
-           Response: "Sensor data stored"
-        });
+        // message.respond({
+        //    returnValue: true,
+        //    Response: "Sensor data stored"
+        // });
 
-        // return response;
+        // return naturalLanguageResponse;
     } catch (error) {
         console.error('API 요청 중 오류 발생:', error);
-        // return null;
+        return null;
     }
 }
-
 
 //gpt가 생성한 최신데이터 가져오는 함수
 async function getLatestSensorData() {
@@ -116,4 +122,49 @@ async function getLatestSensorData() {
     }
 }
 
-service.register("callRandomForestModel", callRandomForestModel);
+async function saveAiPromptToDB(message) {
+    try {
+        const prompt = await callRandomForestModel();
+        console.log("출력 프롬프트", prompt);
+
+        //여기에 db에 저장하는 로직 추가하기
+        console.log("JS-service 호출:", prompt);
+
+        const promptRef = ref(database, `sector/0/plant/prompt`);
+
+        set(promptRef, prompt)
+            .then(() => {
+                console.log("prompt updated successfully.");
+            })
+            .catch((error) => {
+                console.error("prompt updating data: ", error);
+            });
+
+        service.call("luna://com.webos.service.alarm/set", {
+            "key": "ai-prompt-alarm",
+            "uri": "luna://com.farm.server.ai.service",
+            "params": {},
+            "in": "00:00:20", //24시간으로 수정하기
+            "wakeup": true
+        }, (response)=>{
+            if (response.returnValue) {
+                console.log("알람설정 완료");
+            } else {
+                console.timeLog("알람설정실패:", response);
+            }
+        });
+        message.respond({
+            returnValue: true,
+            Response: "alarm setting ok"
+        });
+    }
+    catch (error) {
+        console.error("Error saving error: ", error);
+        message.respond({
+            returnValue: false,
+            errorText: error.message || "An error occurred."
+        });
+    }
+}
+
+service.register("saveAiPromptToDB", saveAiPromptToDB);
