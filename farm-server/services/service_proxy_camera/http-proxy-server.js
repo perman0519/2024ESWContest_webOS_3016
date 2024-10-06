@@ -232,22 +232,17 @@ app.get('/stream', (req, res) => {
     });
 });
 
-const startHttpServer = () => {
-    app.listen(port, () => {
-    console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
-    });
-}
-
 // Flask 서버에 update 요청을 보내는 엔드포인트 추가
 app.post('/api/ai/train', async (req, res) => {
   try {
       const flaskUrl = 'http://54.180.187.212:5000/update';  // Flask 서버의 엔드포인트
       const dataToSend = {
-          sectorID: "1"  //TODO: 클라이언트한테 받아올 섹터번호로 나중에 수정해야한다
+          sectorID: '1'  //TODO: 클라이언트로부터 받는 섹터번호
       };
 
       // Flask 서버에 POST 요청 보내기
       const flaskResponse = await axios.post(flaskUrl, dataToSend);
+
 
       // Flask 서버의 응답 처리
       if (flaskResponse.status === 200) {
@@ -263,5 +258,43 @@ app.post('/api/ai/train', async (req, res) => {
   }
 });
 
-// startHttpServer();
-module.exports = { startHttpServer };
+// db에 저장된 ai추론 결과 가져오는 엔드포인트 추가
+app.get('/api/prompt/:sectorId', async (req, res) => {
+  const sectorId = req.params.sectorId;
+  const plantRef = ref(database, `sector/${sectorId}/plant`);
+
+  try {
+    // 데이터를 비동기적으로 가져옴
+    const snapshot = await get(plantRef);
+    
+    if (snapshot.exists()) {
+      const plantData = snapshot.val();
+      console.log('Fetched plant data:', plantData);  // plantData 로그
+
+      if (plantData.prompt) {
+        res.json({ prompt: plantData.prompt });
+      } else {
+        res.status(404).json({ error: 'Prompt not found' });
+      }
+    } else {
+      res.status(404).json({ message: "No data available" });
+    }
+  } catch (error) {
+    console.error('Error fetching plant prompt:', error);
+    res.status(500).json({ error: 'Failed to fetch plant prompt' });
+  }
+});
+
+
+
+
+
+const startHttpServer = () => {
+    app.listen(port, () => {
+    console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
+    });
+}
+
+
+startHttpServer();
+// module.exports = { startHttpServer };
