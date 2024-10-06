@@ -27,7 +27,7 @@ export const Select = ({ onValueChange, defaultValue, children }) => {
   };
 
   return (
-    <div ref={selectRef} className="relative">
+    <div ref={selectRef} className="w-full">
       <SelectTrigger onClick={handleToggle}>
         <SelectValue placeholder="선택하세요" value={selectedValue} />
       </SelectTrigger>
@@ -47,7 +47,7 @@ export const Select = ({ onValueChange, defaultValue, children }) => {
 export const SelectTrigger = ({ children, onClick }) => {
   return (
     <div
-      className="w-[300px] bg-white border border-gray-300 text-base text-gray-800 rounded px-3 py-2 flex justify-between items-center cursor-pointer"
+      className="w-full bg-white border border-gray-300 text-base text-gray-800 rounded px-3 py-2 flex justify-between items-center cursor-pointer"
       onClick={onClick}
     >
       {children}
@@ -60,7 +60,7 @@ export const SelectTrigger = ({ children, onClick }) => {
 
 export const SelectContent = ({ children }) => {
   return (
-    <div className="absolute mt-1 w-[300px] bg-white border border-gray-300 rounded shadow-lg z-10">
+    <div className="absolute mt-1 w-fit bg-white border border-gray-300 rounded shadow-lg z-10">
       {children}
     </div>
   );

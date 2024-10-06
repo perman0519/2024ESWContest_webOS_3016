@@ -5,6 +5,7 @@ import MainPanel from '../views/MainPanel';
 import LoginPanel from '../views/LoginPanel';
 import RegisterPanel from '../views/RegisterPanel';
 import ChartPanel from '../views/ChartPanel';
+import TimelapsePanel from '../views/TimelapsePanel';
 
 import { auth } from '../views/firebase';
 import { useState, useCallback, useEffect } from 'react';
@@ -54,13 +55,18 @@ const App = (props) => {
         setIndex(4);
     }, []);
 
+    const timelapsePanel = useCallback(() => {
+        setIndex(5);
+    }, []);
+
     return (
         <Panels css={css} {...props} index={index} onBack={previousPanel}>
-            <LoginPanel user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
-            <MainPanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel}/>
-            <RegisterPanel login={loginPanel}/>
-            <ChartPanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} />
-            <SubscribePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel}/>
+            <LoginPanel     user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
+            <MainPanel      login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+            <RegisterPanel  login={loginPanel}/>
+            <ChartPanel     login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+            <SubscribePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+            <TimelapsePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
         </Panels>
     );
 };

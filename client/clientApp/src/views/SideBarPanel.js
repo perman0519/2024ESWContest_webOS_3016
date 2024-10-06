@@ -2,7 +2,7 @@ import { Button } from "../components/button/Button";
 import { Home, Film, ChartArea, Sprout } from "lucide-react";
 
 export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트로 변경
-    const { main, chart, logout, subscribe, isSidebarOpen } = props;
+    const { main, chart, logout, subscribe, isSidebarOpen, timelapse } = props;
 
     return (
 		<>
@@ -23,7 +23,7 @@ export function SidebarPanel(props) {  // kind 대신 일반 함수 컴포넌트
                         <Button variant="ghost" onClick={chart} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <ChartArea className="mr-2 h-4 w-4" /> <span className="text-base text-center">그래프</span>
                         </Button>
-                        <Button variant="ghost" className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
+                        <Button variant="ghost" onClick={timelapse} className="flex w-full justify-start items-center text-gray-800 hover:bg-green-100">
                             <Film className="mr-2 h-4 w-4" /> <span className="text-base text-center">타임랩스</span>
                         </Button>
                     </div>

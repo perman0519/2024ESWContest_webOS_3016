@@ -15,7 +15,7 @@ import css from '../App/App.module.less';
 
 const ip = "10.19.208.240:8081";
 
-const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
+const wsRef = { current: null };
 
 function ConrtolOnOff({ user, type }) {
     const [isSelected, setIsSelected] = useState(false);
@@ -97,23 +97,16 @@ async function getSensorLatest(selectSectorId) {
 
 function calculateDateDifference(endDate) {
     try {
-      // 오늘 날짜 (현재 날짜)
       const start = new Date();
       const end = new Date(endDate);
-
-      // 날짜가 유효한지 확인
       if (isNaN(end.getTime())) {
         throw new Error("Invalid end date format. Please enter a valid date.");
       }
-
-      // 시작 날짜가 종료 날짜 이후일 경우 오류 처리
       if (start < end) {
         throw new Error("End date should be later than or equal to today's date.");
       }
-
-      // 밀리초 단위 차이를 일 단위로 변환
       const diffInTime = start.getTime() - end.getTime();
-      const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24)); // 하루는 1000ms * 3600초 * 24시간
+      const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
 
       return diffInDays;
     } catch (error) {
@@ -127,9 +120,10 @@ function formatDateToYYYYMMDD(date) {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
 let sensorInterval;
 function MainPanel(props) {
-    const { main, chart, user, subscribe, login } = props;
+    const { main, chart, user, subscribe, login, timelapse } = props;
     const [growthData, setGrowthData] = useState(generateGrowthData());
     const [currentTemp, setCurrentTemp] = useState(0);
     const [currentHumi, setCurrentHumi] = useState(0);
@@ -152,6 +146,9 @@ function MainPanel(props) {
             setFirebseError(null);
             try {
                 const plantList = await setPlantList(user);
+                if (!plantList.length) {
+                    subscribe();
+                }
                 setSelectedPlantList(plantList);
                 setSelectSectorId(plantList[0].id);
                 if (plantList.length > 0) {
@@ -196,10 +193,6 @@ function MainPanel(props) {
             console.error('Error signing out:', error);
         }
     }, [login]);
-
-    // console.log('Main');
-    // console.log(user.uid);
-    // console.log(user.email);
 
     const handleSidebarToggle = useCallback((prevState) => {
         setIsSidebarOpen(!prevState);
@@ -265,7 +258,7 @@ function MainPanel(props) {
             {/* <Header title="COSMOS IoT Dashboard" /> */}
             <Row className="flex h-screen bg-gradient-to-br from-green-100 to-green-200 text-gray-800 overflow-hidden" style={{height: '100%', width: '100%'}}>
                 <Cell size="12%">
-                    <SidebarPanel main={main} chart={chart} logout={logout} subscribe={subscribe} isSidebarOpen={isSidebarOpen}/>
+                    <SidebarPanel main={main} chart={chart} logout={logout} subscribe={subscribe} timelapse={timelapse} isSidebarOpen={isSidebarOpen}/>
                 </Cell>
                 <Cell className="flex-1 overflow-hidden">
                     <Column className="h-full overflow-y-auto p-2">
@@ -304,13 +297,15 @@ function MainPanel(props) {
                                         </div>
                                     </div>
                                     <div className=" rounded-lg flex items-center justify-center mb-4">
-                                        <img
-                                            src={src}
-                                            width="940"
-                                            height="600"
-                                            onError={handleError} // 이미지 로드 실패 시 handleError 호출
-                                            alt="Streaming Content"
-                                        />
+                                        { !camerror &&
+                                            <img
+                                                src={src}
+                                                width="940"
+                                                height="600"
+                                                onError={handleError}
+                                                alt="Streaming Content"
+                                            />
+                                        }
                                         {camerror && <span className="text-gray-500">실시간 식물 카메라</span>}
                                     </div>
                                     <div className="mt-8 flex justify-evenly items-center">
@@ -406,35 +401,30 @@ function MainPanel(props) {
                     </Column>
                 </Cell>
             </Row>
-
-            {/* 메인 콘텐츠 */}
         </Panel>
     );
 }
 function ConnectSocket() {
-    const [isConnected, setIsConnected] = useState(false);  // 연결 성공 여부 상태 관리
+    const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        // WebSocket 연결을 설정하는 함수
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
             wsRef.current = new WebSocket('ws://10.19.233.90:3001');
 
             wsRef.current.onopen = function() {
                 console.log('Online 🟢');
-                setIsConnected(true);  // 연결 성공 여부 업데이트
-                // wsRef.current.send('안녕하세요, 서버!');
+                setIsConnected(true);
             };
 
             wsRef.current.onclose = function(event) {
-                setIsConnected(false);  // 연결이 닫혔을 때 연결 상태 업데이트
+                setIsConnected(false);
                 if (!event.wasClean) {
                     console.error('Offline 🔴');
-                    // 5초 후에 다시 연결 시도
                     setTimeout(() => {
                         console.log('다시 연결 시도 중...');
-                        connectWebSocket();  // 재연결 시도
-                    }, 5000);  // 5초 후에 재연결 시도
+                        connectWebSocket();
+                    }, 5000);
                 } else {
                     console.log('연결이 정상적으로 종료되었습니다.');
                 }
@@ -449,14 +439,14 @@ function ConnectSocket() {
             };
         };
 
-        connectWebSocket();  // WebSocket 연결 시도
+        connectWebSocket();
 
         return () => {
             if (wsRef.current) {
-                wsRef.current.close();  // 컴포넌트가 언마운트될 때 WebSocket 연결 해제
+                wsRef.current.close();
             }
         };
-    }, []);  // 빈 배열을 넣어 첫 렌더링 시에만 실행되도록 설정
+    }, []);
 
     return (
         <div>

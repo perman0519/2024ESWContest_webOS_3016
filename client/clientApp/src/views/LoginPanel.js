@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Panel } from '@enact/sandstone/Panels'
 import {InputField} from '@enact/sandstone/Input';
 import { useState, useCallback } from 'react';
@@ -27,12 +28,11 @@ function LoginPanel(props) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    //         setUser(currentUser);
-    //     });
-    //     return () => unsubscribe();
-    // }, []);
+    useEffect(() => {
+      if (user && user.uid) {
+        main();
+      }
+    }, []);
 
     const logout = useCallback(async () => {
         try {
@@ -82,6 +82,7 @@ function LoginPanel(props) {
                     <div>
                         <p>Welcome, {user.email}</p>
                         <p>UID: {user.uid}</p>
+
                         <Button onClick={main}>Go Main</Button>
                         <Button onClick={logout}>Logout</Button>
                     </div>

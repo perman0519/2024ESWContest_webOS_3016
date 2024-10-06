@@ -22,9 +22,9 @@ const database = getDatabase(app);
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
     //TODO: 요청하는 자연어를 더 자연스럽게 다듬어야한다
-    //const prompt = 
+    //const prompt =
     //'예측된 물 주기 양은' + prediction + '입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.';
-    const prompt = 
+    const prompt =
     `예측된 물 주기 양은 ${prediction} 입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.`;
 
 
@@ -79,7 +79,7 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
            returnValue: true,
            Response: "Sensor data stored"
         });
-            
+
         // return response;
     } catch (error) {
         console.error('API 요청 중 오류 발생:', error);
@@ -92,7 +92,7 @@ async function callRandomForestModel(message) { //인자로 ['온도', '습도',
 async function getLatestSensorData() {
     try {
         const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
-        
+
         const snapshot = await get(sensorDataRef);
 
         if (snapshot.exists()){
@@ -113,7 +113,7 @@ async function getLatestSensorData() {
     } catch (error) {
     console.error("Error fetching data: ", error);
     throw error;
-    }    
+    }
 }
 
 service.register("callRandomForestModel", callRandomForestModel);
