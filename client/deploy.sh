@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TARGET_DEVICE="rbpi4"
+TARGET_DEVICE="mac"
 
 PACKAGE_TARGET="clientApp"
 

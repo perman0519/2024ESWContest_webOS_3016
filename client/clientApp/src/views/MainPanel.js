@@ -13,7 +13,7 @@ import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
-const ip = "10.19.208.240:8081";
+const ip = "10.19.233.90:8081";
 
 const wsRef = { current: null };
 

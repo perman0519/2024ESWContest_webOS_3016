@@ -27,7 +27,7 @@ const plantData = [
 	]},
   ]
 
-const ip = "10.19.208.240:8081";
+const ip = "10.19.233.90:8081";
 
 async function setPlantList(user) {
     const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
@@ -103,6 +103,7 @@ function TimelapsePanel(props) {
 
 	const handleVideo = useCallback(() => {
 		setSrc(`http://${ip}/timelapse`);
+		setCameraError(false); // 에러 상태 초기화
 	}, []);
 
     return (
