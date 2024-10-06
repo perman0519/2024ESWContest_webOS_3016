@@ -102,7 +102,7 @@ function TimelapsePanel(props) {
     }, []);
 
 	const handleVideo = useCallback(() => {
-		setSrc(`http://${ip}/timelapse`);
+		setSrc(`http://${ip}/timelapse?${new Date().getTime()}`);
 		setCameraError(false); // 에러 상태 초기화
 	}, []);
 

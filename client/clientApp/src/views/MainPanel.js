@@ -233,9 +233,9 @@ function MainPanel(props) {
 
     useEffect(() => {
         const cameraInterval = setInterval(() => {
-            setSrc(`http://${ip}/stream`);
+            setSrc(`http://${ip}/stream?${new Date().getTime()}`);
             setCameraError(false);
-        }, 50000);
+        }, 10000);
 
         return () => {clearInterval(cameraInterval);};
 

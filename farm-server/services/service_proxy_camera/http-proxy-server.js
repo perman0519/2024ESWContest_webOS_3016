@@ -263,5 +263,5 @@ app.post('/api/ai/train', async (req, res) => {
   }
 });
 
-startHttpServer();
-// module.exports = { startHttpServer };
+// startHttpServer();
+module.exports = { startHttpServer };

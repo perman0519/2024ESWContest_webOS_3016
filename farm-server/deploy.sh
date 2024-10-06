@@ -4,7 +4,7 @@ TARGET_DEVICE="mac"
 
 SERVER_WEB_APP="farm_control_dashboard"
 SERVICE_DIR="services"
-SERVICES=("service_plant_measure" "service_proxy_camera" "service_sensor" "service_socket-server")
+SERVICES=("service_proxy_camera")
 
 PACKAGE_TARGET=$SERVER_WEB_APP
 for service in "${SERVICES[@]}"; do

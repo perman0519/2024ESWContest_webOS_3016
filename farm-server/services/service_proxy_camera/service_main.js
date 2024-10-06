@@ -60,14 +60,14 @@ service.register("startHttpServer", (msg) => {
 service.register("saveLocal", async (message) => {
     try {
         const img = await saveLocal();
-        console.log("img name: ", img);
-        if (img)
-            saveImage(img, "0");
+        // console.log("img name: ", img);
+        // if (img)
+        //     saveImage(img, "0");
         setInterval(async () => {
             const img = await saveLocal();
-            console.log("img name: ", img);
-            if (img)
-                saveImage(img, "0");
+            // console.log("img name: ", img);
+            // if (img)
+            //     saveImage(img, "0");
         }, 10000);
 
             //------------------------- heartbeat 구독 -------------------------
@@ -123,25 +123,25 @@ service.register("startAll", (msg) => {
     });
 });
 
-function saveImage(imageName, sector) {
-    var params = {
-        "objects": [
-            {
-                "_kind": "com.farm.server.camera.service:1",
-                "name": imageName,
-                "sector": sector
-            }
-        ]
-    };
-    service.call("luna://com.webos.service.db/put", params, function(response) {
-        if (response.payload.returnValue === true) {
-            console.log("Image saved successfully");
-        } else {
-            console.log("Failed to save image:", JSON.stringify(response.payload));
-			throw new Error("Failed to save image: " +  JSON.stringify(response.payload));
-        }
-    });
-}
+// function saveImage(imageName, sector) {
+//     var params = {
+//         "objects": [
+//             {
+//                 "_kind": "com.farm.server.camera.service:1",
+//                 "name": imageName,
+//                 "sector": sector
+//             }
+//         ]
+//     };
+//     service.call("luna://com.webos.service.db/put", params, function(response) {
+//         if (response.payload.returnValue === true) {
+//             console.log("Image saved successfully");
+//         } else {
+//             console.log("Failed to save image:", JSON.stringify(response.payload));
+// 			throw new Error("Failed to save image: " +  JSON.stringify(response.payload));
+//         }
+//     });
+// }
 
 // //----------------------------------------------------------------------heartbeat----------------------------------------------------------------------
 // // handle subscription requests
