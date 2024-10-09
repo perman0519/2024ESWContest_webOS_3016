@@ -2,7 +2,7 @@
 // const Service = require('webos-service');
 // const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
-const { ref,  query, orderByKey, limitToLast, get, set } = require('firebase/database');
+const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
 const getDatabase = require('firebase/database').getDatabase;
 
@@ -94,7 +94,7 @@ async function recommendActionByGpt(week, species) {
 }
 
 //test
-recommendActionByGpt(3, 'Basil');
+// recommendActionByGpt(3, 'Basil');
 
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
@@ -107,6 +107,10 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     console.log("feature Latest: ", features);
     // console.log("feature Latest: ", pre_features);
 
+    const week = await calculateTimeDifference();
+    console.log('몇 주주 확인 : ' , week);
+    // const species = "토마토"
+
     try {
         const response = await axios.post('http://54.180.187.212:5000/predict', {
             features: features  // 줄기 길이와 엽폭 데이터를 전송
@@ -114,13 +118,14 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
 
         console.log('서버 응답 1:', response.data.prediction);
 
-        const recommendationResponse = await recommendActionByGpt(week, species); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
+        const recommendationResponse = await recommendActionByGpt(week, 'tomato'); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
         const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction); // await 사용
 
-
+        console.log("토마토 관련:", recommendationResponse);
         console.log("자연어로 변환된 응답:", naturalLanguageResponse);
-
-        return {recommendationResponse ,naturalLanguageResponse}; // 자연어 변환된 응답 반환
+        
+        // return {recommendationResponse ,naturalLanguageResponse}; // 자연어 변환된 응답 반환
+        return `${recommendationResponse}\n${naturalLanguageResponse}`;
 
 
         // // 도출된 결과 자연어로 변경하는 함수
@@ -148,14 +153,12 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
 async function getLatestSensorData() {
     try {
         const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1)); //최신데이터 참조하기 위한
-        const weekCount = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToFirst(1));
 
         const snapshot = await get(sensorDataRef);
 
         if (snapshot.exists()){
             const data = snapshot.val();
             let latestData = null;
-
             for (let key in data){
                 latestData = data[key];
             }
@@ -173,8 +176,53 @@ async function getLatestSensorData() {
     }
 }
 
+async function calculateTimeDifference() {
+    try {
+        const lastQuery = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
+        const firstQuery = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToFirst(1));
+
+        // 첫 번째 값 가져오기
+        const firstSnapshot = await get(firstQuery);
+        if (!firstSnapshot.exists()) {
+            console.error("첫 번째 데이터가 존재하지 않습니다.");
+            return undefined;
+        }
+        const firstData = firstSnapshot.val();
+        const firstTimestamp = Object.keys(firstData)[0]; // 첫 번째 타임스탬프 가져오기
+        
+        console.log("히히", firstTimestamp);
+
+        // 마지막 값 가져오기
+        const lastSnapshot = await get(lastQuery);
+        if (!lastSnapshot.exists()) {
+            console.error("마지막 데이터가 존재하지 않습니다.");
+            return undefined;
+        }
+        const lastData = lastSnapshot.val();
+        const lastTimestamp = Object.keys(lastData)[0]; // 마지막 타임스탬프 가져오기
+
+        console.log("키키", lastTimestamp);
+
+        // 타임스탬프를 Date 객체로 변환
+        const firstDate = new Date(firstTimestamp);
+        const lastDate = new Date(lastTimestamp);
+
+        // 시간 차이 계산 (밀리초 단위)
+        const timeDifference = lastDate - firstDate; // 밀리초 차이
+        const weakDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24 * 7)) + 1; // 주 차이
+
+        console.log(`몇 주차인지 : ${weakDifference}`);
+
+        return weakDifference;
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return undefined;
+    }
+}
+
+
 // save the prompt results to DB & JS-service func
-async function saveAiPromptToDB(message) {
+async function saveAiPromptToDB() {
     try {
         const prompt = await callRandomForestModel();
         console.log("출력 프롬프트", prompt);
@@ -206,19 +254,20 @@ async function saveAiPromptToDB(message) {
                 console.timeLog("알람설정실패:", response);
             }
         });
-        message.respond({
-            returnValue: true,
-            Response: "alarm setting ok"
-        });
+        // message.respond({
+        //     returnValue: true,
+        //     Response: "alarm setting ok"
+        // });
     }
     catch (error) {
         console.error("Error saving error: ", error);
-        message.respond({
-            returnValue: false,
-            errorText: error.message || "An error occurred."
-        });
+        // message.respond({
+        //     returnValue: false,
+        //     errorText: error.message || "An error occurred."
+        // });
     }
 }
 
+saveAiPromptToDB();
 
 // service.register("saveAiPromptToDB", saveAiPromptToDB);
