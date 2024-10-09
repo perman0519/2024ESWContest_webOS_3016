@@ -1,0 +1,11 @@
+{
+  "name": "com.farm.server.periodic.call.service",
+  "version": "1.0.1",
+  "description": "periodically call service",
+  "main": "service_main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD"
+}

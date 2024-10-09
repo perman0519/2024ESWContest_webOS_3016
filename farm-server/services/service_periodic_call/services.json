@@ -1,0 +1,9 @@
+{
+  "id": "com.farm.server.periodic.call.service",
+  "description": "periodically call service",
+  "services": [
+    {
+      "name": "com.farm.server.periodic.call.service"
+    }
+  ]
+}
