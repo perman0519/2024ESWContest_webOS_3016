@@ -14,6 +14,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import './attachErrorHandler';
 import css from './App.module.less';
 import SubscribePanel from '../views/SubscribePanel';
+import { PlantProvider } from '../views/PlantContext';
 
 
 const App = (props) => {
@@ -60,14 +61,16 @@ const App = (props) => {
     }, []);
 
     return (
-        <Panels css={css} {...props} index={index} onBack={previousPanel}>
-            <LoginPanel     user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
-            <MainPanel      login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
-            <RegisterPanel  login={loginPanel}/>
-            <ChartPanel     login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
-            <SubscribePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
-            <TimelapsePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
-        </Panels>
+        <PlantProvider>
+            <Panels css={css} {...props} index={index} onBack={previousPanel}>
+                    <LoginPanel     user={user} setUser={setUser} back={previousPanel} main={mainPanel} register={registerPanel}/>
+                    <MainPanel      login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+                    <RegisterPanel  login={loginPanel}/>
+                    <ChartPanel     login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+                    <SubscribePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+                    <TimelapsePanel login={loginPanel} user={user} main={mainPanel} chart={chartPanel} subscribe={subscribePanel} timelapse={timelapsePanel}/>
+            </Panels>
+        </PlantProvider>
     );
 };
 

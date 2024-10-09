@@ -12,8 +12,9 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Bell, Menu, Flower} from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
+import { usePlantContext } from './PlantContext.js';  // 추가
 
-const ip = "10.19.233.90:8081";
+const ip = "10.19.208.192:8081";
 
 const wsRef = { current: null };
 
@@ -50,21 +51,21 @@ function ConrtolOnOff({ user, type }) {
     );
 }
 
-  const generateGrowthData = () => {
-    const baseData = [
-      { date: '9월 1일', height: 5 },
-      { date: '9월 5일', height: 7 },
-      { date: '9월 10일', height: 12 },
-      { date: '9월 15일', height: 18 },
-      { date: '9월 20일', height: 25 },
-      { date: '9월 25일', height: 30 },
-    ];
+//   const generateGrowthData = () => {
+//     const baseData = [
+//       { date: '9월 1일', height: 5 },
+//       { date: '9월 5일', height: 7 },
+//       { date: '9월 10일', height: 12 },
+//       { date: '9월 15일', height: 18 },
+//       { date: '9월 20일', height: 25 },
+//       { date: '9월 25일', height: 30 },
+//     ];
 
-    return baseData.map(item => ({
-      ...item,
-      height: item.height + (Math.random() - 0.5) * 5
-    }));
-  }
+//     return baseData.map(item => ({
+//       ...item,
+//       height: item.height + (Math.random() - 0.5) * 5
+//     }));
+//   }
 
 async function setPlantList(user) {
     const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
@@ -74,11 +75,12 @@ async function setPlantList(user) {
     return res;
 }
 
-async function initSelectedPlant(selectedPlantList) {
+async function initSelectedPlant(selectSectorId, selectedPlantList) {
     if (!selectedPlantList || selectedPlantList.length === 0) {
         return null;
     }
-    const selectRes = await fetch(`http://${ip}/api/sector/${selectedPlantList[0].id}`);
+    const id = selectSectorId === "" ? selectedPlantList[0].id : selectSectorId;
+    const selectRes = await fetch(`http://${ip}/api/sector/${id}`);
     if (!selectRes.ok) {
         throw new Error('Failed to fetch plant details');
     }
@@ -124,19 +126,32 @@ function formatDateToYYYYMMDD(date) {
 let sensorInterval;
 function MainPanel(props) {
     const { main, chart, user, subscribe, login, timelapse } = props;
-    const [growthData, setGrowthData] = useState(generateGrowthData());
+    const {
+        selectedPlantList,
+        setSelectedPlantList,
+        selectedPlant,
+        setSelectedPlant,
+        selectSectorId,
+		setSelectSectorId,
+		plantAge,
+		setPlantAge,
+		plantHeight,
+		setPlantHeight
+    } = usePlantContext();  // Context에서 상태 가져오기
+
+    const [growthData, setGrowthData] = useState([]);
     const [currentTemp, setCurrentTemp] = useState(0);
     const [currentHumi, setCurrentHumi] = useState(0);
     const [currentSoilHumi, setCurrentSoilHumi] = useState(0);
-    const [plantAge, setPlantAge] = useState(21);
-    const [plantHeight, setPlantHeight] = useState(30);
+    // const [plantAge, setPlantAge] = useState(21);
+    // const [plantHeight, setPlantHeight] = useState(30);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [src, setSrc] = useState(`http://${ip}/stream`);
     const [camerror, setCameraError] = useState(false);
-    const [selectedPlantList, setSelectedPlantList] = useState([]);
-    const [selectedPlant, setSelectedPlant] = useState(null);
-    const [selectSectorId, setSelectSectorId] = useState("");
-    const [advisorMessage, setAdvisorMessage] = useState("식물이 건강하게 자라고 있습니다. 현재 생장 속도가 양호합니다.");
+    // const [selectedPlantList, setSelectedPlantList] = useState([]);
+    // const [selectedPlant, setSelectedPlant] = useState(null);
+    // const [selectSectorId, setSelectSectorId] = useState("");
+    const [advisorMessage, setAdvisorMessage] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [firebseError, setFirebseError] = useState(null);
 
@@ -150,14 +165,23 @@ function MainPanel(props) {
                     subscribe();
                 }
                 setSelectedPlantList(plantList);
-                setSelectSectorId(plantList[0].id);
+                console.log(selectSectorId);
+                const id = selectSectorId === "" ? plantList[0].id : selectSectorId;
+                console.log("id: ", id);
+                setSelectSectorId(id);
                 if (plantList.length > 0) {
-                    const plant = await initSelectedPlant(plantList);
+                    const plant = await initSelectedPlant(selectSectorId, plantList);
                     setSelectedPlant(plant);
                     setPlantAge(calculateDateDifference(plant.plant.createdAt));
                     console.log(plant.plant.length);
                     setPlantHeight(plant.plant.length[formatDateToYYYYMMDD(new Date())]);
-                    // setGrowthData(plant.plant.length);
+                    setAdvisorMessage(plant.plant.prompt);
+                    console.log(plant.plant.length);
+                    const baseData = Object.entries(plant.plant.length).map(([date, height]) => ({
+                        date,
+                        height
+                      }));
+                    setGrowthData(baseData);
                 } else {
                     setFirebseError("No plants found for this user");
                 }
@@ -183,7 +207,8 @@ function MainPanel(props) {
         if (user && user.uid) {
             fetchData();
         }
-    }, [user]);
+    // }, [user, setSelectedPlantList, setSelectSectorId, setPlantAge, setPlantHeight, subscribe, selectedPlant, setSelectedPlant, plantAge, plantHeight]);
+    }, [user, setSelectedPlantList]);
 
     const logout = useCallback(async () => {
         try {
@@ -211,6 +236,11 @@ function MainPanel(props) {
                 setPlantAge(calculateDateDifference(data.plant.createdAt));
                 console.log(data.plant.length);
                 setPlantHeight(data.plant.length[formatDateToYYYYMMDD(new Date())]);
+                const baseData = Object.entries(data.plant.length).map(([date, height]) => ({
+                    date,
+                    height
+                  }));
+                setGrowthData(baseData);
             });
         });
 
@@ -404,13 +434,14 @@ function MainPanel(props) {
         </Panel>
     );
 }
+
 function ConnectSocket() {
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://10.19.233.90:3001');
+            wsRef.current = new WebSocket('ws://10.19.208.192:3001');
 
             wsRef.current.onopen = function() {
                 console.log('Online 🟢');

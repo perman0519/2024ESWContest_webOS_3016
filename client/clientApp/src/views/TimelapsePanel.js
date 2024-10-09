@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/
 import { Select, SelectItem } from "../components/select/Select"
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
+import { usePlantContext } from './PlantContext.js';  // 추가
+
 
 import {Film, Menu, Flower, Plus, Play, Calendar } from 'lucide-react'
 
@@ -27,7 +29,7 @@ const plantData = [
 	]},
   ]
 
-const ip = "10.19.233.90:8081";
+const ip = "10.19.208.192:8081";
 
 async function setPlantList(user) {
     const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
@@ -52,43 +54,25 @@ async function initSelectedPlant(selectedPlantList) {
 function TimelapsePanel(props) {
     const { main, chart, user, subscribe, logout, timelapse } = props;
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-	const [selectedPlantList, setSelectedPlantList] = useState([]);
-    const [selectedPlant, setSelectedPlant] = useState(null);
+	// const [selectedPlantList, setSelectedPlantList] = useState([]);
+    // const [selectedPlant, setSelectedPlant] = useState(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectSectorId, setSelectSectorId] = useState("");
     const [src, setSrc] = useState("");
     const [camerror, setCameraError] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
     const [firebseError, setFirebseError] = useState(null);
-
+    const {
+        selectedPlantList,
+        setSelectedPlantList,
+        selectedPlant,
+        setSelectedPlant
+    } = usePlantContext();  // Context에서 상태 가져오기
 
     useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            setFirebseError(null);
-            try {
-                const plantList = await setPlantList(user);
-                if (!plantList.length) {
-                    subscribe();
-                }
-                setSelectedPlantList(plantList);
-                setSelectSectorId(plantList[0].id);
-                if (plantList.length > 0) {
-                    const plant = await initSelectedPlant(plantList);
-                    setSelectedPlant(plant);
-                } else {
-                    setFirebseError("No plants found for this user");
-                }
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                setFirebseError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        if (user && user.uid) {
-            fetchData();
-        }
+        // if (user && user.uid) {
+        //     fetchData();
+        // }
     }, [user]);
 
     const handleSelectedPlant = useCallback(async (value) => {

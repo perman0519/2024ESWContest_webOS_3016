@@ -11,24 +11,66 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Bell, Menu, Flower } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
+import { usePlantContext } from './PlantContext.js';  // 추가
 
 
-const wsRef = { current: null };  // 전역적으로 useRef와 비슷한 구조로 WebSocket 관리
+const wsRef = { current: null };
 
-const getSensorData = () => {
-	return Array.from({ length: 24 }, (_, i) => ({
-		time: `${i}:00`,
-		temperature: Math.random() * 10 + 20,
-		humidity: Math.random() * 30 + 50,
-		soilMoisture: Math.random() * 20 + 30,
-	}))
-}
+const ip = "10.19.208.192:8081";
+
+function calculateDateDifference(endDate) {
+    try {
+      const start = new Date();
+      const end = new Date(endDate);
+      if (isNaN(end.getTime())) {
+        throw new Error("Invalid end date format. Please enter a valid date.");
+      }
+      if (start < end) {
+        throw new Error("End date should be later than or equal to today's date.");
+      }
+      const diffInTime = start.getTime() - end.getTime();
+      const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+
+      return diffInDays;
+    } catch (error) {
+      return error.message;
+    }
+  }
+
+
+// const getSensorData = () => {
+// 	return Array.from({ length: 24 }, (_, i) => ({
+// 		time: `${i}:00`,
+// 		temperature: Math.random() * 10 + 20,
+// 		humidity: Math.random() * 30 + 50,
+// 		soil_humidity: Math.random() * 20 + 30,
+// 	}))
+// }
+
+// async function setPlantList(user) {
+//     const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
+//     console.log(getSubListRes);
+//     const res = await getSubListRes.json();
+//     console.log(res);
+//     return res;
+// }
 
 function ChartPanel(props) {
 	const { main, chart, user, subscribe, timelapse, login } = props;
-	const [sensorData, setSensorData] = useState(getSensorData())
-	const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-	const [selectedPlant, setSelectedPlant] = useState("겨자")
+	const [sensorData, setSensorData] = useState([]);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const {
+        selectedPlantList,
+        setSelectedPlantList,
+        selectedPlant,
+        setSelectedPlant,
+        selectSectorId,
+		setSelectSectorId,
+		plantAge,
+		setPlantAge,
+		plantHeight,
+		setPlantHeight
+    } = usePlantContext();  // Context에서 상태 가져오기
 
 	const logout = useCallback(async () => {
 		try {
@@ -40,18 +82,68 @@ function ChartPanel(props) {
 	}, [login]);
 
 	useEffect(() => {
-		const interval = setInterval(() => {setSensorData(getSensorData())}, 5000);
-
-		return () => clearInterval(interval);
-	}, [sensorData]);
+		// console.log(value);
+        // const vlist = value.split('-');
+        // setSelectSectorId(vlist[0]);
+		async function fetchData() {
+			fetch(`http://${ip}/api/sector/${selectSectorId}`).then((res) => {
+				if (!res.ok) {
+					throw new Error('Failed to fetch plant details');
+				}
+				res.json().then((data) => {
+					setSelectedPlant(data);
+					setPlantAge(calculateDateDifference(data.plant.createdAt));
+					console.log(data.plant.length);
+					console.log(data);
+					const baseData = Object.entries(data.sensorData).map(([time, values]) => ({
+						time,
+						temperature: values.temperature,
+						humidity: values.humidity,
+						soil_humidity: values.soil_humidity
+					}));
+					setSensorData(baseData);
+				});
+			});
+		}
+		fetchData();
+	}, [setSensorData]);
 
 	const handleSidebarToggle = useCallback((prevState) => {
 		setIsSidebarOpen(!prevState);
 	}, []);
 
-	const handleSelectedPlant = useCallback((e) => {
-		setSelectedPlant(e.value);
-	}, []);
+	const handleSelectedPlant = useCallback(async (value) => {
+        console.log(value);
+        const vlist = value.split('-');
+        setSelectSectorId(vlist[0]);
+        fetch(`http://${ip}/api/sector/${vlist[0]}`).then((res) => {
+            if (!res.ok) {
+                throw new Error('Failed to fetch plant details');
+            }
+            res.json().then((data) => {
+                setSelectedPlant(data);
+                setPlantAge(calculateDateDifference(data.plant.createdAt));
+                console.log(data.plant.length);
+				console.log(data);
+                const baseData = Object.entries(data.sensorData).map(([time, values]) => ({
+					time,
+					temperature: values.temperature,
+					humidity: values.humidity,
+					soil_humidity: values.soil_humidity
+				  }));
+				setSensorData(baseData);
+            });
+        });
+
+        // clearInterval(sensorInterval);
+
+        // sensorInterval = setInterval(async() => {
+        //     const sensorData = await getSensorLatest(vlist[0]);
+        //     setCurrentHumi(sensorData.humidity);
+        //     setCurrentSoilHumi(sensorData.soil_humidity);
+        //     setCurrentTemp(sensorData.temperature);
+        // }, 10000);
+    }, []);
 
 	return (
 		<Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
@@ -81,11 +173,14 @@ function ChartPanel(props) {
 								<Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
 									<Bell size={20} />
 								</Button>
-								<Select className="" onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
+								{/* <Select className="" onValueChange={handleSelectedPlant} defaultValue={selectedPlant}>
 									<SelectItem value="겨자">겨자</SelectItem>
 									<SelectItem value="바질">바질</SelectItem>
 									<SelectItem value="로즈마리">로즈마리</SelectItem>
-								</Select>
+								</Select> */}
+								<Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
+                                    {selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
+                                </Select>
 							</div>
 						</Cell>
 						<Cell className="grid grid-cols-12 gap-3">
@@ -101,7 +196,7 @@ function ChartPanel(props) {
 												<Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }} />
 												<Line type="monotone" dataKey="temperature" stroke="#EF4444" name="온도 (°C)" strokeWidth={2} dot={false} />
 												<Line type="monotone" dataKey="humidity" stroke="#3B82F6" name="습도 (%)" strokeWidth={2} dot={false} />
-												<Line type="monotone" dataKey="soilMoisture" stroke="#10B981" name="토양 습도 (%)" strokeWidth={2} dot={false} />
+												<Line type="monotone" dataKey="soil_humidity" stroke="#10B981" name="토양 습도 (%)" strokeWidth={2} dot={false} />
 											</LineChart>
 										</ResponsiveContainer>
 									</div>
@@ -122,7 +217,7 @@ function ConnectSocket() {
 		// WebSocket 연결을 설정하는 함수
 		const connectWebSocket = () => {
 			// eslint-disable-next-line no-undef
-			wsRef.current = new WebSocket('ws://10.19.233.90:3001');
+			wsRef.current = new WebSocket('ws://10.19.208.192:3001');
 
 			wsRef.current.onopen = function () {
 				console.log('Online 🟢');
