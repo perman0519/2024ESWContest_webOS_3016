@@ -1,6 +1,6 @@
-const pkgInfo = require('./package.json');
-const Service = require('webos-service');
-const service = new Service(pkgInfo.name);
+// const pkgInfo = require('./package.json');
+// const Service = require('webos-service');
+// const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, get, set } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
@@ -51,14 +51,14 @@ async function recommendActionByGpt(week, species) {
     // 시스템 메시지로 대화의 맥락 설정
     const systemMessage = `
     You are an expert assistant for smart farm operators. Your task is to provide short, actionable plant care recommendations based on the plant's species, growth stage (age in weeks), and the fact that it is grown in a controlled smart farm environment.
-    Please include the following information:
+    Please include the following information in Korean:
     1. Optimal temperature range for this plant at its current age.
     2. Ideal humidity levels, considering the smart farm's controlled environment.
     3. Recommended soil moisture range, suitable for automated irrigation systems.
     4. Suggested actions to promote healthy growth, such as nutrient adjustments, light settings, or pruning techniques, taking into account the plant's current age and stage of growth.
-    Keep your answers concise and relevant to a smart farm setup.
+    Keep your answers concise, in Korean, and relevant to a smart farm setup.
     `;
-
+    
     // 사용자 메시지 (프롬프트)
     const userMessage = `
     I am growing a ${species} plant in a smart farm, and it is currently in week ${week}. 
@@ -73,7 +73,7 @@ async function recommendActionByGpt(week, species) {
                 { role: 'system', content: systemMessage },
                 { role: 'user', content: userMessage }
             ],
-            max_tokens: 200,  // 응답 길이 제한 (최대 200 토큰으로 설정)
+            max_tokens: 500,  // 응답 길이 제한 (최대 200 토큰으로 설정)
             temperature: 0.7
         }, {
             headers: {
@@ -94,7 +94,7 @@ async function recommendActionByGpt(week, species) {
 }
 
 //test
-//recommendActionByGpt(3, 'Basil');
+recommendActionByGpt(3, 'Basil');
 
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
@@ -114,12 +114,13 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
 
         console.log('서버 응답 1:', response.data.prediction);
 
-
+        const recommendationResponse = await recommendActionByGpt(week, species); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
         const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction); // await 사용
+
 
         console.log("자연어로 변환된 응답:", naturalLanguageResponse);
 
-        return naturalLanguageResponse; // 자연어 변환된 응답 반환
+        return {recommendationResponse ,naturalLanguageResponse}; // 자연어 변환된 응답 반환
 
 
         // // 도출된 결과 자연어로 변경하는 함수
@@ -146,7 +147,8 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
 //gpt가 생성한 최신데이터 가져오는 함수
 async function getLatestSensorData() {
     try {
-        const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
+        const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1)); //최신데이터 참조하기 위한
+        const weekCount = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToFirst(1));
 
         const snapshot = await get(sensorDataRef);
 
@@ -171,16 +173,17 @@ async function getLatestSensorData() {
     }
 }
 
+// save the prompt results to DB & JS-service func
 async function saveAiPromptToDB(message) {
     try {
         const prompt = await callRandomForestModel();
         console.log("출력 프롬프트", prompt);
 
-        //여기에 db에 저장하는 로직 추가하기
         console.log("JS-service 호출:", prompt);
 
         const promptRef = ref(database, `sector/0/plant/prompt`);
 
+        // save prompt results to DB
         set(promptRef, prompt)
             .then(() => {
                 console.log("prompt updated successfully.");
@@ -189,11 +192,12 @@ async function saveAiPromptToDB(message) {
                 console.error("prompt updating data: ", error);
             });
 
+        //alarm set API, TODO: not working well
         service.call("luna://com.webos.service.alarm/set", {
             "key": "ai-prompt-alarm",
             "uri": "luna://com.farm.server.ai.service",
             "params": {},
-            "in": "00:00:20", //24시간으로 수정하기
+            "in": "00:00:20", //TODO: 24시간으로 수정하기
             "wakeup": true
         }, (response)=>{
             if (response.returnValue) {
@@ -216,4 +220,5 @@ async function saveAiPromptToDB(message) {
     }
 }
 
-service.register("saveAiPromptToDB", saveAiPromptToDB);
+
+// service.register("saveAiPromptToDB", saveAiPromptToDB);
