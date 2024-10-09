@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 export const Select = ({ onValueChange, defaultValue, children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +18,7 @@ export const Select = ({ onValueChange, defaultValue, children }) => {
     };
   }, []);
 
-  const handleToggle = () => setIsOpen(!isOpen);
+  const handleToggle = useCallback(() => setIsOpen(!isOpen),[isOpen, setIsOpen]);
 
   const handleSelect = (value) => {
     setSelectedValue(value);
@@ -77,6 +77,7 @@ export const SelectValue = ({ placeholder, value }) => {
 export const SelectItem = ({ value, children, onClick }) => (
   <div
     className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+     // eslint-disable-next-line
     onClick={() => onClick(value)}
   >
     {children}

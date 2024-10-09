@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 export const Dialog = ({ isOpen, onOpenChange, children }) => {
   const dialogRef = useRef(null);
@@ -22,8 +22,11 @@ console.log(isOpen);
     };
   }, [isOpen, onOpenChange]);
 
-  if (!isOpen) return null;
+  const handelOpenChange = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
 
+  if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-40 flex">
       <div
@@ -32,7 +35,9 @@ console.log(isOpen);
       >
         <button
           className="absolute top-0 right-0 mt-4 mr-4 text-gray-400 hover:text-gray-600"
-          onClick={() => onOpenChange(false)}
+          onClick={handelOpenChange}
+          //fix  Line 35:11:  JSX props should not use arrow functions  react/jsx-no-bind
+          // onClick={onOpenChange.bind(null, false)}
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />

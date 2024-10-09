@@ -61,15 +61,11 @@ function ChartPanel(props) {
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const {
         selectedPlantList,
-        setSelectedPlantList,
         selectedPlant,
         setSelectedPlant,
         selectSectorId,
 		setSelectSectorId,
-		plantAge,
 		setPlantAge,
-		plantHeight,
-		setPlantHeight
     } = usePlantContext();  // Context에서 상태 가져오기
 
 	const logout = useCallback(async () => {
@@ -106,7 +102,7 @@ function ChartPanel(props) {
 			});
 		}
 		fetchData();
-	}, [setSensorData]);
+	}, [setSensorData, selectSectorId, setSelectedPlant, setPlantAge]);
 
 	const handleSidebarToggle = useCallback((prevState) => {
 		setIsSidebarOpen(!prevState);
@@ -134,16 +130,7 @@ function ChartPanel(props) {
 				setSensorData(baseData);
             });
         });
-
-        // clearInterval(sensorInterval);
-
-        // sensorInterval = setInterval(async() => {
-        //     const sensorData = await getSensorLatest(vlist[0]);
-        //     setCurrentHumi(sensorData.humidity);
-        //     setCurrentSoilHumi(sensorData.soil_humidity);
-        //     setCurrentTemp(sensorData.temperature);
-        // }, 10000);
-    }, []);
+    }, [setPlantAge, setSelectSectorId, setSelectedPlant, setSensorData]);
 
 	return (
 		<Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>

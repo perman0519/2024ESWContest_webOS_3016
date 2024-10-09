@@ -9,16 +9,17 @@ import { auth } from './firebase';
 import { Card, CardContent } from '../components/card/Card';
 import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Bell, Menu, Flower} from 'lucide-react'
+import { Menu, Flower } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
+import { createToast } from '../components/toast';
 
 const ip = "10.19.208.192:8081";
 
 const wsRef = { current: null };
 
-function ConrtolOnOff({ user, type }) {
+function ControlOnOff({ user, type }) {
     const [isSelected, setIsSelected] = useState(false);
     const icon = type === "led" ? "💡" : "🚰";
 
@@ -31,9 +32,12 @@ function ConrtolOnOff({ user, type }) {
                     "type": "${type}",
                     "command": "${toggleStatus ? "ON" : "OFF"}"
                 }
-            `
-
+            `;
             wsRef.current.send(message);
+            wsRef.current.onmessage = function(event) {
+                console.log('서버로부터 받은 메시지:', event.data);
+                createToast(`${event.data}`);
+            }
         }
     }, [user, type]);
 
@@ -143,17 +147,13 @@ function MainPanel(props) {
     const [currentTemp, setCurrentTemp] = useState(0);
     const [currentHumi, setCurrentHumi] = useState(0);
     const [currentSoilHumi, setCurrentSoilHumi] = useState(0);
-    // const [plantAge, setPlantAge] = useState(21);
-    // const [plantHeight, setPlantHeight] = useState(30);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [src, setSrc] = useState(`http://${ip}/stream`);
     const [camerror, setCameraError] = useState(false);
-    // const [selectedPlantList, setSelectedPlantList] = useState([]);
-    // const [selectedPlant, setSelectedPlant] = useState(null);
-    // const [selectSectorId, setSelectSectorId] = useState("");
     const [advisorMessage, setAdvisorMessage] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [firebseError, setFirebseError] = useState(null);
+    const [showButton, setShowButton] = useState(false); // 버튼을 보여줄지 결정하는 상태
 
     useEffect(() => {
         async function fetchData() {
@@ -165,18 +165,21 @@ function MainPanel(props) {
                     subscribe();
                 }
                 setSelectedPlantList(plantList);
-                console.log(selectSectorId);
                 const id = selectSectorId === "" ? plantList[0].id : selectSectorId;
-                console.log("id: ", id);
                 setSelectSectorId(id);
                 if (plantList.length > 0) {
                     const plant = await initSelectedPlant(selectSectorId, plantList);
                     setSelectedPlant(plant);
                     setPlantAge(calculateDateDifference(plant.plant.createdAt));
-                    console.log(plant.plant.length);
+                    const maxAge = plant.plant.name === "bazil" ? 30 : 60;
+                    if (plantAge > maxAge) {
+                        setShowButton(true);
+                    }
+                    else {
+                        setShowButton(false);
+                    }
                     setPlantHeight(plant.plant.length[formatDateToYYYYMMDD(new Date())]);
                     setAdvisorMessage(plant.plant.prompt);
-                    console.log(plant.plant.length);
                     const baseData = Object.entries(plant.plant.length).map(([date, height]) => ({
                         date,
                         height
@@ -189,11 +192,12 @@ function MainPanel(props) {
                 setCurrentHumi(sensorData.humidity);
                 setCurrentSoilHumi(sensorData.soil_humidity);
                 setCurrentTemp(sensorData.temperature);
+
                 sensorInterval = setInterval(async() => {
-                    const sensorData = await getSensorLatest(plantList[0].id);
-                    setCurrentHumi(sensorData.humidity);
-                    setCurrentSoilHumi(sensorData.soil_humidity);
-                    setCurrentTemp(sensorData.temperature);
+                    const sensorLastestData = await getSensorLatest(plantList[0].id);
+                    setCurrentHumi(sensorLastestData.humidity);
+                    setCurrentSoilHumi(sensorLastestData.soil_humidity);
+                    setCurrentTemp(sensorLastestData.temperature);
                 }, 10000);
 
                 return () => clearInterval(sensorInterval);
@@ -208,7 +212,8 @@ function MainPanel(props) {
             fetchData();
         }
     // }, [user, setSelectedPlantList, setSelectSectorId, setPlantAge, setPlantHeight, subscribe, selectedPlant, setSelectedPlant, plantAge, plantHeight]);
-    }, [user, setSelectedPlantList]);
+ // eslint-disable-next-line
+    }, [user, setSelectedPlantList, plantAge]);
 
     const logout = useCallback(async () => {
         try {
@@ -250,15 +255,22 @@ function MainPanel(props) {
         setCurrentSoilHumi(sensorData.soil_humidity);
         setCurrentTemp(sensorData.temperature);
         sensorInterval = setInterval(async() => {
-            const sensorData = await getSensorLatest(vlist[0]);
-            setCurrentHumi(sensorData.humidity);
-            setCurrentSoilHumi(sensorData.soil_humidity);
-            setCurrentTemp(sensorData.temperature);
+            const sensorLatestData = await getSensorLatest(vlist[0]);
+            setCurrentHumi(sensorLatestData.humidity);
+            setCurrentSoilHumi(sensorLatestData.soil_humidity);
+            setCurrentTemp(sensorLatestData.temperature);
         }, 10000);
+        // eslint-disable-next-line
     }, []);
 
     const handleError = useCallback(() => {
         setCameraError(true);
+    }, []);
+
+    const handleHarvest = useCallback(() => {
+        // 일단 학습 api 호출
+        // firebase 데이터 삭제
+        // timelapse
     }, []);
 
     useEffect(() => {
@@ -306,11 +318,7 @@ function MainPanel(props) {
                                 </div>
                             </div>
                             <div className="flex items-center space-x-4">
-
                                 <ConnectSocket />
-                                <Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
-                                    <Bell size={20} />
-                                </Button>
                                 <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
                                     {selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
                                 </Select>
@@ -322,9 +330,15 @@ function MainPanel(props) {
                                     <div className='flex justify-evenly items-center mb-2'>
                                         <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant? selectedPlant.plant.name: ""} 식물 구역</h2>
                                         <div className="flex items-center space-x-4 border-x">
-                                            <ConrtolOnOff user={user} type='waterpump' />
-                                            <ConrtolOnOff user={user} type='led' />
+                                            <ControlOnOff user={user} type='waterpump' />
+                                            <ControlOnOff user={user} type='led' />
                                         </div>
+                                        {
+                                            showButton &&
+                                            <Button variant="outline" onclick={handleHarvest} className="text-gray-800 w-fit text-sm border-gray-300 hover:bg-green-100">
+                                                <span>수확하기</span>
+                                            </Button>
+                                        }
                                     </div>
                                     <div className=" rounded-lg flex items-center justify-center mb-4">
                                         { !camerror &&

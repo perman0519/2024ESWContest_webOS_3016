@@ -5,32 +5,7 @@ import {InputField} from '@enact/sandstone/Input';
 import { useState, useCallback } from 'react';
 import { auth } from './firebase';
 import { createUserWithEmailAndPassword, signOut  } from 'firebase/auth';
-import LS2Request from '@enact/webos/LS2Request';
-
-const webOSBridge = new LS2Request();
-
-const onToastSuccess = (msg) => {
-	console.log(msg);
-}
-
-const onToastFailure = (msg) => {
-	console.log(msg);
-}
-
-const createToast = (msg) => {
-	const parms = {
-			"message": `"${msg}"`
-	}
-	const lsRequest = {
-			"service":"luna://com.webos.notification",
-			"method":"createToast",
-			"parameters": parms,
-			"onSuccess": onToastSuccess,
-			"onFailure": onToastFailure
-	};
-	webOSBridge.send(lsRequest);
-}
-
+import { createToast } from '../components/toast';
 // function validateEmail(email) {
 //     const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 //     return re.test(String(email).toLowerCase());

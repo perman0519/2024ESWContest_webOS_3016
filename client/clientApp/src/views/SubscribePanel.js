@@ -1,4 +1,4 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect} from 'react';
 import {Panel} from '@enact/sandstone/Panels';
 import { Button } from '../components/button/Button';
 import { Row, Cell, Column } from '@enact/ui/Layout';
@@ -17,7 +17,7 @@ function SubscribePanel(props) {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newSubscriptionPlant, setNewSubscriptionPlant] = useState("");
-    const [subscriptionSlots, setSubscriptionSlots] = useState([]);
+    // const [subscriptionSlots, setSubscriptionSlots] = useState([]);
     const [slots, setSlots] = useState();
 
     useEffect( () => {
@@ -35,7 +35,7 @@ function SubscribePanel(props) {
                 }
             });
             console.log("sectors: ", sectors);
-            setSubscriptionSlots(sectors);
+            // setSubscriptionSlots(sectors);
             setSlots(sectors);
         }
         fetchData();
@@ -51,7 +51,7 @@ function SubscribePanel(props) {
         const today = new Date().toISOString().split('T')[0];
         const updatedSlots = slots.map(slot =>
           slot.id === selectedSlot.id
-            ? { ...slot, name: newSubscriptionPlant, subscriber: [...slot.subscriber, `${user.uid}`], startDate: today }
+            ? { ...slot, name: newSubscriptionPlant, subscriber: `${user.uid}`, startDate: today }
             : slot
         )
         console.log(selectedSlot.id);

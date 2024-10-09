@@ -1,85 +1,36 @@
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useCallback} from 'react';
 import {Panel} from '@enact/sandstone/Panels';
 import { Button } from '../components/button/Button';
 import { Row, Cell, Column } from '@enact/ui/Layout';
 import './MainPanel.style.css';
 import { Card, CardContent } from "../components/card/Card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/dialog/Dialog"
 import { Select, SelectItem } from "../components/select/Select"
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
-import { usePlantContext } from './PlantContext.js';  // 추가
+import { usePlantContext } from './PlantContext.js';
 
-
-import {Film, Menu, Flower, Plus, Play, Calendar } from 'lucide-react'
-
-const plantData = [
-	{ id: 1, name: "겨자", videos: [
-	  { id: 1, date: "2023-09-01", thumbnail: "/placeholder.svg?height=120&width=200" },
-	  { id: 2, date: "2023-09-15", thumbnail: "/placeholder.svg?height=120&width=200" },
-	  { id: 3, date: "2023-09-30", thumbnail: "/placeholder.svg?height=120&width=200" },
-	]},
-	{ id: 2, name: "바질", videos: [
-	  { id: 4, date: "2023-09-05", thumbnail: "/placeholder.svg?height=120&width=200" },
-	  { id: 5, date: "2023-09-20", thumbnail: "/placeholder.svg?height=120&width=200" },
-	]},
-	{ id: 3, name: "로즈마리", videos: [
-	  { id: 6, date: "2023-09-10", thumbnail: "/placeholder.svg?height=120&width=200" },
-	  { id: 7, date: "2023-09-25", thumbnail: "/placeholder.svg?height=120&width=200" },
-	]},
-  ]
+import {Film, Menu} from 'lucide-react'
 
 const ip = "10.19.208.192:8081";
-
-async function setPlantList(user) {
-    const getSubListRes = await fetch(`http://${ip}/api/sub-list/${user.uid}`);
-    console.log(getSubListRes);
-    const res = await getSubListRes.json();
-    console.log(res);
-    return res;
-}
-
-async function initSelectedPlant(selectedPlantList) {
-    if (!selectedPlantList || selectedPlantList.length === 0) {
-        return null;
-    }
-    const selectRes = await fetch(`http://${ip}/api/sector/${selectedPlantList[0].id}`);
-    if (!selectRes.ok) {
-        throw new Error('Failed to fetch plant details');
-    }
-    const select = await selectRes.json();
-    return select;
-}
+// 카메라 아무나 다 볼 수 있음 문제있음
 
 function TimelapsePanel(props) {
+    // eslint-disable-next-line
     const { main, chart, user, subscribe, logout, timelapse } = props;
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-	// const [selectedPlantList, setSelectedPlantList] = useState([]);
-    // const [selectedPlant, setSelectedPlant] = useState(null);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [selectSectorId, setSelectSectorId] = useState("");
     const [src, setSrc] = useState("");
     const [camerror, setCameraError] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-    const [firebseError, setFirebseError] = useState(null);
     const {
         selectedPlantList,
-        setSelectedPlantList,
         selectedPlant,
-        setSelectedPlant
+        setSelectSectorId,
     } = usePlantContext();  // Context에서 상태 가져오기
-
-    useEffect(() => {
-        // if (user && user.uid) {
-        //     fetchData();
-        // }
-    }, [user]);
 
     const handleSelectedPlant = useCallback(async (value) => {
         console.log(value);
         const vlist = value.split('-');
         setSelectSectorId(vlist[0]);
-    }, []);
+    }, [setSelectSectorId]);
 
 	const handleError = useCallback(() => {
         setCameraError(true);
@@ -116,8 +67,8 @@ function TimelapsePanel(props) {
                                 {
                                     selectedPlant &&
                                     <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
-                                    	{selectedPlantList && selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
-                                	</Select>
+                                        {selectedPlantList && selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
+                                    </Select>
                                 }
                             </div>
                        </Cell>
