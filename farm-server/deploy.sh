@@ -4,7 +4,7 @@ TARGET_DEVICE="mac"
 
 SERVER_WEB_APP="farm_control_dashboard"
 SERVICE_DIR="services"
-SERVICES=("service_proxy_camera")
+SERVICES=("service_proxy_camera" "service_plant_measure")
 
 PACKAGE_TARGET=$SERVER_WEB_APP
 for service in "${SERVICES[@]}"; do
@@ -23,7 +23,7 @@ for service in "${SERVICES[@]}"; do
   printf "ares-package is running: ${GREEN}%s${NC}\n" "${SERVICE_DIR}/${service}"
 done
 echo "==============================="
-ares-package $PACKAGE_TARGET
+ares-package --no-minify $PACKAGE_TARGET
 
 # .ipk 파일 검색 (가장 최근에 수정된 파일)
 INSTALL_IPK_FILE=$(ls -t ./*.ipk 2>/dev/null | head -1)

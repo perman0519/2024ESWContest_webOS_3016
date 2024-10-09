@@ -6,7 +6,7 @@
 StreamServer server;
 bool isCameraStreamOn = true;
 
-const char* ws_server_ip = "10.19.233.90";
+const char* ws_server_ip = "10.19.208.192";
 const uint16_t ws_server_port = 9999;
 
 

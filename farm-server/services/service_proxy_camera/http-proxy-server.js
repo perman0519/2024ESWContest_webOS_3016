@@ -16,7 +16,7 @@ const imagePath = '/media/internal/stream.jpeg'
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     next();
 });
@@ -232,22 +232,38 @@ app.get('/stream', (req, res) => {
     });
 });
 
-// Flask 서버에 update 요청을 보내는 엔드포인트 추가
-app.post('/api/ai/train', async (req, res) => {
+// // Flask 서버에 update 요청을 보내는 엔드포인트 추가
+app.post('/api/harvest/:sectorId', async (req, res) => {
+  const sectorId = req.params.sectorId;
   try {
       const flaskUrl = 'http://54.180.187.212:5000/update';  // Flask 서버의 엔드포인트
       const dataToSend = {
-          sectorID: '1'  //TODO: 클라이언트로부터 받는 섹터번호
+          sectorID: `${sectorId}`  //TODO: 클라이언트로부터 받는 섹터번호
       };
 
+      console.log("harvest");
       // Flask 서버에 POST 요청 보내기
       const flaskResponse = await axios.post(flaskUrl, dataToSend);
 
-
       // Flask 서버의 응답 처리
       if (flaskResponse.status === 200) {
-          console.log("Flask 서버로 성공적으로 요청을 보냈습니다:", flaskResponse.data);
-          res.json({ message: "Flask 서버로 업데이트 요청을 성공적으로 보냈습니다." });
+        console.log("harvest");
+
+        // delete firebase data
+        const sectorRef = ref(database, `sector/${sectorId}`);
+        update(sectorRef, {
+          plant: null,
+          sensorData: null,
+          uid : null
+        });
+        const imageList = fs.readdirSync(`/media/multimedia/sector/${sectorId}`);
+        for (const image of imageList) {
+          fs.unlinkSync(`/media/multimedia/sector/${sectorId}/${image}`);
+        }
+
+        console.log("Flask 서버로 성공적으로 요청을 보냈습니다:", flaskResponse.data);
+        res.json({ message: "Flask 서버로 업데이트 요청을 성공적으로 보냈습니다." });
+
       } else {
           console.error("Flask 서버 응답 오류:", flaskResponse.status);
           res.status(500).json({ error: "Flask 서버 응답 오류" });
@@ -266,7 +282,7 @@ app.get('/api/prompt/:sectorId', async (req, res) => {
   try {
     // 데이터를 비동기적으로 가져옴
     const snapshot = await get(plantRef);
-    
+
     if (snapshot.exists()) {
       const plantData = snapshot.val();
       console.log('Fetched plant data:', plantData);  // plantData 로그
@@ -285,16 +301,11 @@ app.get('/api/prompt/:sectorId', async (req, res) => {
   }
 });
 
-
-
-
-
 const startHttpServer = () => {
     app.listen(port, () => {
     console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
     });
 }
 
-
-startHttpServer();
-// module.exports = { startHttpServer };
+// startHttpServer();
+module.exports = { startHttpServer };
