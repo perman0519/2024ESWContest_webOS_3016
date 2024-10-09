@@ -1,8 +1,6 @@
-# Client Web App
+# 🌿 Client Web App 🌿
+The client app provides real-time plant and sensor monitoring, along with a GPT-based plant growth advisor. <br>
+Users can subscribe to different sectors of the smart farm. <br>
+Additionally, the app offers a time-lapse feature that captures the plant growth process.
 
-## client
-- client는 webOS OSE를 기반으로 작성되었습니다.
-- client는 webOS OSE의 web application으로 작성되었습니다.
-- client는 스마트팜의 상태를 모니터링하고 제어할 수 있습니다.
-- client는 스마트팜의 상태를 실시간으로 확인할 수 있습니다.
-- client는 스마트팜의 제어를 웹을 통해 할 수 있습니다.
+클라이언트 앱 사진
