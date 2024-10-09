@@ -1,5 +1,10 @@
 # 2024 ESWContest - webOS by 우리42수상한42
 
+## 📚 Index
+- [Client](./client/README.md)
+- [farm-server](./farm-server/README.md)
+- [esp_part](./esp_part/README.md)
+
 ## 🌿 Features
 #### 🌱 Subscribe to Your Preferred Plants by Sector 🌱
 > Users can subscribe to grow their desired plants in different sectors of the smart farm.
@@ -54,11 +59,6 @@ Follow these steps to set up and run the project on your local machine:
       ```bash
       App Name : ClientApp
       ```
-
-## 📚 Index
-- [Client](./client/README.md)
-- [farm-server](./farm-server/README.md)
-- [esp_part](./esp_part/README.md)
 
 ## 🙌 Collaborator
 |<img src="https://avatars.githubusercontent.com/u/58614643?v=4" width="200" height="200"/>|<img src="https://avatars.githubusercontent.com/u/102403228?v=4" width="200" height="200"/>|<img src="https://avatars.githubusercontent.com/u/117874685?v=4" width="200" height="200"/>|<img src="https://avatars.githubusercontent.com/u/115722373?v=4" width="200" height="200"/>|
