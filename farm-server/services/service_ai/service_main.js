@@ -21,7 +21,6 @@ const database = getDatabase(app);
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
-    //TODO: 요청하는 자연어를 더 자연스럽게 다듬어야한다
     //const prompt =
     //'예측된 물 주기 양은' + prediction + '입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.';
     const prompt =
@@ -43,9 +42,59 @@ async function convertPredictionToNaturalLanguage(prediction) {
             'Content-Type': 'application/json'
         }
     });
-
     return response.data.choices[0].message.content.trim();
 }
+
+// 식물의 {주차, 종}을 입력받아서 GPT를 통해서 온도, 습도, 생장습도의 정보와 추천행동을 가이드해주는 함수
+// 추천행동이란 작물이 클 때 보조해줄 수 있는 행동(영양제나 기타 등등)
+async function recommendActionByGpt(week, species) {
+    // 시스템 메시지로 대화의 맥락 설정
+    const systemMessage = `
+    You are an expert assistant for smart farm operators. Your task is to provide short, actionable plant care recommendations based on the plant's species, growth stage (age in weeks), and the fact that it is grown in a controlled smart farm environment.
+    Please include the following information:
+    1. Optimal temperature range for this plant at its current age.
+    2. Ideal humidity levels, considering the smart farm's controlled environment.
+    3. Recommended soil moisture range, suitable for automated irrigation systems.
+    4. Suggested actions to promote healthy growth, such as nutrient adjustments, light settings, or pruning techniques, taking into account the plant's current age and stage of growth.
+    Keep your answers concise and relevant to a smart farm setup.
+    `;
+
+    // 사용자 메시지 (프롬프트)
+    const userMessage = `
+    I am growing a ${species} plant in a smart farm, and it is currently in week ${week}. 
+    Could you provide short guidelines for maintaining temperature, humidity, soil moisture, and any recommended actions?
+    `;
+
+    try {
+        // GPT API 호출
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4',
+            messages: [
+                { role: 'system', content: systemMessage },
+                { role: 'user', content: userMessage }
+            ],
+            max_tokens: 200,  // 응답 길이 제한 (최대 200 토큰으로 설정)
+            temperature: 0.7
+        }, {
+            headers: {
+                'Authorization': `Bearer `,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const gptReply = response.data.choices[0].message.content;
+        console.log("GPT 추천 내용:", gptReply);
+
+        return gptReply;
+
+    } catch (error) {
+        console.error("Error fetching GPT recommendations:", error);
+        return null;
+    }
+}
+
+//test
+//recommendActionByGpt(3, 'Basil');
 
 // 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
