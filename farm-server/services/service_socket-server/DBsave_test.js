@@ -21,7 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// weekly_avg 데이터를 sector/0에 저장하는 함수
+// weekly_avg 데이터를 sector/sectorId에 저장하는 함수
 function saveWeeklyAvgToFirebase(sector_id, weeklyData) {
     // 데이터베이스 경로 설정 (sector/{sector_id}/weekly_avg)
     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
@@ -34,7 +34,7 @@ function saveWeeklyAvgToFirebase(sector_id, weeklyData) {
       .catch((error) => {
         console.log('Firebase weekly_avg 저장 실패: ', error);
       });
-  }
+}
 
 // 데이터를 주단위로 묶어주는 함수
 function groupByWeek(data) {
@@ -108,22 +108,89 @@ function setWeekData(sector_id)
     });
 }
 
-setWeekData(0);
+//setWeekData(0);
+
+// ISO 8601형식의 문자열을 열월일시분초 형식으로 변환
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 주간 펌프횟수를 저장
+function saveWeeklyPumpData(sector_id, count) {
+    let id = 0;  // 시작 ID를 0으로 설정
+    const checkAndStore = () => {
+        const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${id}`);
+        
+        // Firebase에서 해당 경로의 데이터를 읽어옴
+        get(dataRef).then((snapshot) => {
+            let currentData = snapshot.val();
+            
+            // pumpCnt가 없는 경우에만 값을 설정
+            if (!currentData || !currentData.pumpCnt) {
+                let setData = {
+                    ...currentData,  // 기존 데이터 유지
+                    pumpCnt: count   // 새로 추가할 pumpCnt 값
+                };
+
+                // Firebase에 데이터 저장
+                return set(dataRef, setData)
+                    .then(() => {
+                        console.log(`ID ${id}에 pumpCnt 저장 성공`);
+                    })
+                    .catch((error) => {
+                        console.error(`ID ${id}에 데이터 저장 실패: `, error);
+                    });
+            } else {
+                // pumpCnt가 있는 경우, 다음 ID로 이동하여 다시 체크
+                id++;
+                checkAndStore();
+            }
+        }).catch((error) => {
+            console.error(`Firebase 읽기 실패: `, error);
+        });
+    };
+    // 최초 호출
+    checkAndStore();
+}
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
     const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+    const currentTime = new Date();  // 현재 시간을 Date 객체로 가져옴
 
     // Firebase에서 상태 값 읽어오기
     get(commandRef)
     .then((snapshot) => {
         let currentData = snapshot.val();
+        
+        // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
+        let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
+
+        // 1주일(7일) 차이가 나는지 계산 (Date 객체끼리 비교)
+        const timeDifference = (currentTime - startTime) / (1000 * 60 * 60 * 24); // 일 단위 계산
 
         let setData = {
             status: state,
-            count: currentData && currentData.count ? currentData.count : 0
+            count: currentData && currentData.count ? currentData.count : 0,
+            start: formatDate(startTime) // 저장할 때는 연월일시분초 형식으로 변환
         };
-        if (state === "ON"){
+
+        // 1주일 이상 차이가 나면 count를 0으로 초기화하고 start를 현재 시간으로 설정
+        if (timeDifference >= 7) {
+            saveWeeklyPumpData(sector_id, currentData.count);
+            setData.count = 0;
+            setData.start = formatDate(currentTime); // 새로운 시작 시간을 현재 시간으로 설정
+        }
+
+        if (state === "ON") {
             setData.count += 1;
         }
         // 상태데이터 설정
@@ -136,3 +203,6 @@ function storePumpStatus(sector_id, state) {
         console.log("Firebase 저장 실패: ", error);
     });
 }
+
+// 함수 호출 예시
+storePumpStatus(0, "ON");
