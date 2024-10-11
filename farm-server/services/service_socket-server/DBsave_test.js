@@ -21,7 +21,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
-// 데이터를 주단위로 그루핑하는 함수
+// weekly_avg 데이터를 sector/0에 저장하는 함수
+function saveWeeklyAvgToFirebase(sector_id, weeklyData) {
+    // 데이터베이스 경로 설정 (sector/{sector_id}/weekly_avg)
+    const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
+  
+    // weekly_avg 데이터 저장
+    set(dataRef, weeklyData)
+      .then(() => {
+        console.log('Firebase weekly_avg 저장 성공');
+      })
+      .catch((error) => {
+        console.log('Firebase weekly_avg 저장 실패: ', error);
+      });
+  }
+
+// 데이터를 주단위로 묶어주는 함수
 function groupByWeek(data) {
     const groupedData = [];
     let currentWeekStart = new Date(data[0].date);
@@ -58,7 +73,7 @@ function groupByWeek(data) {
     return groupedData;  // forEach 루프가 끝난 후 데이터를 반환
 }
 
-// week단위로 데이터를 저장하는 함수
+// week단위로 센서데이터를 평균내어 저장하는 함수
 function setWeekData(sector_id)
 {
     // 섹터별 db의 값을 가져온다
@@ -78,8 +93,12 @@ function setWeekData(sector_id)
             ...values
           }));
 
-        const groupedData = groupByWeek(entries);
-        console.log(groupedData);
+        // entry들을 주간별로 그룹핑한다
+        const weeklyData = groupByWeek(entries);
+        //console.log(weeklyData);
+
+        // 주간평균을 DB에 저장한다
+        saveWeeklyAvgToFirebase(sector_id, weeklyData);
     })
     .then(() => {
         console.log("Firebase 읽어오기 성공");
@@ -89,7 +108,7 @@ function setWeekData(sector_id)
     });
 }
 
-setWeekData(1);
+setWeekData(0);
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
