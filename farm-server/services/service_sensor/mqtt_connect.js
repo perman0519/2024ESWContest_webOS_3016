@@ -60,6 +60,7 @@ function updateSectorInfo(database, sensorData, ref)
 }
 
 function receivedMessage(message, database, ref) {
+    console.log(message);
     console.log("Message received: " + message.toString());
 
     let sensorData;
@@ -104,7 +105,7 @@ function setupMQTT(database, ref) {
     const mqtt_topic = "sensor/all"; // 나중에 변경
     client.on('connect', () => {connectionSuccess(client, mqtt_topic)});
     client.on('error', connectionError);
-    client.on('message', (msg) => {receivedMessage(msg, database, ref)});
+    client.on('message', (topic, msg) => {receivedMessage(msg, database, ref)});
 }
 
 function getSensorData(database, ref, onValue)
