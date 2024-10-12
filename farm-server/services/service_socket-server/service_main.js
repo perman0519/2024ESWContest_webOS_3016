@@ -3,7 +3,9 @@ const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const mqtt = require('mqtt');
-const { database } = require('./firebase.js');
+// const { database } = require('./firebase.js');
+const database = require('./firebase.js');
+console.log("database: ",database);
 const { ref, set, get } = require('firebase/database');
 const logHeader = "[" + pkgInfo.name + "]";
 
@@ -61,7 +63,7 @@ function saveWeeklyPumpData(sector_id, count) {
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-    const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+    const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
     const currentTime = new Date();
 
     // get data from Firebase
@@ -134,7 +136,7 @@ function publishToMQTT(topic, command) {
 // serverStart Status
 let serverStarted = false;
 
-//
+// register service
 function socketServer(message) {
     console.log("In sensorControlServer callback");
     try {
