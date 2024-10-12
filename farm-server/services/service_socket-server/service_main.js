@@ -61,40 +61,10 @@ function saveWeeklyPumpData(sector_id, count) {
     checkAndStore();
 }
 
-// storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-    const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
-    const currentTime = new Date();
-
-    // get data from Firebase
-    get(pumpRef)
-    .then((snapshot) => {
-        let currentData = snapshot.val();
-        
-        // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
-        let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
-
-        // 1주일(7일) 차이가 나는지 계산 (Date 객체끼리 비교)
-        const timeDifference = (currentTime - startTime) / (1000 * 60 * 60 * 24); // 일 단위 계산
-
-        let setData = {
-            status: state,
-            count: currentData && currentData.count ? currentData.count : 0,
-            start: formatDate(startTime) // 저장할 때는 연월일시분초 형식으로 변환
-        };
-
-        // 1주일 이상 차이가 나면 count를 0으로 초기화하고 start를 현재 시간으로 설정
-        if (timeDifference >= 7) {
-            saveWeeklyPumpData(sector_id, currentData.count);
-            setData.count = 0;
-            setData.start = formatDate(currentTime); // 새로운 시작 시간을 현재 시간으로 설정
-        }
-
-        if (state === "ON") {
-            setData.count += 1;
-        }
-        // 상태데이터 설정
-        return set(pumpRef, setData);
+    const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+    set(commandRef, {
+        status: state,
     })
     .then(() => {
         console.log("Firebase 저장 성공");
@@ -103,6 +73,49 @@ function storePumpStatus(sector_id, state) {
         console.log("Firebase 저장 실패: ", error);
     });
 }
+
+// storePumpStatus and add Pump_count
+// function storePumpStatus(sector_id, state) {
+//     const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
+//     const currentTime = new Date();
+
+//     // get data from Firebase
+//     get(pumpRef)
+//     .then((snapshot) => {
+//         let currentData = snapshot.val();
+        
+//         // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
+//         let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
+
+//         // 1주일(7일) 차이가 나는지 계산 (Date 객체끼리 비교)
+//         const timeDifference = (currentTime - startTime) / (1000 * 60 * 60 * 24); // 일 단위 계산
+
+//         let setData = {
+//             status: state,
+//             count: currentData && currentData.count ? currentData.count : 0,
+//             start: formatDate(startTime) // 저장할 때는 연월일시분초 형식으로 변환
+//         };
+
+//         // 1주일 이상 차이가 나면 count를 0으로 초기화하고 start를 현재 시간으로 설정
+//         if (timeDifference >= 7) {
+//             saveWeeklyPumpData(sector_id, currentData.count);
+//             setData.count = 0;
+//             setData.start = formatDate(currentTime); // 새로운 시작 시간을 현재 시간으로 설정
+//         }
+
+//         if (state === "ON") {
+//             setData.count += 1;
+//         }
+//         // 상태데이터 설정
+//         return set(pumpRef, setData);
+//     })
+//     .then(() => {
+//         console.log("Firebase 저장 성공");
+//     })
+//     .catch((error) => {
+//         console.log("Firebase 저장 실패: ", error);
+//     });
+// }
 
 //publish command to MQTT brocker
 function publishToMQTT(topic, command) {
