@@ -1,6 +1,6 @@
-// const pkgInfo = require('./package.json');
-// const Service = require('webos-service');
-// const service = new Service(pkgInfo.name);
+const pkgInfo = require('./package.json');
+const Service = require('webos-service');
+const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
@@ -222,7 +222,7 @@ async function calculateTimeDifference() {
 
 
 // save the prompt results to DB & JS-service func
-async function saveAiPromptToDB() {
+async function saveAiPromptToDB(message) {
     try {
         const prompt = await callRandomForestModel();
         console.log("출력 프롬프트", prompt);
@@ -240,34 +240,34 @@ async function saveAiPromptToDB() {
                 console.error("prompt updating data: ", error);
             });
 
-        //alarm set API, TODO: not working well
-        service.call("luna://com.webos.service.alarm/set", {
-            "key": "ai-prompt-alarm",
-            "uri": "luna://com.farm.server.ai.service",
-            "params": {},
-            "in": "00:00:20", //TODO: 24시간으로 수정하기
-            "wakeup": true
-        }, (response)=>{
-            if (response.returnValue) {
-                console.log("알람설정 완료");
-            } else {
-                console.timeLog("알람설정실패:", response);
-            }
-        });
-        // message.respond({
-        //     returnValue: true,
-        //     Response: "alarm setting ok"
+        // //alarm set API, TODO: not working well
+        // service.call("luna://com.webos.service.alarm/set", {
+        //     "key": "ai-prompt-alarm",
+        //     "uri": "luna://com.farm.server.ai.service",
+        //     "params": {},
+        //     "in": "00:00:20", //TODO: 24시간으로 수정하기
+        //     "wakeup": true
+        // }, (response)=>{
+        //     if (response.returnValue) {
+        //         console.log("알람설정 완료");
+        //     } else {
+        //         console.timeLog("알람설정실패:", response);
+        //     }
         // });
+        message.respond({
+            returnValue: true,
+            Response: "alarm setting ok"
+        });
     }
     catch (error) {
         console.error("Error saving error: ", error);
-        // message.respond({
-        //     returnValue: false,
-        //     errorText: error.message || "An error occurred."
-        // });
+        message.respond({
+            returnValue: false,
+            errorText: error.message || "An error occurred."
+        });
     }
 }
 
-saveAiPromptToDB();
+// saveAiPromptToDB();
 
-// service.register("saveAiPromptToDB", saveAiPromptToDB);
+service.register("saveAiPromptToDB", saveAiPromptToDB);

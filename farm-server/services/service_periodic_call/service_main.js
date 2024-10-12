@@ -1,7 +1,7 @@
-const pkgInfo = require('./package.json');
-const Service = require('webos-service');
-const service = new Service(pkgInfo.name); // Create service by service name on package.json
-const logHeader = "[" + pkgInfo.name + "]";
+// const pkgInfo = require('./package.json');
+// const Service = require('webos-service');
+// const service = new Service(pkgInfo.name); // Create service by service name on package.json
+// const logHeader = "[" + pkgInfo.name + "]";
 
 // function periodicallyCallService(msg) {
 //     try {
@@ -100,34 +100,145 @@ const logHeader = "[" + pkgInfo.name + "]";
 // });
 
 
-service.register("periodicallyCallService", function (msg) {
-    console.log("setAlarmService 호출");
+// service.register("periodicallyCallService", function (msg) {
+//     console.log("setAlarmService 호출");
 
-    // 주기적 호출 시작
-    // setInterval(() => {
+//     // 주기적 호출 시작
+//     // setInterval(() => {
+//         service.call("luna://com.webos.service.alarm/set", {
+//             "key": "ai_prompt_alarm",
+//             "uri": "luna://com.farm.server.ai.service/saveAiPromptToDB",
+//             "params": {},
+//             "in": "00:00:03", // 주기 설정
+//             "wakeup": true
+//         }, function(response) {
+//             console.log("SERVICE_METHOD_CALLED:com.webos.service.alarm/set");
+            
+//             if (response.payload.returnValue) {
+//                 console.log("알람 설정 완료");
+//             } else {
+//                 console.log("알람 설정 실패:", response);
+//             }
+//         });
+//     // }, 2000); // 20초마다 호출
+
+//     msg.respond({
+//         returnValue: true,
+//         msg: "알람이 성공적으로 설정되었습니다."
+//     });
+// });
+
+
+const pkgInfo = require('./package.json');
+const Service = require('webos-service');
+const service = new Service(pkgInfo.name); // Create service by service name on package.json
+const logHeader = "[" + pkgInfo.name + "]";
+
+function periodicallyCallService(msg) {
+    try {
+        console.log("주기적 호출 서비스 진입");
+
         service.call("luna://com.webos.service.alarm/set", {
             "key": "ai_prompt_alarm",
             "uri": "luna://com.farm.server.ai.service/saveAiPromptToDB",
             "params": {},
-            "in": "00:00:3", // 주기 설정
+            "in": "00:00:02", // 24시간으로 수정
             "wakeup": true
         }, function(response) {
             console.log("SERVICE_METHOD_CALLED:com.webos.service.alarm/set");
-            
+    
             if (response.payload.returnValue) {
                 console.log("알람 설정 완료");
+                msg.respond({
+                    returnValue: true,
+                    Response: "alarm setting ok"
+                });
             } else {
                 console.log("알람 설정 실패:", response);
+                msg.respond({
+                    returnValue: false,
+                    Response: "alarm setting failed"
+                });
             }
         });
-    // }, 2000); // 20초마다 호출
+           // //------------------------- heartbeat 구독 -------------------------
+        const sub = service.subscribe(`luna://${pkgInfo.name}/heartbeat`, {subscribe: true});
+        const max = 5000; //heart beat 횟수 /// heart beat가 꺼지면, 5초 정도 딜레이 생김 --> 따라서 이 녀석도 heart beat를 무한히 돌릴 필요가 있어보임.
+        let count = 0;
+        sub.addListener("response", function(msg) {
+            console.log(JSON.stringify(msg.payload));
+            if (++count >= max) {
+                sub.cancel();
+                setTimeout(function(){
+                    console.log(max+" responses received, exiting...");
+                    process.exit(0);
+                }, 1000);
+            }
+        });
+    }
+    catch (error) {
+        console.error("Error saving error: ", error);
+        msg.respond({
+            returnValue: false,
+            errorText: error.msg || "An error occurred."
+        });
+    }
+}
 
-    msg.respond({
-        returnValue: true,
-        msg: "알람이 성공적으로 설정되었습니다."
-    });
+service.register("periodicallyCallService", periodicallyCallService);
+
+// //----------------------------------------------------------------------heartbeat----------------------------------------------------------------------
+// // handle subscription requests
+
+const subscriptions = {};
+let heartbeatinterval;
+let x = 1;
+function createHeartBeatInterval() {
+    if (heartbeatinterval) {
+        return;
+    }
+    console.log(logHeader, "create_heartbeatinterval");
+    heartbeatinterval = setInterval(function() {
+        sendResponses();
+    }, 5000);
+}
+
+// send responses to each subscribed client
+function sendResponses() {
+    console.log(logHeader, "send_response");
+    console.log("Sending responses, subscription count=" + Object.keys(subscriptions).length);
+    for (const i in subscriptions) {
+        if (Object.prototype.hasOwnProperty.call(subscriptions, i)) {
+            const s = subscriptions[i];
+            s.respond({
+                returnValue: true,
+                event: "beat " + x
+            });
+        }
+    }
+    x++;
+}
+
+var heartbeat = service.register("heartbeat");
+heartbeat.on("request", function(message) {
+    console.log(logHeader, "SERVICE_METHOD_CALLED:/heartbeat");
+    message.respond({event: "beat"}); // initial response
+    if (message.isSubscription) {
+        subscriptions[message.uniqueToken] = message; //add message to "subscriptions"
+        if (!heartbeatinterval) {
+            createHeartBeatInterval();
+        }
+    }
 });
-
+heartbeat.on("cancel", function(message) {
+    delete subscriptions[message.uniqueToken]; // remove message from "subscriptions"
+    var keys = Object.keys(subscriptions);
+    if (keys.length === 0) { // count the remaining subscriptions
+        console.log("no more subscriptions, canceling interval");
+        clearInterval(heartbeatinterval);
+        heartbeatinterval = undefined;
+    }
+});
 
 
 
