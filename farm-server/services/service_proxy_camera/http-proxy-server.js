@@ -48,7 +48,7 @@ app.get('/api/sectors', async (req, res) => {
 });
 
 app.get('/timelapse', (req, res) => {
-    const imageList = fs.readdirSync('/media/multimedia/sector/0');
+    const imageList = fs.readdirSync('/tmp/usb/sda/sda2/sector/0');
     res.setHeader('Content-Type', 'multipart/x-mixed-replace; boundary=frame');
 
     const sendImage = (imagePath) => {
@@ -83,7 +83,7 @@ app.get('/timelapse', (req, res) => {
     const streamImages = async () => {
         for (const image of imageList) {
             console.log('Sending image:', image);
-            await sendImage('/media/multimedia/sector/0/' + image);
+            await sendImage('/tmp/usb/sda/sda2/sector/0/' + image);
             await new Promise(resolve => setTimeout(resolve, 50)); // 0.5초 대기
         }
         res.end(); // 모든 이미지 전송 후 연결 종료
@@ -256,9 +256,9 @@ app.post('/api/harvest/:sectorId', async (req, res) => {
           sensorData: null,
           uid : null
         });
-        const imageList = fs.readdirSync(`/media/multimedia/sector/${sectorId}`);
+        const imageList = fs.readdirSync(`/tmp/usb/sda/sda2/sector/${sectorId}`);
         for (const image of imageList) {
-          fs.unlinkSync(`/media/multimedia/sector/${sectorId}/${image}`);
+          fs.unlinkSync(`/tmp/usb/sda/sda2/sector/${sectorId}/${image}`);
         }
 
         console.log("Flask 서버로 성공적으로 요청을 보냈습니다:", flaskResponse.data);

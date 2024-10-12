@@ -13,7 +13,7 @@ function getLocalTimestamp() {
 async function saveLocal() {
 	const timeStamp = getLocalTimestamp();
 	const data = await fs.readFile('/media/internal/stream.jpeg');
-	fs.writeFile(`/media/multimedia/sector/0/${timeStamp}.jpeg`, data);
+	fs.writeFile(`/tmp/usb/sda/sda2/sector/0/${timeStamp}.jpeg`, data);
 	return `${timeStamp}.jpeg`;
 }
 

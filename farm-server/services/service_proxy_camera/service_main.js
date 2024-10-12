@@ -68,7 +68,7 @@ service.register("saveLocal", async (message) => {
             // console.log("img name: ", img);
             // if (img)
             //     saveImage(img, "0");
-        }, 10000);
+        }, 600000);
 
             //------------------------- heartbeat 구독 -------------------------
         const sub = service.subscribe(`luna://${pkgInfo.name}/heartbeat`, {subscribe: true});

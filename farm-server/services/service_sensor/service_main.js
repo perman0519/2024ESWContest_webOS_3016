@@ -14,18 +14,18 @@ function storeSensorData(message) {
     });
 }
 
-async function getSensorData(message) {
-    try {
-        const sensorData = await getSensorData(database, ref, onValue);
-        console.log("Returned sensor data: ", sensorData);
-        message.respond({
-            returnValue: true,
-            Response: sensorData
-        });
-    } catch (error) {
-        console.error("Error: ", error);
-    }
-}
+// async function getSensorData(message) {
+//     try {
+//         const sensorData = await getSensorData(database, ref, onValue);
+//         console.log("Returned sensor data: ", sensorData);
+//         message.respond({
+//             returnValue: true,
+//             Response: sensorData
+//         });
+//     } catch (error) {
+//         console.error("Error: ", error);
+//     }
+// }
 
 service.register("storeSensorData", storeSensorData);
-service.register("getSensorData", getSensorData);
+// service.register("getSensorData", getSensorData);
