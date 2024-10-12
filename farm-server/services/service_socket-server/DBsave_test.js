@@ -1,25 +1,5 @@
-// const WebSocket = require("ws");
-// const mqtt = require('mqtt');
-// const { database } = require('./firebase.js');
+const database = require('./firebase.js');
 const { ref, set, get } = require('firebase/database');
-
-const initializeApp = require('firebase/app').initializeApp;
-const getDatabase = require('firebase/database').getDatabase;
-require('dotenv').config({ path: './.env' });
-
-// firebase init
-const firebaseConfig = {
-    apiKey: process.env.APIKEY,
-    authDomain: process.env.AUTH_DOMAIN,
-    databaseURL: process.env.DATABASE_URL,
-    projectId: process.env.PROJECT_ID,
-    storageBucket: process.env.STORAGE_BUCKET,
-    messagingSenderId: process.env.MESSAGING_SENDER_ID,
-    appId: process.env.APP_ID
-};
-
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
 
 // weekly_avg 데이터를 sector/sectorId에 저장하는 함수
 function saveWeeklyAvgToFirebase(sector_id, weeklyData) {
