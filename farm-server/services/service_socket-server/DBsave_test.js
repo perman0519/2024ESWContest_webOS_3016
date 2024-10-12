@@ -143,11 +143,11 @@ function saveWeeklyPumpData(sector_id, count) {
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-    const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+    const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`);
     const currentTime = new Date();  // 현재 시간을 Date 객체로 가져옴
 
     // Firebase에서 상태 값 읽어오기
-    get(commandRef)
+    get(pumpRef)
     .then((snapshot) => {
         let currentData = snapshot.val();
         
@@ -174,7 +174,7 @@ function storePumpStatus(sector_id, state) {
             setData.count += 1;
         }
         // 상태데이터 설정
-        return set(commandRef, setData);
+        return set(pumpRef, setData);
     })
     .then(() => {
         console.log("Firebase 저장 성공");

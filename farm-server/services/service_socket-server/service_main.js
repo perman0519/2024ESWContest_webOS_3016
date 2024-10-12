@@ -4,7 +4,7 @@ const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const mqtt = require('mqtt');
 const { database } = require('./firebase.js');
-const { ref, set } = require('firebase/database');
+const { ref, set, get } = require('firebase/database');
 const logHeader = "[" + pkgInfo.name + "]";
 
 // Firebase에 명령 저장하는 함수
@@ -21,11 +21,78 @@ function storeLedStatus(sector_id, state) {
     });
 }
 
-//
+// save weekly pump count to firebase
+function saveWeeklyPumpData(sector_id, count) {
+    let id = 0;  // id is week number
+    const checkAndStore = () => {
+        const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${id}`);
+        
+        // read route from Firebase
+        get(dataRef).then((snapshot) => {
+            let currentData = snapshot.val();
+            
+            // if threr is no pumpCnt then push data
+            if (!currentData || !currentData.pumpCnt) {
+                let setData = {
+                    ...currentData,  // set previous data
+                    pumpCnt: count
+                };
+
+                // save data to Firebase
+                return set(dataRef, setData)
+                    .then(() => {
+                        console.log(`ID ${id}에 pumpCnt 저장 성공`);
+                    })
+                    .catch((error) => {
+                        console.error(`ID ${id}에 데이터 저장 실패: `, error);
+                    });
+            } else {
+                // if there is pumpCnt on this ID then id++
+                id++;
+                checkAndStore();
+            }
+        }).catch((error) => {
+            console.error(`Firebase 읽기 실패: `, error);
+        });
+    };
+    // first call
+    checkAndStore();
+}
+
+// storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-    const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
-    set(commandRef, {
-        status: state,
+    const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+    const currentTime = new Date();
+
+    // get data from Firebase
+    get(pumpRef)
+    .then((snapshot) => {
+        let currentData = snapshot.val();
+        
+        // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
+        let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
+
+        // 1주일(7일) 차이가 나는지 계산 (Date 객체끼리 비교)
+        const timeDifference = (currentTime - startTime) / (1000 * 60 * 60 * 24); // 일 단위 계산
+
+        let setData = {
+            status: state,
+            count: currentData && currentData.count ? currentData.count : 0,
+            start: formatDate(startTime) // 저장할 때는 연월일시분초 형식으로 변환
+        };
+
+        // 1주일 이상 차이가 나면 count를 0으로 초기화하고 start를 현재 시간으로 설정
+        if (timeDifference >= 7) {
+            saveWeeklyPumpData(sector_id, currentData.count);
+            setData.count = 0;
+            setData.start = formatDate(currentTime); // 새로운 시작 시간을 현재 시간으로 설정
+        }
+
+        if (state === "ON") {
+            setData.count += 1;
+        }
+        // 상태데이터 설정
+        return set(pumpRef, setData);
     })
     .then(() => {
         console.log("Firebase 저장 성공");
