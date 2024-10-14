@@ -15,7 +15,7 @@ import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
 import { createToast } from '../components/toast';
 
-const ip = "10.19.208.192:8081";
+const ip = "0.0.0.0:8081";
 
 const wsRef = { current: null };
 
@@ -310,7 +310,7 @@ function MainPanel(props) {
                                     <Menu className="h-6 w-6" />
                                 </Button>
                                 <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                                    <Flower className="text-white" size={24} />
+                                    <Flower className="text-white" size={40} />
                                 </div>
                                 <div>
                                     <h1 className="text-xl font-bold text-gray-800">안녕하세요, {user.email}</h1>
@@ -354,7 +354,7 @@ function MainPanel(props) {
                                     </div>
                                     <div className="mt-8 flex justify-evenly items-center">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            <div className="w-20 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                                             {currentTemp}°C
                                             </div>
                                             <div>
@@ -363,7 +363,7 @@ function MainPanel(props) {
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            <div className="w-20 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                                                 {currentHumi}%
                                             </div>
                                             <div>
@@ -372,7 +372,7 @@ function MainPanel(props) {
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                            <div className="w-20 h-16 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                                                 {currentSoilHumi}°C
                                             </div>
                                             <div>
@@ -455,7 +455,7 @@ function ConnectSocket() {
     useEffect(() => {
         const connectWebSocket = () => {
             // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://10.19.208.192:3001');
+            wsRef.current = new WebSocket('ws://0.0.0.0:3001');
 
             wsRef.current.onopen = function() {
                 console.log('Online 🟢');
