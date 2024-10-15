@@ -1,13 +1,11 @@
-const ref = require('firebase/database').ref;
-const onValue = require('firebase/database').onValue;
 const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
-const { setupMQTT, getSensorData } = require('./mqtt_connect.js');
+const { setupMQTT } = require('./mqtt_connect.js');
 const { database } = require('./firebase.js');
 
 function storeSensorData(message) {
-    setupMQTT(database, ref);
+    setupMQTT(database);
     message.respond({
         returnValue: true,
         Response: "Sensor data stored"
