@@ -155,8 +155,6 @@ function ChartPanel(props) {
 								</div>
 							</div>
 							<div className="flex items-center space-x-4">
-
-								<ConnectSocket />
 								<Button variant="outline" size="icon" className="text-gray-800 border-gray-300 hover:bg-green-100">
 									<Bell size={20} />
 								</Button>
