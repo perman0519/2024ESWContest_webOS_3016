@@ -1,5 +1,5 @@
 const mqtt = require('mqtt');
-const { set, onValue, ref } = require('firebase/database');
+const { set, onValue, ref, get } = require('firebase/database');
 
 // 마지막 저장된 시간을 기록하는 변수
 let lastSavedTime = 0;
@@ -35,7 +35,7 @@ function updateSectorInfo(database, sensorData)
             console.log(sector_id, timeStamp, `sector/${sector_id}/sensorData/`);
             const sectorValue = ref(database, `sector/${sector_id}/sensorData`);
 
-            const sectorRef = ref(database, `sector/${sector_id}/`); //testing
+            const sectorRef = ref(database, `sector/${sector_id}/`); //testing ok
 
             onValue(sectorValue, (snapshot) => {
                 const existingData = snapshot.val() || {}; // 데이터가 없을 때도 existingData 변수가 객체 형식으로 초기화
@@ -56,8 +56,8 @@ function updateSectorInfo(database, sensorData)
                         console.error("Error updating data: ", error);
                     });
             });
-            
-            saveWeekData(sectorRef); //testing
+            // 주간평균을 DB에 저장
+            saveWeekData(sectorRef, database); //testing
         }
     } else {
         console.log("Skipped saving, waiting for 30 seconds interval.");
@@ -110,10 +110,8 @@ function setupMQTT(database) {
     const mqtt_topic = "sensor/all"; // 나중에 변경
     client.on('connect', () => {connectionSuccess(client, mqtt_topic)});
     client.on('error', connectionError);
-    client.on('message', (topic, msg) => {receivedMessage(msg, database, ref)});
+    client.on('message', (topic, msg) => {receivedMessage(msg, database)});
 }
-
-setupMQTT(database, );
 
 function getSensorData(database, ref, onValue)
 {
@@ -159,9 +157,9 @@ function getSensorData(database, ref, onValue)
 }
 
 // weekly_avg 데이터를 sector/sectorId에 저장하는 함수
-function saveWeeklyAvgToFirebase(sector_id, weeklyData) {
+function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
     // 데이터베이스 경로 설정 (sector/{sector_id}/weekly_avg)
-    const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
+    const dataRef = ref(database, `sector/${sector_id}/weekly_avg`); //error
   
     // weekly_avg 데이터 저장
     set(dataRef, weeklyData)
@@ -211,7 +209,7 @@ function groupByWeek(data) {
 }
 
 // week단위로 센서데이터를 평균내어 저장하는 함수
-function saveWeekData(sectorRef)
+function saveWeekData(sectorRef, database)
 {
     // 섹터별 db의 값을 가져온다
     //const sectorRef = ref(database, `sector/${sector_id}/`);
@@ -235,13 +233,14 @@ function saveWeekData(sectorRef)
         //console.log(weeklyData);
 
         // 주간평균을 DB에 저장한다
-        saveWeeklyAvgToFirebase(sector_id, weeklyData);
+        // saveWeeklyAvgToFirebase(sector_id, weeklyData);
+        saveWeeklyAvgToFirebase(0, weeklyData, database);
     })
     .then(() => {
         console.log("Firebase 읽어오기 성공");
     })
     .catch((error) => {
-        console.log("Firebase 저장 실패: ", error);
+        console.log("Firebase 저장 실패: ", error); //here
     });
 }
 
