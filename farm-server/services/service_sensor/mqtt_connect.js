@@ -57,7 +57,7 @@ function updateSectorInfo(database, sensorData)
                     });
             });
             
-            setWeekData(sectorRef); //testing
+            saveWeekData(sectorRef); //testing
         }
     } else {
         console.log("Skipped saving, waiting for 30 seconds interval.");
@@ -211,7 +211,7 @@ function groupByWeek(data) {
 }
 
 // week단위로 센서데이터를 평균내어 저장하는 함수
-function setWeekData(sectorRef)
+function saveWeekData(sectorRef)
 {
     // 섹터별 db의 값을 가져온다
     //const sectorRef = ref(database, `sector/${sector_id}/`);
