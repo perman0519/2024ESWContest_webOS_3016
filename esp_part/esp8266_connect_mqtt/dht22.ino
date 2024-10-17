@@ -11,8 +11,8 @@ JSON 형식 문자열 생성: packet 변수에서 {"Temperature": , "Humidity": 
 #define DHTPIN D2  // 사용하기로 한 디지털 핀
 #define DHTTYPE DHT22
 
-const char* ssid = "LGU+-974B82";
-const char* password = "77025701";
+const char* ssid = "42 Guest";
+const char* password = "WeL0ve42Seoul";
 const char* mqtt_server = "192.168.100.101";  // broker가 실행되고 있는 주소.
 
 WiFiClient espClient;
@@ -122,7 +122,7 @@ void mqtt_publish(float Humi, float Temp) {
     packet.toCharArray(msg, 100);  // JSON 데이터를 char 배열로 변환
     Serial.print("Publish message: ");
     Serial.println(msg);
-    
+
     // MQTT로 메시지 발행
     client.publish("Sensor/Temp_Humi", msg);
   }

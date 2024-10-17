@@ -1,6 +1,10 @@
 #define LED_PIN 8
 #define WATERPUMP_PIN 9
 
+unsigned long pumpStartTime = 0;
+bool isPumpRunning = false;
+const unsigned long PUMP_DURATION = 5000; // 5 seconds in milliseconds
+
 void setup() {
   Serial.begin(115200); // PC와의 통신을 위한 시리얼 포트
   Serial.flush();
@@ -22,11 +26,30 @@ void loop() {
       digitalWrite(LED_PIN, LOW);
       Serial.println("LED_OFF_OK");
     } else if (command == "WATERPUMP_ON") {
-      digitalWrite(WATERPUMP_PIN, HIGH);
-      Serial.println("WATERPUMP_ON_OK");
-    } else if (command == "WATERPUMP_OFF") {
-      digitalWrite(WATERPUMP_PIN, LOW);
-      Serial.println("WATERPUMP_OFF_OK");
+      startPump();
     }
+  }
+
+  checkPumpStatus();
+}
+
+void startPump() {
+  if (!isPumpRunning) {
+    digitalWrite(WATERPUMP_PIN, HIGH);
+    isPumpRunning = true;
+    pumpStartTime = millis();
+    Serial.println("WATERPUMP_ON_OK");
+  }
+}
+
+void stopPump() {
+  digitalWrite(WATERPUMP_PIN, LOW);
+  isPumpRunning = false;
+  Serial.println("WATERPUMP_AUTO_OFF");
+}
+
+void checkPumpStatus() {
+  if (isPumpRunning && (millis() - pumpStartTime >= PUMP_DURATION)) {
+    stopPump();
   }
 }
