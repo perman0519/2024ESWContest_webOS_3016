@@ -15,6 +15,7 @@
     "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",
     "fs": "^0.0.1-security",
+    "mqtt": "^5.10.1",
     "undici": "^6.19.8",
     "ws": "^8.18.0"
   }

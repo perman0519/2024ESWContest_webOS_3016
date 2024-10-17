@@ -3,6 +3,7 @@ const { onValue, child, get, ref, query, orderByKey, limitToLast, push, update, 
 const express = require('express');
 const fs = require('fs');
 const { Z_ASCII } = require('zlib');
+const mqtt = require('mqtt');
 const axios = require('axios');  // axios 임포트 추가
 
 const app = express();
@@ -299,6 +300,53 @@ app.get('/api/prompt/:sectorId', async (req, res) => {
     console.error('Error fetching plant prompt:', error);
     res.status(500).json({ error: 'Failed to fetch plant prompt' });
   }
+});
+
+app.post('/api/arduino', async (req, res) => {
+    const type = req.body.type;
+    const userId = req.body.user_id;
+    const sectorId = req.body.sector_id;
+    const command = req.body.command;
+    console.log("req.body: ", req.body);
+    const mqtt_host = "54.180.187.212";
+    const mqtt_port = "8000";
+    const mqtt_clientId = "clientID-" + parseInt(Math.random() * 100);
+
+    const client = mqtt.connect(`ws://${mqtt_host}:${mqtt_port}`, {
+        clientId: mqtt_clientId,
+    });
+
+    client.on('connect', function () {
+        console.log("mqtt Connected to MQTT broker");
+    });
+
+    client.on('error', function (err) {
+        console.log("mqtt Connection failed: ", err.message);
+    });
+
+    const topic = `esp32/${type}/command`;
+    client.publish(topic, command, {qos : 1}, function (err){
+        if (!err){
+            console.log(`topic publish success : ${topic}`);
+        }
+        else {
+            console.log("publish failed: ", err.message);
+        }
+        client.end();
+    });
+
+    const commandRef = ref(database, `sector/${sectorId}/LED_Status/`);
+    set(commandRef, {
+        status: command,
+    })
+    .then(() => {
+        console.log("Firebase 저장 성공");
+    })
+    .catch((error) => {
+        console.log("Firebase 저장 실패: ", error);
+    });
+
+    res.json({ message: "Command sent successfully" });
 });
 
 const startHttpServer = () => {

@@ -10,7 +10,7 @@ import {Calendar, Flower, Plus } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
-const ip = "10.19.208.192:8081";
+const ip = "10.19.208.172:8081";
 
 function SubscribePanel(props) {
     const { main, chart, user, subscribe, logout, timelapse, isSidebarOpen } = props;

@@ -27,6 +27,7 @@ void loop() {
       Serial.println("LED_OFF_OK");
     } else if (command == "WATERPUMP_ON") {
       startPump();
+      Serial.println("WATERPUMP_ON_OK");
     }
   }
 

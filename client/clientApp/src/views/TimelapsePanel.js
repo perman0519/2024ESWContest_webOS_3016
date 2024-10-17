@@ -11,7 +11,7 @@ import { usePlantContext } from './PlantContext.js';
 
 import {Film, Menu} from 'lucide-react'
 
-const ip = "10.19.208.192:8081";
+const ip = "10.19.208.172:8081";
 // 카메라 아무나 다 볼 수 있음 문제있음
 
 function TimelapsePanel(props) {
@@ -37,6 +37,7 @@ function TimelapsePanel(props) {
     }, []);
 
 	const handleVideo = useCallback(() => {
+        console.log("handleVideo");
 		setSrc(`http://${ip}/timelapse?${new Date().getTime()}`);
 		setCameraError(false); // 에러 상태 초기화
 	}, []);

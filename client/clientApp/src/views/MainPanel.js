@@ -15,30 +15,35 @@ import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
 import { createToast } from '../components/toast';
 
-const ip = "0.0.0.0:8081";
+const ip = "10.19.208.172:8081";
 
-const wsRef = { current: null };
+// const wsRef = { current: null };
 
+// function waterpumpOn({ user }) {
 function ControlOnOff({ user, type }) {
     const [isSelected, setIsSelected] = useState(false);
     const icon = type === "led" ? "💡" : "🚰";
 
     const sendMessage = useCallback((toggleStatus) => {
-        if (wsRef.current) {
-            const message = `
-                {
-                    "user_id": "${user.uid}",
-                    "sector_id": ${0},
-                    "type": "${type}",
-                    "command": "${toggleStatus ? "ON" : "OFF"}"
-                }
-            `;
-            wsRef.current.send(message);
-            wsRef.current.onmessage = function(event) {
-                console.log('서버로부터 받은 메시지:', event.data);
-                createToast(`${event.data}`);
-            }
-        }
+        fetch(`http://${ip}/api/arduino`, {
+            method: 'POST', // POST 요청
+            headers: {
+                'Content-Type': 'application/json', // JSON 형식으로 보낼 때
+            },
+            body: JSON.stringify({
+                "user_id": `${user.uid}`,
+                "sector_id": `${0}`,
+                "type": `${type}`,
+                "command": `${toggleStatus ? "ON" : "OFF"}`
+            })
+        }).then(response => response.json())
+        .then(data => {
+            createToast(data);
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }, [user, type]);
 
     const handleToggle = useCallback((e) => {
@@ -215,6 +220,29 @@ function MainPanel(props) {
  // eslint-disable-next-line
     }, [user, setSelectedPlantList, plantAge]);
 
+    const waterpumpOn = useCallback(() => {
+        console.log('워터펌프를 켭니다.');
+        fetch(`http://${ip}/api/arduino`, {
+            method: 'POST', // POST 요청
+            headers: {
+                'Content-Type': 'application/json', // JSON 형식으로 보낼 때
+            },
+            body: JSON.stringify({
+                "user_id": `${user.uid}`,
+                "sector_id": `${0}`,
+                "type": 'waterpump',
+                "command": `ON`
+            })
+        }).then(response => response.json())
+        .then(data => {
+            createToast(data);
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }, [user]);
+
     const logout = useCallback(async () => {
         try {
             await signOut(auth);
@@ -318,7 +346,6 @@ function MainPanel(props) {
                                 </div>
                             </div>
                             <div className="flex items-center space-x-4">
-                                <ConnectSocket />
                                 <Select className=""  onValueChange={handleSelectedPlant} defaultValue={selectedPlant.plant.name}>
                                     {selectedPlantList.map((plant) => <SelectItem value={plant.id+"-"+plant.name}>{plant.name}</SelectItem>)}
                                 </Select>
@@ -330,12 +357,12 @@ function MainPanel(props) {
                                     <div className='flex justify-evenly items-center mb-2'>
                                         <h2 className="text-xl font-semibold mb-4 text-gray-800">{selectedPlant? selectedPlant.plant.name: ""} 식물 구역</h2>
                                         <div className="flex items-center space-x-4 border-x">
-                                            <ControlOnOff user={user} type='waterpump' />
+                                            <Button onClick={waterpumpOn}>🚰 On</Button>
                                             <ControlOnOff user={user} type='led' />
                                         </div>
                                         {
                                             showButton &&
-                                            <Button variant="outline" onclick={handleHarvest} className="text-gray-800 w-fit text-sm border-gray-300 hover:bg-green-100">
+                                            <Button variant="outline" onClick={handleHarvest} className="text-gray-800 w-fit text-sm border-gray-300 hover:bg-green-100">
                                                 <span>수확하기</span>
                                             </Button>
                                         }
@@ -449,55 +476,55 @@ function MainPanel(props) {
     );
 }
 
-function ConnectSocket() {
-    const [isConnected, setIsConnected] = useState(false);
+// function ConnectSocket() {
+//     const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-        const connectWebSocket = () => {
-            // eslint-disable-next-line no-undef
-            wsRef.current = new WebSocket('ws://0.0.0.0:3001');
+//     useEffect(() => {
+//         const connectWebSocket = () => {
+//             // eslint-disable-next-line no-undef
+//             wsRef.current = new WebSocket('ws://10.19.208.172:3001');
 
-            wsRef.current.onopen = function() {
-                console.log('Online 🟢');
-                setIsConnected(true);
-            };
+//             wsRef.current.onopen = function() {
+//                 console.log('Online 🟢');
+//                 setIsConnected(true);
+//             };
 
-            wsRef.current.onclose = function(event) {
-                setIsConnected(false);
-                if (!event.wasClean) {
-                    console.error('Offline 🔴');
-                    setTimeout(() => {
-                        console.log('다시 연결 시도 중...');
-                        connectWebSocket();
-                    }, 5000);
-                } else {
-                    console.log('연결이 정상적으로 종료되었습니다.');
-                }
-            };
+//             wsRef.current.onclose = function(event) {
+//                 setIsConnected(false);
+//                 if (!event.wasClean) {
+//                     console.error('Offline 🔴');
+//                     setTimeout(() => {
+//                         console.log('다시 연결 시도 중...');
+//                         connectWebSocket();
+//                     }, 5000);
+//                 } else {
+//                     console.log('연결이 정상적으로 종료되었습니다.');
+//                 }
+//             };
 
-            wsRef.current.onmessage = function(event) {
-                console.log('서버로부터 받은 메시지:', event.data);
-            };
+//             wsRef.current.onmessage = function(event) {
+//                 console.log('서버로부터 받은 메시지:', event.data);
+//             };
 
-            wsRef.current.onerror = function(error) {
-                console.error('WebSocket 오류 발생:', error);
-            };
-        };
+//             wsRef.current.onerror = function(error) {
+//                 console.error('WebSocket 오류 발생:', error);
+//             };
+//         };
 
-        connectWebSocket();
+//         connectWebSocket();
 
-        return () => {
-            if (wsRef.current) {
-                wsRef.current.close();
-            }
-        };
-    }, []);
+//         return () => {
+//             if (wsRef.current) {
+//                 wsRef.current.close();
+//             }
+//         };
+//     }, []);
 
-    return (
-        <div>
-            <span>{isConnected ? '🟢' : '🔴'}</span>
-        </div>
-    );
-}
+//     return (
+//         <div>
+//             <span>{isConnected ? '🟢' : '🔴'}</span>
+//         </div>
+//     );
+// }
 
 export default MainPanel;
