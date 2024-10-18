@@ -14,9 +14,12 @@ import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
 import { createToast } from '../components/toast';
+import dotenv from 'dotenv';
 
-const ip = "10.19.208.172:8081";
-const arduino_ip = "10.19.208.172:8082";
+dotenv.config();
+
+const ip = `${process.env.REACT_APP_IP}:${process.env.REACT_APP_HTTP_PORT}`;
+// const arduino_ip = `${process.env.REACT_APP_IP}:${process.env.REACT_APP_HTTP2_PORT}`;
 
 // const wsRef = { current: null };
 
@@ -26,7 +29,7 @@ function ControlOnOff({ user, type }) {
     const icon = type === "led" ? "💡" : "🚰";
 
     const sendMessage = useCallback((toggleStatus) => {
-        fetch(`http://${arduino_ip}/api/arduino`, {
+        fetch(`http://${ip}/api/arduino`, {
             method: 'POST', // POST 요청
             headers: {
                 'Content-Type': 'application/json', // JSON 형식으로 보낼 때
@@ -223,7 +226,7 @@ function MainPanel(props) {
 
     const waterpumpOn = useCallback(() => {
         console.log('워터펌프를 켭니다.');
-        fetch(`http://${arduino_ip}/api/arduino`, {
+        fetch(`http://${ip}/api/arduino`, {
             method: 'POST', // POST 요청
             headers: {
                 'Content-Type': 'application/json', // JSON 형식으로 보낼 때

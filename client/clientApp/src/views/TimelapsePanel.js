@@ -11,8 +11,11 @@ import { usePlantContext } from './PlantContext.js';
 
 import {Film, Menu} from 'lucide-react'
 
-const ip = "10.19.208.172:8081";
-// 카메라 아무나 다 볼 수 있음 문제있음
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const ip = `${process.env.REACT_APP_IP}:${process.env.REACT_APP_HTTP_PORT}`;
 
 function TimelapsePanel(props) {
     // eslint-disable-next-line

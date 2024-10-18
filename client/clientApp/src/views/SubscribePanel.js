@@ -10,7 +10,11 @@ import {Calendar, Flower, Plus } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 
-const ip = "10.19.208.172:8081";
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const ip = `${process.env.REACT_APP_IP}:${process.env.REACT_APP_HTTP_PORT}`;
 
 function SubscribePanel(props) {
     const { main, chart, user, subscribe, logout, timelapse, isSidebarOpen } = props;

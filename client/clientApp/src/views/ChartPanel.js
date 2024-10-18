@@ -12,11 +12,11 @@ import { Bell, Menu, Flower } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
+import dotenv from 'dotenv';
 
+dotenv.config();
 
-// const wsRef = { current: null };
-
-const ip = "10.19.208.172:8081";
+const ip = `${process.env.REACT_APP_IP}:${process.env.REACT_APP_HTTP_PORT}`;
 
 function calculateDateDifference(endDate) {
     try {
