@@ -1,5 +1,5 @@
 const { database }  = require('./firebase.js');
-const { onValue, child, get, ref, query, orderByKey, limitToLast, push, update, set } = require('firebase/database');
+const { onValue, child, get, ref, query, orderByKey, limitToLast, push, update, set, transaction } = require('firebase/database');
 const express = require('express');
 const fs = require('fs');
 const { Z_ASCII } = require('zlib');
@@ -346,6 +346,13 @@ app.post('/api/arduino', async (req, res) => {
         console.log("Firebase 저장 실패: ", error);
     });
 
+    //////////////////////////
+    if (type ==="waterpump") {
+      storePumpStatus(0, "ON");
+      console.log("testtesttesttest");
+    }
+    ///////////////////////////
+
     res.json({ message: "Command sent successfully" });
 });
 
@@ -354,6 +361,110 @@ const startHttpServer = () => {
     console.log(`MJPEG streaming server running at http://0.0.0.0:${port}`);
     });
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+// ISO 8601형식의 문자열을 열월일시분초 형식으로 변환
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+  const day = String(date.getDate()).padStart(2, '0');
+  
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// save weekly pump count to firebase
+function saveWeeklyPumpData(sector_id, count) {
+  let id = 0;  // 주 번호
+  const maxId = 52; // 최대 52주까지만 시도
+  const checkAndStore = () => {
+      if (id > maxId) {
+          console.error(`최대 ID ${maxId}까지 데이터를 저장할 수 없습니다.`);
+          return;
+      }
+
+      const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${id}`);
+
+      // Firebase에서 데이터를 읽고 저장하는 부분
+      get(dataRef).then((snapshot) => {
+          let currentData = snapshot.val();
+          
+          // 데이터가 없거나 pumpCnt가 없으면 새로운 데이터 저장
+          if (!currentData || !currentData.pumpCnt) {
+              let setData = {
+                  ...currentData,  // 기존 데이터 유지
+                  pumpCnt: count   // 새로운 pumpCnt 저장
+              };
+
+              // 데이터를 Firebase에 저장
+              return set(dataRef, setData)
+                  .then(() => {
+                      console.log(`ID ${id}에 pumpCnt 저장 성공`);
+                  })
+                  .catch((error) => {
+                      console.error(`ID ${id}에 데이터 저장 실패: `, error);
+                  });
+          } else {
+              // 이미 데이터가 있으면 id 증가 후 다시 시도
+              id++;
+              checkAndStore();
+          }
+      }).catch((error) => {
+          console.error(`Firebase 읽기 실패: `, error);
+      });
+  };
+
+  // 첫 번째 호출
+  checkAndStore();
+}
+
+// storePumpStatus and add Pump_count
+function storePumpStatus(sector_id, state) {
+  const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
+  const currentTime = new Date();
+
+  // get data from Firebase
+  get(pumpRef)
+  .then((snapshot) => {
+      let currentData = snapshot.val();
+      
+      // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
+      let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
+
+      // 1주일(7일) 차이가 나는지 계산 (Date 객체끼리 비교)
+      const timeDifference = (currentTime - startTime) / (1000 * 60 * 60 * 24); // 일 단위 계산
+
+      let setData = {
+          status: state,
+          count: currentData && currentData.count ? currentData.count : 0,
+          start: formatDate(startTime) // 저장할 때는 연월일시분초 형식으로 변환
+      };
+
+      // 1주일 이상 차이가 나면 count를 0으로 초기화하고 start를 현재 시간으로 설정
+      if (timeDifference >= 7) {
+          saveWeeklyPumpData(sector_id, currentData.count);
+          setData.count = 0;
+          setData.start = formatDate(currentTime); // 새로운 시작 시간을 현재 시간으로 설정
+      }
+
+      if (state === "ON") {
+          setData.count += 1;
+      }
+      // 상태데이터 설정
+      return set(pumpRef, setData);
+  })
+  .then(() => {
+      console.log("Firebase 저장 성공");
+  })
+  .catch((error) => {
+      console.log("Firebase 저장 실패: ", error);
+  });
+}
+//////////////////////////////////////////////////////////////////////////////////////////
 
 // startHttpServer();
 module.exports = { startHttpServer };

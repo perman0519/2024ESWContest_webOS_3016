@@ -79,20 +79,6 @@ function saveWeeklyPumpData(sector_id, count) {
     checkAndStore();
 }
 
-
-// function storePumpStatus(sector_id, state) {
-//     const commandRef = ref(database, `sector/${sector_id}/Pump_Status/`);
-//     set(commandRef, {
-//         status: state,
-//     })
-//     .then(() => {
-//         console.log("Firebase 저장 성공");
-//     })
-//     .catch((error) => {
-//         console.log("Firebase 저장 실패: ", error);
-//     });
-// }
-
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
     const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
