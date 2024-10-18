@@ -16,6 +16,7 @@ import { usePlantContext } from './PlantContext.js';  // 추가
 import { createToast } from '../components/toast';
 
 const ip = "10.19.208.172:8081";
+const arduino_ip = "10.19.208.172:8082";
 
 // const wsRef = { current: null };
 
@@ -25,7 +26,7 @@ function ControlOnOff({ user, type }) {
     const icon = type === "led" ? "💡" : "🚰";
 
     const sendMessage = useCallback((toggleStatus) => {
-        fetch(`http://${ip}/api/arduino`, {
+        fetch(`http://${arduino_ip}/api/arduino`, {
             method: 'POST', // POST 요청
             headers: {
                 'Content-Type': 'application/json', // JSON 형식으로 보낼 때
@@ -187,7 +188,7 @@ function MainPanel(props) {
                     setAdvisorMessage(plant.plant.prompt);
                     const baseData = Object.entries(plant.plant.length).map(([date, height]) => ({
                         date,
-                        height
+                        height: Number(Number(height).toFixed(2))
                       }));
                     setGrowthData(baseData);
                 } else {
@@ -222,7 +223,7 @@ function MainPanel(props) {
 
     const waterpumpOn = useCallback(() => {
         console.log('워터펌프를 켭니다.');
-        fetch(`http://${ip}/api/arduino`, {
+        fetch(`http://${arduino_ip}/api/arduino`, {
             method: 'POST', // POST 요청
             headers: {
                 'Content-Type': 'application/json', // JSON 형식으로 보낼 때
@@ -421,7 +422,7 @@ function MainPanel(props) {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">현재 높이</p>
-                                        <p className="text-2xl font-bold text-gray-800">{plantHeight} cm</p>
+                                        <p className="text-2xl font-bold text-gray-800">{plantHeight.toFixed(2)}  cm</p>
                                     </div>
                                     </div>
                                     <div className="h-64">
