@@ -25,10 +25,10 @@ function getLocalTimestamp() {
 
 async function getPlantLength(message) {
 
-    const imageList = fs.readdirSync('/tmp/usb/sda/sda2/sector/0');
+    const imageList = fs.readdirSync('/media/multimedia/sector/0');
     const latestImage = imageList[imageList.length - 1];
 
-    const image = fs.readFileSync('/tmp/usb/sda/sda2/sector/0/' + latestImage, {
+    const image = fs.readFileSync('/media/multimedia/sector/0/' + latestImage, {
         encoding: "base64"
     });
     console.log("image: ", image);
@@ -38,9 +38,9 @@ async function getPlantLength(message) {
     try {
         const response = await axios({
             method: "POST",
-            url: "https://detect.roboflow.com/plant-length-ijchc/1",
+            url: "https://detect.roboflow.com/plant-length/1",
             params: {
-                api_key: "71mKKK85Z6Y6SaL92bJk"
+                api_key: "RHUq6ZDE5t0JQkwjks14"
             },
             data: image,
             headers: {
@@ -49,10 +49,9 @@ async function getPlantLength(message) {
         });
 
         console.log(response.data);
-        const referenceBBox = response.data.predictions.find(item => item.class === '1'); // 1 == ref
-        const plantBBox = response.data.predictions.find(item => item.class === '0'); // 0 == plant
-        console.log("plantBBox: ", plantBBox);
-        console.log("ref: ", referenceBBox);
+        const referenceBBox = response.data.predictions.find(item => item.class === 'ref');
+        const plantBBox = response.data.predictions.find(item => item.class === 'plant');
+
         let plantHeightCM = 0;
         if (!referenceBBox || !plantBBox) {
             plantHeightCM = 0;
@@ -93,10 +92,6 @@ async function getPlantLength(message) {
             }
         } else {
             console.log("동일한 타임스탬프의 데이터가 이미 존재합니다. 건너뜁니다...");
-            message.respond({
-                returnValue: false,
-                Response: "동일한 타임스탬프의 데이터가 이미 존재합니다. 건너뜁니다.."
-            });
         }
     } catch (e) {
         message.respond({

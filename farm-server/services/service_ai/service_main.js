@@ -2,22 +2,8 @@ const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
-const { ref,  query, orderByKey, limitToLast, get, set } = require('firebase/database');
-const initializeApp = require('firebase/app').initializeApp;
-const getDatabase = require('firebase/database').getDatabase;
-
-const firebaseConfig = {
-    apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-    authDomain: "smartfarm-ddbc3.firebaseapp.com",
-    databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-    projectId: "smartfarm-ddbc3",
-    storageBucket: "smartfarm-ddbc3.appspot.com",
-    messagingSenderId: "945689382597",
-    appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
-  };
-
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const { ref,  query, orderByKey, limitToLast, get, set, transaction } = require('firebase/database');
+const { database } = require('./firebase.js');
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
@@ -140,19 +126,6 @@ async function saveAiPromptToDB(message) {
                 console.error("prompt updating data: ", error);
             });
 
-        service.call("luna://com.webos.service.alarm/set", {
-            "key": "ai-prompt-alarm",
-            "uri": "luna://com.farm.server.ai.service",
-            "params": {},
-            "in": "00:00:20", //24시간으로 수정하기
-            "wakeup": true
-        }, (response)=>{
-            if (response.returnValue) {
-                console.log("알람설정 완료");
-            } else {
-                console.timeLog("알람설정실패:", response);
-            }
-        });
         message.respond({
             returnValue: true,
             Response: "alarm setting ok"
@@ -167,4 +140,5 @@ async function saveAiPromptToDB(message) {
     }
 }
 
+// saveAiPromptToDB();
 service.register("saveAiPromptToDB", saveAiPromptToDB);
