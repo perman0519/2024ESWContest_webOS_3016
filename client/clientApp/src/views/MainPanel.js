@@ -303,6 +303,10 @@ function MainPanel(props) {
         // 일단 학습 api 호출
         // firebase 데이터 삭제
         // timelapse
+        fetch(`http://${ip}/api/harvest/${selectSectorId}`, {
+            method: 'POST'
+        });
+        subscribe();
     }, []);
 
     useEffect(() => {
