@@ -33,15 +33,6 @@
             <!-- <div id -->
         </section>
         <section class="container mt-3">
-            <div class="d-flex justify-content-between">
-                <div class="d-flex align-items-center">
-                    <span class="fs-3 fw-bold me-3">sensor/control ws server state : </span> <div id="sensor-ws-state"></div>
-                </div>
-                <button class="btn btn-primary" id="control-ws-btn"> sensor/control ws server start</button>
-            </div>
-            <!-- <div id -->
-        </section>
-        <section class="container mt-3">
             <h3>camera preview</h3>
             <img src="http://localhost:8081/stream" alt="">
         </section>
@@ -98,7 +89,6 @@
     <script>
         const cameraState = document.getElementById("camera-ws-state");
         const cameraHttpState = document.getElementById("camera-http-state")
-        const sensorState = document.getElementById("sensor-ws-state");
         console.log(sensorState)
         // setInterval
         let cameraWsInstance = null;
@@ -106,10 +96,6 @@
 
         const checkCameraWebSocketState = setInterval(() => {
             checkWSState('ws://localhost:3000', cameraState, cameraWsInstance);
-        }, 1000);
-
-        const checkSensorControlWebSocketState = setInterval(() => {
-            checkWSState('ws://localhost:3001', sensorState, sensorWsInstance);
         }, 1000);
         const checkCameraHttpState = setInterval(() => {checkHttpState(cameraHttpState);}, 1000)
     </script>
@@ -131,7 +117,6 @@
 
         document.querySelector("#camera-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startWSServer');});
         document.querySelector("#camera-http-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startHttpServer')});
-        document.querySelector("#control-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.socket.server.service/socketServer')});
         document.querySelector("#startAll-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startAll')});
     </script>
 </body>
