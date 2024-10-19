@@ -2,8 +2,22 @@ const pkgInfo = require('./package.json');
 const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
-const { ref,  query, orderByKey, limitToLast, get, set, transaction } = require('firebase/database');
-const { database } = require('./firebase.js');
+const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
+const initializeApp = require('firebase/app').initializeApp;
+const getDatabase = require('firebase/database').getDatabase;
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
+    authDomain: "smartfarm-ddbc3.firebaseapp.com",
+    databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
+    projectId: "smartfarm-ddbc3",
+    storageBucket: "smartfarm-ddbc3.appspot.com",
+    messagingSenderId: "945689382597",
+    appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
+  };
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
@@ -36,7 +50,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
 async function recommendActionByGpt(week, species) {
     // 시스템 메시지로 대화의 맥락 설정
     const systemMessage = `
-    You are an expert assistant for smart farm operators. Your task is to provide short, actionable plant care recommendations based on the plant's species, growth stage (age in weeks), and the fact that it is grown in a controlled smart farm environment.
+    You are an expert assistant for smart farm operators. Your task is to provide short, actionable plant care recommendations, concise within a 200-character limit based on the plant's species, growth stage (age in weeks), and the fact that it is grown in a controlled smart farm environment.
     Please include the following information in Korean:
     1. Optimal temperature range for this plant at its current age.
     2. Ideal humidity levels, considering the smart farm's controlled environment.
@@ -82,7 +96,7 @@ async function recommendActionByGpt(week, species) {
 //test
 // recommendActionByGpt(3, 'Basil');
 
-// 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
+/// 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
 // Flask API에 POST 요청을 보내 예측값을 받아오는 함수
 async function callRandomForestModel() { //인자로 ['온도', '습도', '일조량']
     // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
@@ -94,7 +108,9 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     // console.log("feature Latest: ", pre_features);
 
     const week = await calculateTimeDifference();
+    const species = await getPlantType();
     console.log('몇 주주 확인 : ' , week);
+    console.log('식물의 종 확인 : ', species);
     // const species = "토마토"
 
     try {
@@ -104,7 +120,7 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
 
         console.log('서버 응답 1:', response.data.prediction);
 
-        const recommendationResponse = await recommendActionByGpt(week, 'tomato'); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
+        const recommendationResponse = await recommendActionByGpt(week, species); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
         const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction); // await 사용
 
         console.log("토마토 관련:", recommendationResponse);
@@ -206,9 +222,32 @@ async function calculateTimeDifference() {
     }
 }
 
+async function getPlantType() {
+    try {
+        const speciesRef = ref(database, 'sector/0/plant/name');
+        const snapshot = await get (speciesRef);
+        // let plantType = undefined;
+
+        // get(speciesRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                plantType = snapshot.val();
+                console.log("Plant name:", plantType);
+                return plantType;
+            }
+            else{
+                console.log("No data available at the specified path.");
+                return undefined;
+            }
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        return undefined;
+    }    
+}
+
 
 // save the prompt results to DB & JS-service func
 async function saveAiPromptToDB(message) {
+    console.log("saveAiPromptToDB 메서드 호출됨:", new Date());
     try {
         const prompt = await callRandomForestModel();
         console.log("출력 프롬프트", prompt);
@@ -240,6 +279,21 @@ async function saveAiPromptToDB(message) {
         //         console.timeLog("알람설정실패:", response);
         //     }
         // });
+
+        // // //------------------------- heartbeat 구독 -------------------------
+        // const sub = service.subscribe(`luna://${pkgInfo.name}/heartbeat`, {subscribe: true});
+        // const max = 5000; //heart beat 횟수 /// heart beat가 꺼지면, 5초 정도 딜레이 생김 --> 따라서 이 녀석도 heart beat를 무한히 돌릴 필요가 있어보임.
+        // let count = 0;
+        // sub.addListener("response", function(msg) {
+        //     console.log(JSON.stringify(msg.payload));
+        //     if (++count >= max) {
+        //         sub.cancel();
+        //         setTimeout(function(){
+        //             console.log(max+" responses received, exiting...");
+        //             process.exit(0);
+        //         }, 1000);
+        //     }
+        // });
         message.respond({
             returnValue: true,
             Response: "alarm setting ok"
@@ -256,5 +310,4 @@ async function saveAiPromptToDB(message) {
 
 // saveAiPromptToDB();
 
-// saveAiPromptToDB();
 service.register("saveAiPromptToDB", saveAiPromptToDB);
