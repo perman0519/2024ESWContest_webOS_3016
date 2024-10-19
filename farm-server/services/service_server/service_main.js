@@ -9,6 +9,7 @@ const { startWSServer } = require('./ws-server.js');
 const { startHttpServer } = require('./http-proxy-server.js');
 const { saveLocal } = require('./save_local.js');
 const { setupMQTT } = require('./mqtt_connect.js');
+const { database } = require("./firebase.js");
 
 service.register("startWSServer", (msg) => {
     startWSServer();

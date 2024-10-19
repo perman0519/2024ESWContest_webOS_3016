@@ -5,6 +5,7 @@ const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const initializeApp = require('firebase/app').initializeApp;
 const getDatabase = require('firebase/database').getDatabase;
+require('dotenv').config({ path: './.env' });
 
 const firebaseConfig = {
     apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
@@ -38,7 +39,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': `Bearer `,  // 실제 API 키 사용
+            'Authorization': 'Bearer ' + process.env.GPT_KEY,  // 실제 API 키 사용
             'Content-Type': 'application/json'
         }
     });
@@ -77,7 +78,7 @@ async function recommendActionByGpt(week, species) {
             temperature: 0.7
         }, {
             headers: {
-                'Authorization': `Bearer `,
+                'Authorization': 'Bearer ' + process.env.GPT_KEY,
                 'Content-Type': 'application/json'
             }
         });
