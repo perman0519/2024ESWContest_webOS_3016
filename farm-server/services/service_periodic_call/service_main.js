@@ -1,7 +1,7 @@
-const pkgInfo = require('./package.json');
-const Service = require('webos-service');
-const service = new Service(pkgInfo.name); // Create service by service name on package.json
-const logHeader = "[" + pkgInfo.name + "]";
+// const pkgInfo = require('./package.json');
+// const Service = require('webos-service');
+// const service = new Service(pkgInfo.name); // Create service by service name on package.json
+// const logHeader = "[" + pkgInfo.name + "]";
 
 // function periodicallyCallService(msg) {
 //     try {
