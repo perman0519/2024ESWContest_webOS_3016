@@ -129,10 +129,10 @@
             bridge.call(url, JSON.stringify(params));
         }
 
-        document.querySelector("#camera-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startWSServer');});
-        document.querySelector("#camera-http-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startHttpServer')});
+        document.querySelector("#camera-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startWSServer');});
+        document.querySelector("#camera-http-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startHttpServer')});
         document.querySelector("#control-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.socket.server.service/socketServer')});
-        document.querySelector("#startAll-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.camera.service/startAll')});
+        document.querySelector("#startAll-ws-btn").addEventListener("click", () => {startServer('luna://com.farm.server.service/startAll')});
     </script>
 </body>
 </html>

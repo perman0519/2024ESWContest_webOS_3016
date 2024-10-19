@@ -1,10 +1,10 @@
 #!/bin/bash
 
-TARGET_DEVICE="topst"
+TARGET_DEVICE="rbpi4"
 
 SERVER_WEB_APP="farm_control_dashboard"
 SERVICE_DIR="services"
-SERVICES=("service_proxy_camera" "service_plant_measure" "service_sensor" "service_socket-server")
+SERVICES=("service_ai" "service_periodic_call" "service_plant_measure" "service_server" "service_sensor")
 
 PACKAGE_TARGET=$SERVER_WEB_APP
 for service in "${SERVICES[@]}"; do

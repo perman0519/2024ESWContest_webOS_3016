@@ -1,5 +1,5 @@
 {
-  "name": "com.farm.server.camera.service",
+  "name": "com.farm.server.service",
   "version": "1.2.0",
   "description": "proxy camera service",
   "main": "service_main.js",

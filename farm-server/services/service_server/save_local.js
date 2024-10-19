@@ -19,8 +19,8 @@ async function saveLocal() {
 
 module.exports = {saveLocal};
 
-// luna-send -n 1 -f luna://com.farm.server.camera.service/startAll '{}'
-// luna-send -n 1 -f -a com.farm.server.camera.service luna://com.webos.service.db/putPermissions '{
+// luna-send -n 1 -f luna://com.farm.server.service/startAll '{}'
+// luna-send -n 1 -f -a com.farm.server.service luna://com.webos.service.db/putPermissions '{
 //  "permissions":[
 //  {
 //   "operations":{
@@ -29,9 +29,9 @@ module.exports = {saveLocal};
 //     "update":"allow",
 //     "delete":"allow"
 //   },
-//   "object":"com.farm.server.camera.service:1",
+//   "object":"com.farm.server.service:1",
 //   "type":"db.kind",
-//   "caller":"com.farm.server.camera.service"
+//   "caller":"com.farm.server.service"
 //   }
 //  ]
 // }'

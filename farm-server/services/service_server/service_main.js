@@ -99,15 +99,15 @@ service.register("saveLocal", async (message) => {
 
 service.register("startAll", (msg) => {
     try {
-        service.call("luna://com.farm.server.camera.service/startWSServer", {}, (response) => {
+        service.call("luna://com.farm.server.service/startWSServer", {}, (response) => {
             console.log("Call to startWSServer");
             console.log("Message payload:", JSON.stringify(response.payload));
         });
-        service.call("luna://com.farm.server.camera.service/startHttpServer", {}, (response) => {
+        service.call("luna://com.farm.server.service/startHttpServer", {}, (response) => {
             console.log("Call to startHttpServer");
             console.log("Message payload:", JSON.stringify(response.payload));
         });
-        service.call("luna://com.farm.server.camera.service/saveLocal", {}, (response) => {
+        service.call("luna://com.farm.server.service/saveLocal", {}, (response) => {
             console.log("Call to saveLocal");
             console.log("Message payload:", JSON.stringify(response.payload));
         });
@@ -127,7 +127,7 @@ service.register("startAll", (msg) => {
 //     var params = {
 //         "objects": [
 //             {
-//                 "_kind": "com.farm.server.camera.service:1",
+//                 "_kind": "com.farm.server.service:1",
 //                 "name": imageName,
 //                 "sector": sector
 //             }
