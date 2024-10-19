@@ -10,9 +10,7 @@
     "time.query",
     "activity.operation",
     "alarm.operation",
-    "com.farm.server.sensor.service.group",
     "com.farm.server.service.group",
-    "com.farm.server.socket.server.service.group",
     "com.farm.server.ai.service.group",
     "com.farm.server.periodic.call.service.group",
     "all"

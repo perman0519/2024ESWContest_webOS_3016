@@ -8,6 +8,7 @@ const logHeader = "[" + pkgInfo.name + "]";
 const { startWSServer } = require('./ws-server.js');
 const { startHttpServer } = require('./http-proxy-server.js');
 const { saveLocal } = require('./save_local.js');
+const { setupMQTT } = require('./mqtt_connect.js');
 
 service.register("startWSServer", (msg) => {
     startWSServer();
@@ -97,6 +98,17 @@ service.register("saveLocal", async (message) => {
     }
 });
 
+function storeSensorData(message) {
+    setupMQTT(database);
+    message.respond({
+        returnValue: true,
+        Response: "Sensor data stored"
+    });
+}
+
+
+service.register("storeSensorData", storeSensorData);
+
 service.register("startAll", (msg) => {
     try {
         service.call("luna://com.farm.server.service/startWSServer", {}, (response) => {
@@ -111,6 +123,9 @@ service.register("startAll", (msg) => {
             console.log("Call to saveLocal");
             console.log("Message payload:", JSON.stringify(response.payload));
         });
+        service.call("luna://com.farm.server.service/storeSensorData", {}, (response) => {
+            console.log("Call to storeSensorData");
+        });
     } catch (err) {
         msg.respond({
             returnValue: false,
@@ -123,28 +138,8 @@ service.register("startAll", (msg) => {
     });
 });
 
-// function saveImage(imageName, sector) {
-//     var params = {
-//         "objects": [
-//             {
-//                 "_kind": "com.farm.server.service:1",
-//                 "name": imageName,
-//                 "sector": sector
-//             }
-//         ]
-//     };
-//     service.call("luna://com.webos.service.db/put", params, function(response) {
-//         if (response.payload.returnValue === true) {
-//             console.log("Image saved successfully");
-//         } else {
-//             console.log("Failed to save image:", JSON.stringify(response.payload));
-// 			throw new Error("Failed to save image: " +  JSON.stringify(response.payload));
-//         }
-//     });
-// }
-
-// //----------------------------------------------------------------------heartbeat----------------------------------------------------------------------
-// // handle subscription requests
+//----------------------------------------------------------------------heartbeat----------------------------------------------------------------------
+// handle subscription requests
 
 const subscriptions = {};
 let heartbeatinterval;
