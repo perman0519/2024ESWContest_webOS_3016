@@ -12,6 +12,7 @@
     "alarm.operation",
     "com.farm.server.service.group",
     "com.farm.server.ai.service.group",
+    "com.farm.server.plant.measure.service.group",
     "com.farm.server.periodic.call.service.group",
     "all"
   ]
