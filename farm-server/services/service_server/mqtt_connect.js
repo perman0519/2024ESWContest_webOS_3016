@@ -106,7 +106,21 @@ function setupMQTT(database) {
 
 function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
-    set(dataRef, weeklyData)
+    
+    // 기존 데이터를 먼저 가져옴
+    get(dataRef)
+      .then((snapshot) => {
+        const existingData = snapshot.val() || {};
+
+        // 새로 추가할 데이터를 기존 데이터에 합침
+        const mergedData = {
+          ...existingData,  // 기존 데이터 유지
+          ...weeklyData     // 새로운 데이터 추가 (기존 키와 충돌하면 덮어씌워짐)
+        };
+
+        // 업데이트 메서드를 사용하여 데이터 저장
+        return set(dataRef, mergedData);
+      })
       .then(() => {
         console.log('Firebase weekly_avg 저장 성공');
       })
