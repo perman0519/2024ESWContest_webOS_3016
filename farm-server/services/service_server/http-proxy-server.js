@@ -235,9 +235,11 @@ app.get('/stream', (req, res) => {
 
 // // Flask 서버에 update 요청을 보내는 엔드포인트 추가
 app.post('/api/harvest/:sectorId', async (req, res) => {
+
   const sectorId = req.params.sectorId;
   try {
       const flaskUrl = 'http://54.180.187.212:5000/update';  // Flask 서버의 엔드포인트
+      
       const dataToSend = {
           sectorID: `${sectorId}`  //TODO: 클라이언트로부터 받는 섹터번호
       };
@@ -245,6 +247,7 @@ app.post('/api/harvest/:sectorId', async (req, res) => {
       console.log("harvest");
       // Flask 서버에 POST 요청 보내기
       const flaskResponse = await axios.post(flaskUrl, dataToSend);
+
 
       // Flask 서버의 응답 처리
       if (flaskResponse.status === 200) {
@@ -257,6 +260,7 @@ app.post('/api/harvest/:sectorId', async (req, res) => {
           sensorData: null,
           uid : null
         });
+
         const imageList = fs.readdirSync(`/tmp/usb/sda/sda2/sector/${sectorId}`);
         for (const image of imageList) {
           fs.unlinkSync(`/tmp/usb/sda/sda2/sector/${sectorId}/${image}`);
