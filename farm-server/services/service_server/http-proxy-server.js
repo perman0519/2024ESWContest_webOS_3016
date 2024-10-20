@@ -235,20 +235,19 @@ app.get('/stream', (req, res) => {
 
 // // Flask 서버에 update 요청을 보내는 엔드포인트 추가
 app.post('/api/harvest/:sectorId', async (req, res) => {
-
   const sectorId = req.params.sectorId;
   try {
       const flaskUrl = 'http://54.180.187.212:5000/update';  // Flask 서버의 엔드포인트
-      
       const dataToSend = {
           sectorID: `${sectorId}`  //TODO: 클라이언트로부터 받는 섹터번호
       };
+
 
       console.log("harvest");
       // Flask 서버에 POST 요청 보내기
       const flaskResponse = await axios.post(flaskUrl, dataToSend);
 
-
+      
       // Flask 서버의 응답 처리
       if (flaskResponse.status === 200) {
         console.log("harvest");
@@ -368,25 +367,6 @@ const startHttpServer = () => {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// 날짜 차이를 계산하는 함수 (일 단위)
-function getDaysDifference(startDate, endDate) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const timeDifference = end - start;
-  const dayDifference = timeDifference / (1000 * 60 * 60 * 24); // 밀리초에서 일 단위로 변환
-  return Math.floor(dayDifference);
-}
-
-// 주차를 계산하는 함수
-function calculateWeek(createdAt) {
-  const currentDate = new Date();
-  const daysDifference = getDaysDifference(createdAt, currentDate);
-  
-  // 주차를 7일로 나눈 값으로 계산 (0주차: 0~7일, 1주차: 8~14일 등)
-  const week = Math.floor(daysDifference / 7);
-  return week;
-}
-
 // ISO 8601형식의 문자열을 열월일시분초 형식으로 변환
 function formatDate(date) {
   const year = date.getFullYear();
@@ -401,6 +381,8 @@ function formatDate(date) {
 }
 
 // save weekly pump count to firebase
+
+=======
 // function saveWeeklyPumpData(sector_id, pumpCnt) {
 //   const week = calculateWeek(createdAt); // 주차 계산
 //   console.log("week:", week);
@@ -443,20 +425,22 @@ function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
               const weekRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
               return update(weekRef, { pumpCnt: weeklyPumpCnt });
           } else {
-              console.error('CreatedAt 데이터를 찾을 수 없습니다.');
+              // 이미 데이터가 있으면 id 증가 후 다시 시도
+              id++;
+              checkAndStore();
           }
-      })
-      .then(() => {
-          console.log('Weekly pump count 저장 성공');
-      })
-      .catch((error) => {
-          console.error('Firebase 저장 실패: ', error);
+      }).catch((error) => {
+          console.error(`Firebase 읽기 실패: `, error);
       });
+  };
+
+  // 첫 번째 호출
+  checkAndStore();
 }
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-  const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`);
+  const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
   const currentTime = new Date();
 
   // get data from Firebase
@@ -496,9 +480,6 @@ function storePumpStatus(sector_id, state) {
       console.log("Firebase 저장 실패: ", error);
   });
 }
-
-//test
-// storePumpStatus(0, "ON");
 //////////////////////////////////////////////////////////////////////////////////////////
 
 // startHttpServer();

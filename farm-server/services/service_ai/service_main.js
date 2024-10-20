@@ -4,31 +4,15 @@ const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const { database } = require("./firebase.js");
-// const initializeApp = require('firebase/app').initializeApp;
-// const getDatabase = require('firebase/database').getDatabase;
 require('dotenv').config({ path: './.env' });
 
-// const firebaseConfig = {
-//     apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-//     authDomain: "smartfarm-ddbc3.firebaseapp.com",
-//     databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-//     projectId: "smartfarm-ddbc3",
-//     storageBucket: "smartfarm-ddbc3.appspot.com",
-//     messagingSenderId: "945689382597",
-//     appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
-//   };
-
-// const app = initializeApp(firebaseConfig);
-// const database = getDatabase(app);
-
-// 예측 결과를 자연어로 변환하는 함수
+// 예측 결과 - 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
     //const prompt =
     //'예측된 물 주기 양은' + prediction + '입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.';
     const prompt =
     `권장되는 주 당 물주기 횟수는 ${prediction} 회 입니다. 이 값이 소수점일 때 정수로 n ~ n+1로 변환해서
     자연스러운 한국어 문장으로 변환하세요.`;
-
 
     console.log("prompt: ", prompt);
 
@@ -41,7 +25,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
         temperature: 0.7
     }, {
         headers: {
-            'Authorization': 'Bearer ' + process.env.GPT_KEY,  // 실제 API 키 사용
+            'Authorization': 'Bearer ' + process.env.GPT_KEY,
             'Content-Type': 'application/json'
         }
     });
@@ -49,6 +33,7 @@ async function convertPredictionToNaturalLanguage(prediction) {
 }
 
 // 식물의 {주차, 종}을 입력받아서 GPT를 통해서 온도, 습도, 생장습도의 정보와 추천행동을 가이드해주는 함수
+// 추천루틴 제공해주는 함수
 // 추천행동이란 작물이 클 때 보조해줄 수 있는 행동(영양제나 기타 등등)
 async function recommendActionByGpt(week, species) {
     // 시스템 메시지로 대화의 맥락 설정
@@ -96,68 +81,10 @@ async function recommendActionByGpt(week, species) {
     }
 }
 
-//test
-// recommendActionByGpt(3, 'Basil');
-
-/// 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
-// Flask API에 POST 요청을 보내 예측값을 받아오는 함수
-async function callRandomForestModel() { //인자로 ['온도', '습도', '일조량']
-    // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
-    const data = await getLatestSensorData();
-    console.log("getSenSorData Latest: ", data);
-    const pre_features = Object.values(data).map(value => value.toString());
-    const features = pre_features.slice(1, 3); // 토양습도, 온도 순으로 읽어오기.
-    console.log("feature Latest: ", features);
-    // console.log("feature Latest: ", pre_features);
-
-    const week = await calculateTimeDifference();
-    const species = await getPlantType();
-    console.log('몇 주주 확인 : ' , week);
-    console.log('식물의 종 확인 : ', species);
-    // const species = "토마토"
-
-    try {
-        const response = await axios.post('http://54.180.187.212:5000/predict', {
-            features: features  // 줄기 길이와 엽폭 데이터를 전송
-        }); //response에 물주기양을 반환하도록 되어있음
-
-        console.log('서버 응답 1:', response.data.prediction);
-
-        const recommendationResponse = await recommendActionByGpt(week, species); //TODO: 여기에 week을 넣어야하는데 이거를 어떻게 계산할지 찾아야함
-        const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction); // await 사용
-
-        console.log("토마토 관련:", recommendationResponse);
-        console.log("자연어로 변환된 응답:", naturalLanguageResponse);
-        
-        // return {recommendationResponse ,naturalLanguageResponse}; // 자연어 변환된 응답 반환
-        return `${recommendationResponse}\n${naturalLanguageResponse}`;
-
-
-        // // 도출된 결과 자연어로 변경하는 함수
-        // convertPredictionToNaturalLanguage(response.data.prediction)
-        //     .then((naturalLanguageResponse) => {
-        //         console.log("자연어로 변환된 응답:", naturalLanguageResponse);
-        //     })
-        //     .catch((error) => {
-        //         console.error("자연어 변환 중 오류 발생:", error);
-        //     });
-
-        // message.respond({
-        //    returnValue: true,
-        //    Response: "Sensor data stored"
-        // });
-
-        // return naturalLanguageResponse;
-    } catch (error) {
-        console.error('API 요청 중 오류 발생:', error);
-        return null;
-    }
-}
-
 //gpt가 생성한 최신데이터 가져오는 함수
-async function getLatestSensorData() {
+async function getLatestSensorData(sector) {
     try {
-        const sensorDataRef = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1)); //최신데이터 참조하기 위한
+        const sensorDataRef = query(ref(database, `sector/${sector}/sensorData`), orderByKey(), limitToLast(1));
 
         const snapshot = await get(sensorDataRef);
 
@@ -181,10 +108,10 @@ async function getLatestSensorData() {
     }
 }
 
-async function calculateTimeDifference() {
+async function calculateTimeDifference(sector) {
     try {
-        const lastQuery = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToLast(1));
-        const firstQuery = query(ref(database, 'sector/0/sensorData'), orderByKey(), limitToFirst(1));
+        const lastQuery = query(ref(database, `sector/${sector}/sensorData`), orderByKey(), limitToLast(1));
+        const firstQuery = query(ref(database, `sector/${sector}/sensorData`), orderByKey(), limitToFirst(1));
 
         // 첫 번째 값 가져오기
         const firstSnapshot = await get(firstQuery);
@@ -195,7 +122,7 @@ async function calculateTimeDifference() {
         const firstData = firstSnapshot.val();
         const firstTimestamp = Object.keys(firstData)[0]; // 첫 번째 타임스탬프 가져오기
         
-        console.log("히히", firstTimestamp);
+        console.log("첫번째 날", firstTimestamp);
 
         // 마지막 값 가져오기
         const lastSnapshot = await get(lastQuery);
@@ -206,7 +133,7 @@ async function calculateTimeDifference() {
         const lastData = lastSnapshot.val();
         const lastTimestamp = Object.keys(lastData)[0]; // 마지막 타임스탬프 가져오기
 
-        console.log("키키", lastTimestamp);
+        console.log("마지막 날", lastTimestamp);
 
         // 타임스탬프를 Date 객체로 변환
         const firstDate = new Date(firstTimestamp);
@@ -225,9 +152,49 @@ async function calculateTimeDifference() {
     }
 }
 
-async function getPlantType() {
+/// 파이썬 코드로 학습된 모델 호출 후 추론 결과 가져오기.
+// Flask API에 POST 요청을 보내 예측값을 받아오는 함수
+//인자로 ['온도', '습도', '일조량']
+async function callRandomForestModel(sector) {
+    // const features = ['26', '60', '5']; //TODO: DB에서 읽어오도록 수정해야함
+    const data = await getLatestSensorData(sector);
+    if (data == null)
+        return null;
+    console.log("getSenSorData Latest: ", data);
+
+    const pre_features = Object.values(data).map(value => value.toString());
+    const features = pre_features.slice(1, 3); // 토양습도, 온도 순으로 읽어오기.
+
+    console.log("feature Latest: ", features);
+
+    const week = await calculateTimeDifference(sector);
+    const species = await getPlantType(sector);
+    console.log('몇 주주 확인 : ' , week);
+    console.log('식물의 종 확인 : ', species);
+
     try {
-        const speciesRef = ref(database, 'sector/0/plant/name');
+        const response = await axios.post(`http://54.180.187.212:5000/predict/${species}`, {
+            features: features  // 줄기 길이와 엽폭 데이터를 전송
+        }); //response에 물주기양을 반환하도록 되어있음
+
+        console.log('서버 응답 1:', response.data.prediction);
+
+        const recommendationResponse = await recommendActionByGpt(week, species); 
+        const naturalLanguageResponse = await convertPredictionToNaturalLanguage(response.data.prediction);
+
+        console.log("토마토 관련:", recommendationResponse);
+        console.log("자연어로 변환된 응답:", naturalLanguageResponse);
+        
+        return `${recommendationResponse}\n${naturalLanguageResponse}`;
+    } catch (error) {
+        console.error('API 요청 중 오류 발생:', error);
+        return null;
+    }
+}
+
+async function getPlantType(sector) {
+    try {
+        const speciesRef = ref(database, `sector/${sector}/plant/name`);
         const snapshot = await get (speciesRef);
         // let plantType = undefined;
 
@@ -247,56 +214,45 @@ async function getPlantType() {
     }    
 }
 
-
 // save the prompt results to DB & JS-service func
 async function saveAiPromptToDB(message) {
     console.log("saveAiPromptToDB 메서드 호출됨:", new Date());
+    const sectorCountString = query(ref(database, 'sector'), orderByKey(), limitToLast(1));
+
     try {
-        const prompt = await callRandomForestModel();
-        console.log("출력 프롬프트", prompt);
 
-        console.log("JS-service 호출:", prompt);
+        const snapshot = await get(sectorCountString); // 비동기적으로 snapshot 가져오기
+        let sectorCount = 0; // sectorCount 변수를 여기서 선언
 
-        const promptRef = ref(database, `sector/0/plant/prompt`);
+        if (snapshot.exists()) {
+            const data = snapshot.val(); // 가져온 데이터
+            const keys = Object.keys(data); // 키 배열 가져오기
+            const lastKey = keys[keys.length - 1]; // 마지막 키
+            sectorCount = Number(lastKey); // 마지막 숫자 변환
+            console.log("값", sectorCount); // 결과 출력
+        } else {
+            console.log("데이터가 없습니다.");
+            return; // 데이터가 없으면 함수 종료
+        }
 
-        // save prompt results to DB
-        set(promptRef, prompt)
-            .then(() => {
-                console.log("prompt updated successfully.");
-            })
-            .catch((error) => {
-                console.error("prompt updating data: ", error);
-            });
+        for (let sector = 0; sector <= sectorCount; sector++) {
+            console.log("몇 번 섹터", sector);
+            const prompt = await callRandomForestModel(sector);
+            console.log("출력 프롬프트", prompt);
 
-        // //alarm set API, TODO: not working well
-        // service.call("luna://com.webos.service.alarm/set", {
-        //     "key": "ai-prompt-alarm",
-        //     "uri": "luna://com.farm.server.ai.service",
-        //     "params": {},
-        //     "in": "00:00:20", //TODO: 24시간으로 수정하기
-        //     "wakeup": true
-        // }, (response)=>{
-        //     if (response.returnValue) {
-        //         console.log("알람설정 완료");
-        //     } else {
-        //         console.timeLog("알람설정실패:", response);
-        //     }
-        // });
+            console.log("JS-service 호출:", prompt);
 
-        // // //------------------------- heartbeat 구독 -------------------------
-        // const sub = service.subscribe(`luna://${pkgInfo.name}/heartbeat`, {subscribe: true});
-        // const max = 5000; //heart beat 횟수 /// heart beat가 꺼지면, 5초 정도 딜레이 생김 --> 따라서 이 녀석도 heart beat를 무한히 돌릴 필요가 있어보임.
-        // let count = 0;
-        // sub.addListener("response", function(msg) {
-        //     console.log(JSON.stringify(msg.payload));
-        //     if (++count >= max) {
-        //         sub.cancel();
-        //         setTimeout(function(){
-        //             console.log(max+" responses received, exiting...");
-        //             process.exit(0);
-        //         }, 1000);
-        //     }
-        // });
+            const promptRef = ref(database, `sector/${sector}/plant/prompt`);
+
+            // save prompt results to DB
+            set(promptRef, prompt)
+                .then(() => {
+                    console.log("prompt updated successfully.");
+                })
+                .catch((error) => {
+                    console.error("prompt updating data: ", error);
+                });
+        }
         message.respond({
             returnValue: true,
             Response: "alarm setting ok"
@@ -311,6 +267,5 @@ async function saveAiPromptToDB(message) {
     }
 }
 
-saveAiPromptToDB();
-
-// service.register("saveAiPromptToDB", saveAiPromptToDB);
+// saveAiPromptToDB();
+service.register("saveAiPromptToDB", saveAiPromptToDB);
