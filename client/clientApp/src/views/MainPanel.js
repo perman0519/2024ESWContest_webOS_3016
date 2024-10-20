@@ -164,6 +164,8 @@ function MainPanel(props) {
     const [firebseError, setFirebseError] = useState(null);
     const [showButton, setShowButton] = useState(false); // 버튼을 보여줄지 결정하는 상태
 
+    let id = 0;
+
     useEffect(() => {
         async function fetchData() {
             setIsLoading(true);
@@ -264,6 +266,8 @@ function MainPanel(props) {
         console.log(value);
         const vlist = value.split('-');
         setSelectSectorId(vlist[0]);
+        id = vlist[0];
+        console.log("selectsector", selectSectorId, vlist[0]);
         fetch(`http://${ip}/api/sector/${vlist[0]}`).then((res) => {
             if (!res.ok) {
                 throw new Error('Failed to fetch plant details');
@@ -303,10 +307,14 @@ function MainPanel(props) {
         // 일단 학습 api 호출
         // firebase 데이터 삭제
         // timelapse
-        fetch(`http://${ip}/api/harvest/${selectSectorId}`, {
+        console.log("harvest: ", id);
+        fetch(`http://${ip}/api/harvest/${id}`, {
             method: 'POST'
+        }).then((response) => {
+            if (response.ok)
+                subscribe();
         });
-        subscribe();
+        subscribe(); // .then 먼저 넘어갈 거 같았지만 실패..
     }, []);
 
     useEffect(() => {
@@ -429,7 +437,7 @@ function MainPanel(props) {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">현재 높이</p>
-                                        <p className="text-2xl font-bold text-gray-800">{plantHeight.toFixed(2)}  cm</p>
+                                        <p className="text-2xl font-bold text-gray-800">{plantHeight && plantHeight.toFixed(2)}  cm</p>
                                     </div>
                                     </div>
                                     <div className="h-64">
