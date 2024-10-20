@@ -10,7 +10,7 @@ import pickle
 data = {
     '토양습도': [30, 35, 32, 40, 25, 20, 22, 30, 32, 35],
     '온도': [20, 22, 21, 19, 24, 25, 23, 22, 21, 20],
-    '주당 물주기횟수': [7, 5, 3, 7, 8, 5, 7, 5, 8, 3]
+    '주당 물주기횟수': [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 }
 
 # 데이터를 표형식으로
@@ -32,11 +32,11 @@ model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
 # 모델을 pickle 파일로 저장합니다.
-with open('stacked_model.pkl', 'wb') as f:
+with open('stacked_tomato_model.pkl', 'wb') as f:
     pickle.dump(model, f)
-print("모델이 regression_model.pkl로 저장되었습니다.")
+print("tomato 모델이 regression_model.pkl로 저장되었습니다.")
 
 # scaler를 pickle 파일로 저장
-with open('scaler.pkl', 'wb') as f:
+with open('tomato_scaler.pkl', 'wb') as f:
     pickle.dump(scaler, f)
-print("scaler가 scaler.pkl로 저장되었습니다.")
+print("scaler가 tomato_scaler.pkl로 저장되었습니다.")

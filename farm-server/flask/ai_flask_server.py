@@ -22,16 +22,25 @@ firebase_admin.initialize_app(cred, {
 firebase_ref = db.reference('sector/0/weekly_avg')
 
 # 모델 파일 확인 및 로드
-model_path = 'stacked_model.pkl'
+basil_model_path = 'stacked_basil_model.pkl'
+tomato_model_path = 'stacked_tomato_model.pkl'
 
-def load_model():
-    if not os.path.exists(model_path):
-        print(f"{model_path} 파일이 없습니다. 모델을 학습합니다.")
-        subprocess.run(['python3', 'make_model.py'])  # 모델이 없을 경우 make_model.py 실행
-    with open(model_path, 'rb') as f:
+def load_basil_model():
+    if not os.path.exists(basil_model_path):
+        print(f"{basil_model_path} 파일이 없습니다. basil 모델을 학습합니다.")
+        subprocess.run(['python3', 'make_basil_model.py'])  # 모델이 없을 경우 make_model.py 실행
+    with open(basil_model_path, 'rb') as f:
         return joblib.load(f)
 
-model = load_model()
+def load_tomato_model():
+    if not os.path.exists(tomato_model_path):
+        print(f"{tomato_model_path} 파일이 없습니다. tomato 모델을 학습합니다.")
+        subprocess.run(['python3', 'make_tomato_model.py'])  # 모델이 없을 경우 make_model.py 실행
+    with open(tomato_model_path, 'rb') as f:
+        return joblib.load(f)
+
+basil_model = load_basil_model()
+tomato_model = load_tomato_model()
 
 # 수확버튼 누르면 Firebase에서 해당 섹터의 데이터를 전부 가져옴
 def update_sensor_data():
@@ -69,25 +78,35 @@ def update_sensor_data():
         print("Firebase 데이터 가져오기 오류:", str(e))
     return newData
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.route('/predict/<species>', methods=['POST'])
+def predict(species):
     try:
         # 요청에서 데이터 가져오기
         data = request.json
         print("받은 데이터: ", data)
 
+        # 요청 데이터에 작물종류를 포함하도록 함.
+        print("작물종류: ", species)
+
         # 입력값을 pandas DataFrame으로 변환
         features = pd.DataFrame([data['features']], columns=['토양습도', '온도'])
         print("받은 특징: ", features)
 
-        # 예측 수행
-        prediction = model.predict(features)
+
+        # species에 따라 모델 선택 및 예측 수행
+        if species == 'bazil':
+            prediction = basil_model.predict(features)
+        elif species == 'tomato':
+            prediction = tomato_model.predict(features)
+        else:
+            return jsonify({'error': 'Invalid species'}), 400
 
         # 결과 반환
         return jsonify({'prediction': prediction[0]})
     except Exception as e:
         print("에러", str(e))
         return jsonify({'error': str(e)}), 400
+
 
 # end-point로 update를 추가하여 updating_model.py를 실행하도록 한다
 @app.route('/update', methods=['POST'])
