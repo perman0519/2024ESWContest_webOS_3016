@@ -1,6 +1,6 @@
-// const pkgInfo = require('./package.json');
-// const Service = require('webos-service');
-// const service = new Service(pkgInfo.name);
+const pkgInfo = require('./package.json');
+const Service = require('webos-service');
+const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const { database } = require("./firebase.js");
@@ -215,7 +215,7 @@ async function getPlantType(sector) {
 }
 
 // save the prompt results to DB & JS-service func
-async function saveAiPromptToDB() {
+async function saveAiPromptToDB(message) {
     console.log("saveAiPromptToDB 메서드 호출됨:", new Date());
     const sectorCountString = query(ref(database, 'sector'), orderByKey(), limitToLast(1));
 
@@ -253,19 +253,19 @@ async function saveAiPromptToDB() {
                     console.error("prompt updating data: ", error);
                 });
         }
-        // message.respond({
-        //     returnValue: true,
-        //     Response: "alarm setting ok"
-        // });
+        message.respond({
+            returnValue: true,
+            Response: "alarm setting ok"
+        });
     }
     catch (error) {
         console.error("Error saving error: ", error);
-        // message.respond({
-        //     returnValue: false,
-        //     errorText: error.message || "An error occurred."
-        // });
+        message.respond({
+            returnValue: false,
+            errorText: error.message || "An error occurred."
+        });
     }
 }
 
-saveAiPromptToDB();
-// service.register("saveAiPromptToDB", saveAiPromptToDB);
+// saveAiPromptToDB();
+service.register("saveAiPromptToDB", saveAiPromptToDB);
