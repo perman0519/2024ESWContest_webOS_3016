@@ -381,36 +381,49 @@ function formatDate(date) {
 }
 
 // save weekly pump count to firebase
-function saveWeeklyPumpData(sector_id, count) {
-  let id = 0;  // 주 번호
-  const maxId = 52; // 최대 52주까지만 시도
-  const checkAndStore = () => {
-      if (id > maxId) {
-          console.error(`최대 ID ${maxId}까지 데이터를 저장할 수 없습니다.`);
-          return;
-      }
 
-      const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${id}`);
+=======
+// function saveWeeklyPumpData(sector_id, pumpCnt) {
+//   const week = calculateWeek(createdAt); // 주차 계산
+//   console.log("week:", week);
+//   const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
 
-      // Firebase에서 데이터를 읽고 저장하는 부분
-      get(dataRef).then((snapshot) => {
-          let currentData = snapshot.val();
-          
-          // 데이터가 없거나 pumpCnt가 없으면 새로운 데이터 저장
-          if (!currentData || !currentData.pumpCnt) {
-              let setData = {
-                  ...currentData,  // 기존 데이터 유지
-                  pumpCnt: count   // 새로운 pumpCnt 저장
-              };
+//   // 기존 데이터를 먼저 가져옴
+//   get(dataRef)
+//     .then((snapshot) => {
+//       const existingData = snapshot.val() || {};
 
-              // 데이터를 Firebase에 저장
-              return set(dataRef, setData)
-                  .then(() => {
-                      console.log(`ID ${id}에 pumpCnt 저장 성공`);
-                  })
-                  .catch((error) => {
-                      console.error(`ID ${id}에 데이터 저장 실패: `, error);
-                  });
+//       // 기존 데이터 유지하고 pumpCnt만 업데이트
+//       const updatedData = {
+//         ...existingData,  // 기존 데이터 유지
+//         pumpCnt: pumpCnt  // pumpCnt만 업데이트
+//       };
+
+//       // update 메서드를 사용하여 특정 필드만 업데이트
+//       return update(dataRef, updatedData);
+//     })
+//     .then(() => {
+//       console.log('Firebase weekly_avg pumpCnt 저장 성공');
+//     })
+//     .catch((error) => {
+//       console.log('Firebase weekly_avg pumpCnt 저장 실패: ', error);
+//     });
+// }
+
+function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
+  const sectorRef = ref(database, `sector/${sector_id}/plant/createdAt`);
+
+  get(sectorRef)
+      .then((snapshot) => {
+          if (snapshot.exists()) {
+              const createdAt = snapshot.val();
+              const week = calculateWeek(createdAt); // 주차 계산
+
+              console.log(`현재는 ${week}주차입니다. Pump Count: ${weeklyPumpCnt}`);
+
+              // 해당 주차에 weeklyPumpCnt 저장
+              const weekRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
+              return update(weekRef, { pumpCnt: weeklyPumpCnt });
           } else {
               // 이미 데이터가 있으면 id 증가 후 다시 시도
               id++;

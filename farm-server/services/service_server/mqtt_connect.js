@@ -1,6 +1,6 @@
 const mqtt = require('mqtt');
 require('dotenv').config({ path: './.env' });
-const { set, onValue, ref, get } = require('firebase/database');
+const { set, onValue, ref, get, update } = require('firebase/database');
 let lastSavedTime = 0;
 
 function updateSectorInfo(database, sensorData)
@@ -106,20 +106,35 @@ function setupMQTT(database) {
 
 function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
-    
+
     // 기존 데이터를 먼저 가져옴
     get(dataRef)
       .then((snapshot) => {
         const existingData = snapshot.val() || {};
 
-        // 새로 추가할 데이터를 기존 데이터에 합침
-        const mergedData = {
-          ...existingData,  // 기존 데이터 유지
-          ...weeklyData     // 새로운 데이터 추가 (기존 키와 충돌하면 덮어씌워짐)
-        };
+        // const updatedData = {
+        //     ...existingData,  // 기존 데이터 유지
+        //   };
+  
+        // // weeklyData에서 pumpCnt가 존재하면 업데이트
+        // if (weeklyData.pumpCnt !== undefined) {
+        // updatedData.pumpCnt = weeklyData.pumpCnt;
+        // }
 
-        // 업데이트 메서드를 사용하여 데이터 저장
-        return set(dataRef, mergedData);
+        // weeklyData의 키가 숫자(0, 1, 2 등)로 설정되어 있으므로, 기존 필드를 유지하면서 주차별 데이터만 덮어씌움
+        const mergedData = { ...existingData };
+
+        // 새로 추가할 데이터를 주차별로 병합
+        Object.keys(weeklyData).forEach(weekKey => {
+            mergedData[weekKey] = {
+                ...existingData[weekKey],  // 기존 주차 데이터 유지
+                ...weeklyData[weekKey]     // 새로운 주차 데이터 추가
+            };
+        });
+
+        // 업데이트 메서드를 사용하여 데이터 병합
+        return update(dataRef, mergedData);
+        // return update(dateRef, updateData);
       })
       .then(() => {
         console.log('Firebase weekly_avg 저장 성공');
@@ -128,6 +143,31 @@ function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
         console.log('Firebase weekly_avg 저장 실패: ', error);
       });
 }
+
+// function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
+//     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
+    
+//     // 기존 데이터를 먼저 가져옴
+//     get(dataRef)
+//       .then((snapshot) => {
+//         const existingData = snapshot.val() || {};
+
+//         // 새로 추가할 데이터를 기존 데이터에 합침
+//         const mergedData = {
+//           ...existingData,  // 기존 데이터 유지
+//           ...weeklyData     // 새로운 데이터 추가 (기존 키와 충돌하면 덮어씌워짐)
+//         };
+
+//         // 업데이트 메서드를 사용하여 데이터 저장
+//         return set(dataRef, mergedData);
+//       })
+//       .then(() => {
+//         console.log('Firebase weekly_avg 저장 성공');
+//       })
+//       .catch((error) => {
+//         console.log('Firebase weekly_avg 저장 실패: ', error);
+//       });
+// }
 
 function groupByWeek(data) {
     const groupedData = [];
