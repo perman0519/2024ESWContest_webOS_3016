@@ -401,6 +401,33 @@ function formatDate(date) {
 }
 
 // save weekly pump count to firebase
+// function saveWeeklyPumpData(sector_id, pumpCnt) {
+//   const week = calculateWeek(createdAt); // 주차 계산
+//   console.log("week:", week);
+//   const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
+
+//   // 기존 데이터를 먼저 가져옴
+//   get(dataRef)
+//     .then((snapshot) => {
+//       const existingData = snapshot.val() || {};
+
+//       // 기존 데이터 유지하고 pumpCnt만 업데이트
+//       const updatedData = {
+//         ...existingData,  // 기존 데이터 유지
+//         pumpCnt: pumpCnt  // pumpCnt만 업데이트
+//       };
+
+//       // update 메서드를 사용하여 특정 필드만 업데이트
+//       return update(dataRef, updatedData);
+//     })
+//     .then(() => {
+//       console.log('Firebase weekly_avg pumpCnt 저장 성공');
+//     })
+//     .catch((error) => {
+//       console.log('Firebase weekly_avg pumpCnt 저장 실패: ', error);
+//     });
+// }
+
 function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
   const sectorRef = ref(database, `sector/${sector_id}/plant/createdAt`);
 
@@ -414,7 +441,7 @@ function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
 
               // 해당 주차에 weeklyPumpCnt 저장
               const weekRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
-              return set(weekRef, { pumpCnt: weeklyPumpCnt });
+              return update(weekRef, { pumpCnt: weeklyPumpCnt });
           } else {
               console.error('CreatedAt 데이터를 찾을 수 없습니다.');
           }

@@ -104,29 +104,6 @@ function setupMQTT(database) {
     client.on('message', (topic, msg) => {receivedMessage(msg, database)});
 }
 
-// function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
-//     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
-
-//     // weeklyData가 배열일 경우, 주차별로 '0', '1', '2' 등의 키로 객체로 변환
-//     if (Array.isArray(weeklyData)) {
-//         const dataToUpdate = weeklyData.reduce((obj, item, index) => {
-//             obj[index] = item;  // 주차별 데이터를 '0', '1' 형식으로 저장
-//             return obj;
-//         }, {});
-
-//         // Firebase 업데이트
-//         update(dataRef, dataToUpdate)
-//           .then(() => {
-//             console.log('Firebase weekly_avg 저장 성공');
-//           })
-//           .catch((error) => {
-//             console.log('Firebase weekly_avg 저장 실패: ', error);
-//           });
-//     } else {
-//         console.error('weeklyData는 배열이어야 합니다:', weeklyData);
-//     }
-// }
-
 function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
 
@@ -135,9 +112,17 @@ function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
       .then((snapshot) => {
         const existingData = snapshot.val() || {};
 
+        // const updatedData = {
+        //     ...existingData,  // 기존 데이터 유지
+        //   };
+  
+        // // weeklyData에서 pumpCnt가 존재하면 업데이트
+        // if (weeklyData.pumpCnt !== undefined) {
+        // updatedData.pumpCnt = weeklyData.pumpCnt;
+        // }
+
         // weeklyData의 키가 숫자(0, 1, 2 등)로 설정되어 있으므로, 기존 필드를 유지하면서 주차별 데이터만 덮어씌움
         const mergedData = { ...existingData };
-        console.log("merge", mergedData);
 
         // 새로 추가할 데이터를 주차별로 병합
         Object.keys(weeklyData).forEach(weekKey => {
@@ -149,6 +134,7 @@ function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
 
         // 업데이트 메서드를 사용하여 데이터 병합
         return update(dataRef, mergedData);
+        // return update(dateRef, updateData);
       })
       .then(() => {
         console.log('Firebase weekly_avg 저장 성공');
@@ -157,8 +143,6 @@ function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
         console.log('Firebase weekly_avg 저장 실패: ', error);
       });
 }
-
-
 
 // function saveWeeklyAvgToFirebase(sector_id, weeklyData, database) {
 //     const dataRef = ref(database, `sector/${sector_id}/weekly_avg`);
