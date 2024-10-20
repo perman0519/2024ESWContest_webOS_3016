@@ -18,7 +18,8 @@ firebase_admin.initialize_app(cred, {
 })
 
 #Realtime Database reference
-firebase_ref = db.reference('sector/0/sensorData') #임시
+# firebase_ref = db.reference('sector/0/sensorData') #임시
+firebase_ref = db.reference('sector/0/weekly_avg')
 
 # 모델 파일 확인 및 로드
 model_path = 'stacked_model.pkl'
@@ -39,25 +40,25 @@ def update_sensor_data():
         sensor_data_snapshot = firebase_ref.order_by_key().get()
 
         newData = {
-            '온도': [],
             '토양습도': [],
-            '물주기양': []
+            '온도': [],
+            '주당 물주기횟수': []
         }
         
         if sensor_data_snapshot:
             print("Firebase에서 모든 데이터 가져옴:")
             # Firebase에서 모든 데이터를 가져옴 (timestamp 기준으로 정렬해서 데이터를 가져옴)
-            for timestamp, data in sensor_data_snapshot.items():
-                print(f"Timestamp: {timestamp}, Data: {data}")
+            for weeks, data in sensor_data_snapshot.items():
+                print(f"Weeks: {weeks}, Data: {data}")
 
                 # 데이터가 존재하는지 확인하고 newData에 추가
-                if 'temperature' in data:
-                    newData['온도'].append(data['temperature'])
-                if 'soil_humidity' in data:
-                    newData['토양습도'].append(data['soil_humidity'])
+                if 'avgSoilHumidity' in data:
+                    newData['토양습도'].append(data['avgSoilHumidity'])
+                if 'avgTemperature' in data:
+                    newData['온도'].append(data['avgTemperture'])
                 #물주기양넣는 부분
-                    newData['물주기양'].append(100)
-                    
+                    newData['주당 물주기횟수'].append(data['pumpCnt'])
+
             print(newData)  # 가져온 데이터 출력
         else:
             print("Firebase에 사용할 데이터가 없습니다.")
@@ -76,7 +77,7 @@ def predict():
         print("받은 데이터: ", data)
 
         # 입력값을 pandas DataFrame으로 변환
-        features = pd.DataFrame([data['features']], columns=['온도', '토양습도'])
+        features = pd.DataFrame([data['features']], columns=['토양습도', '온도'])
         print("받은 특징: ", features)
 
         # 예측 수행

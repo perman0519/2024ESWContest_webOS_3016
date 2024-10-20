@@ -3,29 +3,31 @@ const Service = require('webos-service');
 const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
-const initializeApp = require('firebase/app').initializeApp;
-const getDatabase = require('firebase/database').getDatabase;
+const { database } = require("./firebase.js");
+// const initializeApp = require('firebase/app').initializeApp;
+// const getDatabase = require('firebase/database').getDatabase;
 require('dotenv').config({ path: './.env' });
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-    authDomain: "smartfarm-ddbc3.firebaseapp.com",
-    databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-    projectId: "smartfarm-ddbc3",
-    storageBucket: "smartfarm-ddbc3.appspot.com",
-    messagingSenderId: "945689382597",
-    appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
-  };
+// const firebaseConfig = {
+//     apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
+//     authDomain: "smartfarm-ddbc3.firebaseapp.com",
+//     databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
+//     projectId: "smartfarm-ddbc3",
+//     storageBucket: "smartfarm-ddbc3.appspot.com",
+//     messagingSenderId: "945689382597",
+//     appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
+//   };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+// const app = initializeApp(firebaseConfig);
+// const database = getDatabase(app);
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
     //const prompt =
     //'예측된 물 주기 양은' + prediction + '입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.';
     const prompt =
-    `예측된 물 주기 양은 ${prediction} 입니다. 이 값을 자연스러운 한국어 문장으로 변환하세요.`;
+    `권장되는 주 당 물주기 횟수는 ${prediction} 회 입니다. 이 값이 소수점일 때 정수로 n ~ n+1로 변환해서
+    자연스러운 한국어 문장으로 변환하세요.`;
 
 
     console.log("prompt: ", prompt);
@@ -104,7 +106,7 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
     const data = await getLatestSensorData();
     console.log("getSenSorData Latest: ", data);
     const pre_features = Object.values(data).map(value => value.toString());
-    const features = pre_features.slice(1, 3).reverse();
+    const features = pre_features.slice(1, 3); // 토양습도, 온도 순으로 읽어오기.
     console.log("feature Latest: ", features);
     // console.log("feature Latest: ", pre_features);
 
@@ -309,6 +311,6 @@ async function saveAiPromptToDB(message) {
     }
 }
 
-// saveAiPromptToDB();
+saveAiPromptToDB();
 
-service.register("saveAiPromptToDB", saveAiPromptToDB);
+// service.register("saveAiPromptToDB", saveAiPromptToDB);
