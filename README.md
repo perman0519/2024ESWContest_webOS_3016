@@ -55,9 +55,30 @@ Follow these steps to set up and run the project on your local machine:
       ```bash
       App Name : farm_dashboard
       ```
+      * .env
+      ```
+      REACT_APP_IP=
+      REACT_APP_CAM_WS_PORT=3000
+      REACT_APP_SENSOR_WS_PORT=3001
+      REACT_APP_HTTP_PORT=8081
+      REACT_APP_HTTP2_PORT=8082
+      ```
    2. **Client**
       ```bash
       App Name : ClientApp
+      ```
+      * .env
+      ```
+      APIKEY=
+      AUTH_DOMAIN=
+      DATABASE_URL=
+      PROJECT_ID=
+      STORAGE_BUCKET=
+      MESSAGING_SENDER_ID=
+      APP_ID=
+      MQTT_HOST=
+      MQTT_PORT=
+      GPT_KEY=
       ```
 
 ## 🙌 Collaborator
