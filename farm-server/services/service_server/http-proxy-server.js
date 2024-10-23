@@ -96,6 +96,50 @@ app.get('/timelapse', (req, res) => {
     });
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const path = require('path');
+const video_port = 3005;
+
+ app.get('/video', (req, res) => {
+   const filePath = '/media/multimedia/sector/0/output.mp4';
+   const stat = fs.statSync(filePath);//  파일의 정보 (크기 등) 확인
+   const fileSize = stat.size;//  파일 크기
+   const range = req.headers.range;//  클라이언트가 보낸 Range 헤더
+
+   console.log("range: ", range);
+
+   if (range) {
+     const parts = range.replace(/bytes=/, "").split("-");
+     const start = parseInt(parts[0], 10);//  시작 바이트
+     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;//  종료 바이트
+
+     const chunkSize = (end - start) + 1;//  전송할 덩어리 크기
+     const file = fs.createReadStream(filePath, { start, end });//  파일 스트림 생성
+     const head = {
+       'Content-Range': `bytes ${start}-${end}/${fileSize}`,//  범위 정보
+       'Accept-Ranges': 'bytes',//  바이트 단위 요청 허용
+       'Content-Length': chunkSize,//  전송할 크기
+       'Content-Type': 'video/mp4',//  파일 타입
+     };
+     
+     res.writeHead(206, head);//  HTTP 상태 코드 206: 일부 컨텐츠 전송
+     file.pipe(res);//  파일을 응답 스트림에 연결하여 전송
+   } else {
+      const head = {
+        'Content-Length': fileSize,
+        'Content-Type': 'video/mp4',
+    };
+    res.writeHead(200, head);
+    fs.createReadStream(videoPath).pipe(res);
+}
+});
+ app.listen(video_port, () => {
+   console.log(`Server running at http://10.19.208.172:${video_port}/video`);
+ });
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 app.get('/api/sensor/:id', (req, res) => {
     const sectorId = req.params.id;
     const sensor = ref(database, `sector/${sectorId}/sensorData`);

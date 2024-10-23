@@ -39,11 +39,31 @@ function TimelapsePanel(props) {
         setCameraError(true);
     }, []);
 
-	const handleVideo = useCallback(() => {
+     // 비디오 요청 시 Range 헤더를 추가하여 요청하는 함수
+	const handleVideo = useCallback(async () => {
         console.log("handleVideo");
-		setSrc(`http://${ip}/timelapse?${new Date().getTime()}`);
-		setCameraError(false); // 에러 상태 초기화
-	}, []);
+
+        try {
+            const response = await fetch(`http://${ip}/timelapse`, {
+                headers: {
+                    'Range': 'bytes=0-1048576' // 1MB 범위 지정 (필요에 따라 변경 가능)
+                }
+            });
+
+            if (response.ok) {
+                const videoBlob = await response.blob();
+                const videoURL = URL.createObjectURL(videoBlob);
+                setSrc(videoURL);  // 비디오 URL을 설정
+                setCameraError(false);  // 에러 상태 초기화
+            } else {
+                console.error("Failed to load video");
+                setCameraError(true);
+            }
+        } catch (error) {
+            console.error("Error fetching video:", error);
+            setCameraError(true);
+        }
+	}, [ip]);
 
     return (
         <Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
@@ -80,21 +100,11 @@ function TimelapsePanel(props) {
                             <Card className="bg-white  w-full border-gray-200">
                                 <CardContent className="p-6  w-full flex flex-col items-center">
                                 <div className="rounded-lg w-full flex items-center justify-center mb-4">
+                                     {/* Display video from the server */}
                                     {!camerror && (
-                                    <img
-                                        src={src}
-                                        width="940"
-                                        height="600"
-                                        onError={handleError}
-                                        alt="Streaming Content"
-                                    />
+                                        <video id="videoPlayer" src="http://10.19.208.172:3005/video" controls width="640" height="360" onError={handleError}></video>
                                     )}
                                     {camerror && <div className="bg-gray-200 w-full h-80 p-4 rounded text-center text-gray-500">식물 타임랩스</div>}
-                                </div>
-                                <div className="flex justify-center w-full">
-                                    <Button variant="primary" className="w-fit" onClick={handleVideo}>
-                                    재생하기
-                                    </Button>
                                 </div>
                                 </CardContent>
                             </Card>
