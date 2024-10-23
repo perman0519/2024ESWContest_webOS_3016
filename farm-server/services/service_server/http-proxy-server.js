@@ -11,9 +11,51 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const port = 8081;
 
+// const path = require('path');
+// const video_port = 3005;
+
 // Placeholder image path
 const placeholderImagePath = '/media/internal/placeholder.jpeg'
 const imagePath = '/media/internal/stream.jpeg'
+
+// app.get('/video', (req, res) => {
+//   const filePath = '/home/root/ffmpeg/1frame.mp4'
+//   const stat = fs.statSync(filePath); // 파일의 정보 (크기 등) 확인
+//   const fileSize = stat.size; // 파일 크기
+//   const range = req.headers.range; // 클라이언트가 보낸 Range 헤더
+
+//   if (range) {
+//     // Range 헤더가 있을 때
+//     const parts = range.replace(/bytes=/, "").split("-");
+//     const start = parseInt(parts[0], 10); // 시작 바이트
+//     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1; // 종료 바이트
+
+//     const chunkSize = (end - start) + 1; // 전송할 덩어리 크기
+//     const file = fs.createReadStream(filePath, { start, end }); // 파일 스트림 생성
+//     const head = {
+//       'Content-Range': `bytes ${start}-${end}/${fileSize}`, // 범위 정보
+//       'Accept-Ranges': 'bytes', // 바이트 단위 요청 허용
+//       'Content-Length': chunkSize, // 전송할 크기
+//       'Content-Type': 'video/mp4', // 파일 타입
+//     };
+
+//     res.writeHead(206, head); // HTTP 상태 코드 206: 일부 컨텐츠 전송
+//     file.pipe(res); // 파일을 응답 스트림에 연결하여 전송
+//   } else {
+//     // Range 헤더가 없을 때 전체 파일 전송
+//     const head = {
+//       'Content-Length': fileSize,
+//       'Content-Type': 'video/mp4',
+//     };
+
+//     res.writeHead(200, head); // HTTP 상태 코드 200: 정상 응답
+//     fs.createReadStream(filePath).pipe(res); // 전체 파일 스트림 전송
+//   }
+// });
+
+// app.listen(video_port, () => {
+//   console.log(`Server running at http://10.19.208.172:${video_port}/video`);
+// });
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');

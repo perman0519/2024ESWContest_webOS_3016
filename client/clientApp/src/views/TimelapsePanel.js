@@ -90,6 +90,7 @@ function TimelapsePanel(props) {
                                     />
                                     )}
                                     {camerror && <div className="bg-gray-200 w-full h-80 p-4 rounded text-center text-gray-500">식물 타임랩스</div>}
+                                    {/* <video id="videoPlayer" src="http://10.19.208.172:3005/video" controls width="640" height="360"></video> */}
                                 </div>
                                 <div className="flex justify-center w-full">
                                     <Button variant="primary" className="w-fit" onClick={handleVideo}>

@@ -4,22 +4,7 @@ const service = new Service(pkgInfo.name);
 const axios = require('axios');  // axios 임포트 // 추가
 const { ref,  query, orderByKey, limitToLast, limitToFirst, get, set } = require('firebase/database');
 const { database } = require("./firebase.js");
-// const initializeApp = require('firebase/app').initializeApp;
-// const getDatabase = require('firebase/database').getDatabase;
 require('dotenv').config({ path: './.env' });
-
-// const firebaseConfig = {
-//     apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-//     authDomain: "smartfarm-ddbc3.firebaseapp.com",
-//     databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-//     projectId: "smartfarm-ddbc3",
-//     storageBucket: "smartfarm-ddbc3.appspot.com",
-//     messagingSenderId: "945689382597",
-//     appId: "1:945689382597:web:77f9a7c6eff9c5d445aaac"
-//   };
-
-// const app = initializeApp(firebaseConfig);
-// const database = getDatabase(app);
 
 // 예측 결과를 자연어로 변환하는 함수
 async function convertPredictionToNaturalLanguage(prediction) {
@@ -132,22 +117,6 @@ async function callRandomForestModel() { //인자로 ['온도', '습도', '일�
         // return {recommendationResponse ,naturalLanguageResponse}; // 자연어 변환된 응답 반환
         return `${recommendationResponse}\n${naturalLanguageResponse}`;
 
-
-        // // 도출된 결과 자연어로 변경하는 함수
-        // convertPredictionToNaturalLanguage(response.data.prediction)
-        //     .then((naturalLanguageResponse) => {
-        //         console.log("자연어로 변환된 응답:", naturalLanguageResponse);
-        //     })
-        //     .catch((error) => {
-        //         console.error("자연어 변환 중 오류 발생:", error);
-        //     });
-
-        // message.respond({
-        //    returnValue: true,
-        //    Response: "Sensor data stored"
-        // });
-
-        // return naturalLanguageResponse;
     } catch (error) {
         console.error('API 요청 중 오류 발생:', error);
         return null;
@@ -268,35 +237,6 @@ async function saveAiPromptToDB(message) {
                 console.error("prompt updating data: ", error);
             });
 
-        // //alarm set API, TODO: not working well
-        // service.call("luna://com.webos.service.alarm/set", {
-        //     "key": "ai-prompt-alarm",
-        //     "uri": "luna://com.farm.server.ai.service",
-        //     "params": {},
-        //     "in": "00:00:20", //TODO: 24시간으로 수정하기
-        //     "wakeup": true
-        // }, (response)=>{
-        //     if (response.returnValue) {
-        //         console.log("알람설정 완료");
-        //     } else {
-        //         console.timeLog("알람설정실패:", response);
-        //     }
-        // });
-
-        // // //------------------------- heartbeat 구독 -------------------------
-        // const sub = service.subscribe(`luna://${pkgInfo.name}/heartbeat`, {subscribe: true});
-        // const max = 5000; //heart beat 횟수 /// heart beat가 꺼지면, 5초 정도 딜레이 생김 --> 따라서 이 녀석도 heart beat를 무한히 돌릴 필요가 있어보임.
-        // let count = 0;
-        // sub.addListener("response", function(msg) {
-        //     console.log(JSON.stringify(msg.payload));
-        //     if (++count >= max) {
-        //         sub.cancel();
-        //         setTimeout(function(){
-        //             console.log(max+" responses received, exiting...");
-        //             process.exit(0);
-        //         }, 1000);
-        //     }
-        // });
         message.respond({
             returnValue: true,
             Response: "alarm setting ok"
@@ -311,6 +251,6 @@ async function saveAiPromptToDB(message) {
     }
 }
 
-saveAiPromptToDB();
+// saveAiPromptToDB();
 
-// service.register("saveAiPromptToDB", saveAiPromptToDB);
+service.register("saveAiPromptToDB", saveAiPromptToDB);
