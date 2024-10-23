@@ -49,7 +49,7 @@ function LoginPanel(props) {
                   <Flower className="text-white" size={40} />
                 </div>
               </div>
-              <CardTitle>나만의 작은 스마트팜</CardTitle>
+              <CardTitle>서로 가꾸는 42</CardTitle>
             </CardHeader>
               {user ? (
                 <CardContent className="px-6 py-6">
