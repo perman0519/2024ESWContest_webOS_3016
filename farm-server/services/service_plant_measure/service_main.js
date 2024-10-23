@@ -25,10 +25,10 @@ function getLocalTimestamp() {
 
 async function getPlantLength(message) {
 
-    const imageList = fs.readdirSync('/tmp/usb/sda/sda2/sector/0');
+    const imageList = fs.readdirSync('/media/multimedia/sector/0');
     const latestImage = imageList[imageList.length - 1];
 
-    const image = fs.readFileSync('/tmp/usb/sda/sda2/sector/0/' + latestImage, {
+    const image = fs.readFileSync('/media/multimedia/sector/0/' + latestImage, {
         encoding: "base64"
     });
     console.log("image: ", image);
