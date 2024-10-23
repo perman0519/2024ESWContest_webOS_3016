@@ -35,11 +35,7 @@ function updateSectorInfo(database, sensorData)
 
             onValue(sectorValue, (snapshot) => {
                 const existingData = snapshot.val() || {};
-                if (!existingData[timeStamp]) {
-                    existingData[timeStamp] = sensorData.data;
-                } else {
-                    console.log("Data with the same timestamp already exists, skipping...");
-                }
+                existingData[timeStamp] = sensorData.data;
                 set(sectorValue, existingData)
                     .then(() => {
                         console.log("Data updated successfully.");
