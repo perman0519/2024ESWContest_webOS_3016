@@ -62,6 +62,14 @@ Follow these steps to set up and run the project on your local machine:
       REACT_APP_SENSOR_WS_PORT=3001
       REACT_APP_HTTP_PORT=8081
       REACT_APP_HTTP2_PORT=8082
+
+      REACT_APP_APIKEY=
+      REACT_APP_AUTH_DOMAIN=
+      REACT_APP_DATABASE_URL=
+      REACT_APP_PROJECT_ID=
+      REACT_APP_STORAGE_BUCKET=
+      REACT_APP_MESSAGING_SENDER_ID=
+      REACT_APP_APP_ID=
       ```
    2. **Client**
       ```bash
