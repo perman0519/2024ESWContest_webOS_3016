@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Panel } from '@enact/sandstone/Panels';
 import { Button } from '../components/button/Button';
 import { Row, Cell, Column } from '@enact/ui/Layout';
@@ -7,7 +7,15 @@ import { signOut } from 'firebase/auth';
 import { auth } from './firebase';
 import { Card, CardContent } from '../components/card/Card';
 import { Select, SelectItem } from '../components/select/Select';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+	LineChart,
+	Line,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+	Tooltip,
+	ResponsiveContainer
+  } from 'recharts';
 import { Bell, Menu, Flower } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
@@ -132,6 +140,49 @@ function ChartPanel(props) {
         });
     }, [setPlantAge, setSelectSectorId, setSelectedPlant, setSensorData]);
 
+
+	const compressData = (originalData, compressionFactor = 10) => {
+		const compressed = [];
+		for (let i = 0; i < originalData.length; i += compressionFactor) {
+		  const chunk = originalData.slice(i, i + compressionFactor);
+		  const avg = {
+			time: chunk[0].time,
+			temperature: chunk.reduce((sum, item) => sum + item.temperature, 0) / chunk.length,
+			humidity: chunk.reduce((sum, item) => sum + item.humidity, 0) / chunk.length,
+			soil_humidity: chunk.reduce((sum, item) => sum + item.soil_humidity, 0) / chunk.length
+		  };
+		  compressed.push(avg);
+		}
+		return compressed;
+	  };
+
+	  // 시간 포맷 함수
+	  const formatXAxis = (tickItem) => {
+		const date = new Date(tickItem);
+		return date.getHours().toString().padStart(2, '0') + ':' +
+			   date.getMinutes().toString().padStart(2, '0');
+	  };
+
+	  // 시간 간격 계산 함수
+	  const calculateTimeIntervals = (data) => {
+		if (!data || data.length < 2) return [];
+
+		const startTime = new Date(data[0].time);
+		const endTime = new Date(data[data.length - 1].time);
+		const totalMinutes = (endTime - startTime) / (1000 * 60);
+		const intervalCount = 6; // 표시할 간격 수
+		const intervalMinutes = Math.floor(totalMinutes / (intervalCount - 1));
+
+		const ticks = [];
+		for (let i = 0; i < intervalCount; i++) {
+		  const tickTime = new Date(startTime.getTime() + (i * intervalMinutes * 60 * 1000));
+		  ticks.push(tickTime.toISOString());
+		}
+		return ticks;
+	  };
+
+	const compressedData = useMemo(() => compressData(sensorData, 10), [sensorData]);
+	const timeIntervals = useMemo(() => calculateTimeIntervals(compressedData), [compressedData]);
 	return (
 		<Panel css={css} className='custom-panel' noBackButton noCloseButton {...props}>
 			{/* <Header title="COSMOS IoT Dashboard" /> */}
@@ -169,23 +220,58 @@ function ChartPanel(props) {
 							</div>
 						</Cell>
 						<Cell className="grid grid-cols-12 gap-3">
-							<Card className="col-span-12  bg-white border-gray-200">
-								<CardContent className=" p-6">
-									<h3 className="text-lg font-semibold mb-4 text-xl text-gray-800">센서 데이터</h3>
-									<div className="mt-14 h-96">
-										<ResponsiveContainer width="100%" height="100%">
-											<LineChart data={sensorData}>
-												<CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-												<XAxis dataKey="time" stroke="#6B7280" />
-												<YAxis stroke="#6B7280" />
-												<Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #E5E7EB' }} />
-												<Line type="monotone" dataKey="temperature" stroke="#EF4444" name="온도 (°C)" strokeWidth={2} dot={false} />
-												<Line type="monotone" dataKey="humidity" stroke="#3B82F6" name="습도 (%)" strokeWidth={2} dot={false} />
-												<Line type="monotone" dataKey="soil_humidity" stroke="#10B981" name="토양 습도 (%)" strokeWidth={2} dot={false} />
-											</LineChart>
-										</ResponsiveContainer>
-									</div>
-								</CardContent>
+						<Card className="col-span-12 bg-white border-gray-200">
+							<CardContent className="p-6">
+								<h3 className="text-lg font-semibold mb-4 text-xl text-gray-800">센서 데이터</h3>
+								<div className="mt-14 h-96">
+								<ResponsiveContainer width="100%" height="100%">
+									<LineChart data={compressedData}>
+									<CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+									<XAxis
+										dataKey="time"
+										stroke="#6B7280"
+										angle={0}
+										textAnchor="end"
+										height={60}
+										interval={30}
+										tick={{ fontSize: 12 }}
+									/>
+									<YAxis stroke="#6B7280" />
+									<Tooltip
+										contentStyle={{
+										backgroundColor: '#FFFFFF',
+										border: '1px solid #E5E7EB',
+										fontSize: '14px'
+										}}
+									/>
+									<Line
+										type="monotone"
+										dataKey="temperature"
+										stroke="#EF4444"
+										name="온도 (°C)"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="humidity"
+										stroke="#3B82F6"
+										name="습도 (%)"
+										strokeWidth={2}
+										dot={false}
+									/>
+									<Line
+										type="monotone"
+										dataKey="soil_humidity"
+										stroke="#10B981"
+										name="토양 습도 (%)"
+										strokeWidth={2}
+										dot={false}
+									/>
+									</LineChart>
+								</ResponsiveContainer>
+								</div>
+							</CardContent>
 							</Card>
 						</Cell>
 					</Column>
