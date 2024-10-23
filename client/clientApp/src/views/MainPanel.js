@@ -38,7 +38,7 @@ function ControlOnOff({ user, type }) {
                 "user_id": `${user.uid}`,
                 "sector_id": `${0}`,
                 "type": `${type}`,
-                "command": `${toggleStatus ? "ON" : "OFF"}`
+                "command": `${toggleStatus ? "OFF" : "ON"}`
             })
         }).then(response => response.json())
         .then(data => {
