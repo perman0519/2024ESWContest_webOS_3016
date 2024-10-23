@@ -1,22 +1,19 @@
 // firebase.js
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const firebaseConfig = {
 
-  apiKey: "AIzaSyBfc8OlhEQ-wIpNL3l2v-mTRPVl0droKRY",
-
-  authDomain: "smartfarm-ddbc3.firebaseapp.com",
-
-  databaseURL: "https://smartfarm-ddbc3-default-rtdb.firebaseio.com",
-
-  projectId: "smartfarm-ddbc3",
-
-  storageBucket: "smartfarm-ddbc3.appspot.com",
-
-  messagingSenderId: "945689382597",
-
-  appId: "1:945689382597:web:ca23f3de21c44e2645aaac"
+  apiKey: `${process.env.REACT_APP_APIKEY}`,
+  authDomain: `${process.env.REACT_APP_AUTH_DOMAIN}`,
+  databaseURL: `${process.env.REACT_APP_DATABASE_URL}`,
+  projectId: `${process.env.REACT_APP_PROJECT_ID}`,
+  storageBucket: `${process.env.REACT_APP_STORAGE_BUCKET}`,
+  messagingSenderId: `${process.env.REACT_APP_MESSAGING_SENDER_ID}`,
+  appId: `${process.env.REACT_APP_APP_ID}`
 
 };
 

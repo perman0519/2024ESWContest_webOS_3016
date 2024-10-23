@@ -9,7 +9,7 @@ import { auth } from './firebase';
 import { Card, CardContent } from '../components/card/Card';
 import { Select, SelectItem } from '../components/select/Select';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { Menu, Flower } from 'lucide-react'
+import { Menu, Flower, TimerReset } from 'lucide-react'
 import { SidebarPanel } from './SideBarPanel';
 import css from '../App/App.module.less';
 import { usePlantContext } from './PlantContext.js';  // 추가
@@ -105,6 +105,15 @@ async function getSensorLatest(selectSectorId) {
     const res = await fetch(`http://${ip}/api/sensor/latest/${selectSectorId}`);
     if (!res.ok) {
         throw new Error('Failed to fetch sensor data');
+    }
+    else {//{"timestamp":"2024-10-24 03:01:48","humidity":46.7,"soil_humidity":54,"temperature":22.8}
+        const data = JSON.stringify({
+            timestamp: "2024-10-24 03:01:48",
+            humidity: 46.7,
+            soilHumidity: 54,
+            temperature: 22.8
+        })
+        return data;
     }
     const data = await res.json();
     return data;
