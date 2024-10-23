@@ -49,7 +49,7 @@ app.get('/api/sectors', async (req, res) => {
 });
 
 app.get('/timelapse', (req, res) => {
-    const imageList = fs.readdirSync('/tmp/usb/sda/sda2/sector/0');
+    const imageList = fs.readdirSync('/media/multimedia/sector/0');
     res.setHeader('Content-Type', 'multipart/x-mixed-replace; boundary=frame');
 
     const sendImage = (imagePath) => {
@@ -84,7 +84,7 @@ app.get('/timelapse', (req, res) => {
     const streamImages = async () => {
         for (const image of imageList) {
             console.log('Sending image:', image);
-            await sendImage('/tmp/usb/sda/sda2/sector/0/' + image);
+            await sendImage('/media/multimedia/sector/0/' + image);
             await new Promise(resolve => setTimeout(resolve, 50)); // 0.5초 대기
         }
         res.end(); // 모든 이미지 전송 후 연결 종료
@@ -122,7 +122,7 @@ const video_port = 3005;
        'Content-Length': chunkSize,//  전송할 크기
        'Content-Type': 'video/mp4',//  파일 타입
      };
-     
+
      res.writeHead(206, head);//  HTTP 상태 코드 206: 일부 컨텐츠 전송
      file.pipe(res);//  파일을 응답 스트림에 연결하여 전송
    } else {
@@ -291,7 +291,7 @@ app.post('/api/harvest/:sectorId', async (req, res) => {
       // Flask 서버에 POST 요청 보내기
       const flaskResponse = await axios.post(flaskUrl, dataToSend);
 
-      
+
       // Flask 서버의 응답 처리
       if (flaskResponse.status === 200) {
         console.log("harvest");
@@ -304,9 +304,9 @@ app.post('/api/harvest/:sectorId', async (req, res) => {
           uid : null
         });
 
-        const imageList = fs.readdirSync(`/tmp/usb/sda/sda2/sector/${sectorId}`);
+        const imageList = fs.readdirSync(`/media/multimedia/sector/${sectorId}`);
         for (const image of imageList) {
-          fs.unlinkSync(`/tmp/usb/sda/sda2/sector/${sectorId}/${image}`);
+          fs.unlinkSync(`/media/multimedia/sector/${sectorId}/${image}`);
         }
 
         console.log("Flask 서버로 성공적으로 요청을 보냈습니다:", flaskResponse.data);
@@ -424,7 +424,7 @@ function getDaysDifference(startDate, endDate) {
 function calculateWeek(createdAt) {
   const currentDate = new Date();
   const daysDifference = getDaysDifference(createdAt, currentDate);
-  
+
   // 주차를 7일로 나눈 값으로 계산 (0주차: 0~7일, 1주차: 8~14일 등)
   const week = Math.floor(daysDifference / 7);
   return week;
@@ -435,11 +435,11 @@ function formatDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
   const day = String(date.getDate()).padStart(2, '0');
-  
+
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
@@ -507,7 +507,7 @@ function storePumpStatus(sector_id, state) {
   get(pumpRef)
   .then((snapshot) => {
       let currentData = snapshot.val();
-      
+
       // startTime이 연월일시분초 형식으로 저장되어 있는 경우 처리
       let startTime = currentData && currentData.start ? new Date(currentData.start) : currentTime;
 

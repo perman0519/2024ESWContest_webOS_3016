@@ -55,7 +55,7 @@ function RegisterPanel(props) {
 
     return (
         <Panel noBackButton noCloseButton {...props}>
-            <Header title="Regiter" />
+            <Header title="Register" />
             <div>
               <InputField
                 type="email"
