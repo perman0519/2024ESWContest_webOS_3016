@@ -367,6 +367,25 @@ const startHttpServer = () => {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
+// 날짜 차이를 계산하는 함수 (일 단위)
+function getDaysDifference(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const timeDifference = end - start;
+  const dayDifference = timeDifference / (1000 * 60 * 60 * 24); // 밀리초에서 일 단위로 변환
+  return Math.floor(dayDifference);
+}
+
+// 주차를 계산하는 함수
+function calculateWeek(createdAt) {
+  const currentDate = new Date();
+  const daysDifference = getDaysDifference(createdAt, currentDate);
+  
+  // 주차를 7일로 나눈 값으로 계산 (0주차: 0~7일, 1주차: 8~14일 등)
+  const week = Math.floor(daysDifference / 7);
+  return week;
+}
+
 // ISO 8601형식의 문자열을 열월일시분초 형식으로 변환
 function formatDate(date) {
   const year = date.getFullYear();
@@ -379,36 +398,6 @@ function formatDate(date) {
   
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
-
-// save weekly pump count to firebase
-
-=======
-// function saveWeeklyPumpData(sector_id, pumpCnt) {
-//   const week = calculateWeek(createdAt); // 주차 계산
-//   console.log("week:", week);
-//   const dataRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
-
-//   // 기존 데이터를 먼저 가져옴
-//   get(dataRef)
-//     .then((snapshot) => {
-//       const existingData = snapshot.val() || {};
-
-//       // 기존 데이터 유지하고 pumpCnt만 업데이트
-//       const updatedData = {
-//         ...existingData,  // 기존 데이터 유지
-//         pumpCnt: pumpCnt  // pumpCnt만 업데이트
-//       };
-
-//       // update 메서드를 사용하여 특정 필드만 업데이트
-//       return update(dataRef, updatedData);
-//     })
-//     .then(() => {
-//       console.log('Firebase weekly_avg pumpCnt 저장 성공');
-//     })
-//     .catch((error) => {
-//       console.log('Firebase weekly_avg pumpCnt 저장 실패: ', error);
-//     });
-// }
 
 function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
   const sectorRef = ref(database, `sector/${sector_id}/plant/createdAt`);
@@ -425,22 +414,49 @@ function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
               const weekRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
               return update(weekRef, { pumpCnt: weeklyPumpCnt });
           } else {
-              // 이미 데이터가 있으면 id 증가 후 다시 시도
-              id++;
-              checkAndStore();
+              console.error('CreatedAt 데이터를 찾을 수 없습니다.');
           }
-      }).catch((error) => {
-          console.error(`Firebase 읽기 실패: `, error);
+      })
+      .then(() => {
+          console.log('Weekly pump count 저장 성공');
+      })
+      .catch((error) => {
+          console.error('Firebase 저장 실패: ', error);
       });
-  };
-
-  // 첫 번째 호출
-  checkAndStore();
 }
+
+// 이게 왜 들어온거지?
+// function saveWeeklyPumpData(sector_id, weeklyPumpCnt) {
+//   const sectorRef = ref(database, `sector/${sector_id}/plant/createdAt`);
+
+//   get(sectorRef)
+//       .then((snapshot) => {
+//           if (snapshot.exists()) {
+//               const createdAt = snapshot.val();
+//               const week = calculateWeek(createdAt); // 주차 계산
+
+//               console.log(`현재는 ${week}주차입니다. Pump Count: ${weeklyPumpCnt}`);
+
+//               // 해당 주차에 weeklyPumpCnt 저장
+//               const weekRef = ref(database, `sector/${sector_id}/weekly_avg/${week}`);
+//               return update(weekRef, { pumpCnt: weeklyPumpCnt });
+//           } else {
+//               // 이미 데이터가 있으면 id 증가 후 다시 시도
+//               id++;
+//               checkAndStore();
+//           }
+//       }).catch((error) => {
+//           console.error(`Firebase 읽기 실패: `, error);
+//       });
+//   };
+
+//   // 첫 번째 호출
+//   checkAndStore();
+// }
 
 // storePumpStatus and add Pump_count
 function storePumpStatus(sector_id, state) {
-  const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`); //여기서 터짐
+  const pumpRef = ref(database, `sector/${sector_id}/Pump_Status/`);
   const currentTime = new Date();
 
   // get data from Firebase
