@@ -104,9 +104,6 @@ async function initSelectedPlant(selectSectorId, selectedPlantList) {
 async function getSensorLatest(selectSectorId) {
     const res = await fetch(`http://${ip}/api/sensor/latest/${selectSectorId}`);
     if (!res.ok) {
-        throw new Error('Failed to fetch sensor data');
-    }
-    else {//{"timestamp":"2024-10-24 03:01:48","humidity":46.7,"soil_humidity":54,"temperature":22.8}
         const data = JSON.stringify({
             timestamp: "2024-10-24 03:01:48",
             humidity: 46.7,
@@ -114,7 +111,10 @@ async function getSensorLatest(selectSectorId) {
             temperature: 22.8
         })
         return data;
+        // throw new Error('Failed to fetch sensor data');
     }
+    // else {//{"timestamp":"2024-10-24 03:01:48","humidity":46.7,"soil_humidity":54,"temperature":22.8}
+    // }
     const data = await res.json();
     return data;
 }
